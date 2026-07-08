@@ -1,0 +1,57 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+htmlcov/
+.coverage
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Package manager caches
+.pnpm-store/
+.npm/
+.yarn/
+
+# Local infrastructure data
+data/
+volumes/
+minio-data/
+milvus-data/
+redis-data/
+mysql-data/
+mongodb-data/
+
+# Logs and runtime files
+*.log
+logs/
+tmp/
+temp/
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Codex / agent local state
+.agents/
