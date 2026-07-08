@@ -10,8 +10,10 @@
 - 当前分支：`main`
 - 本项目已启用 Git Credential Manager：`credential.helper=manager`
 - 本项目换行策略：`core.autocrlf=false`、`core.eol=lf`
+- 提交作者：`Zhujia409 <Zhujia409@users.noreply.github.com>`
+- 远程仓库：`https://github.com/ZhuJia409/Legal_AI_Agent.git`
 
-注意：当前项目尚未配置提交作者 `user.name` 和 `user.email`，也尚未配置 GitHub 远程仓库地址。
+注意：如果你希望 GitHub 提交记录绑定到另一个邮箱，可以修改当前仓库的 `user.email` 后再提交新内容。
 
 项目已补充以下 Git 项目级配置文件：
 
@@ -44,10 +46,10 @@ git config --global user.email "你的邮箱"
 
 ## 配置远程仓库
 
-创建 GitHub 仓库后，在项目根目录配置远程地址：
+本项目已配置远程仓库。如果需要重新配置，可在项目根目录执行：
 
 ```powershell
-git remote add origin https://github.com/<owner>/<repo>.git
+git remote set-url origin https://github.com/ZhuJia409/Legal_AI_Agent.git
 ```
 
 检查远程地址：
@@ -56,13 +58,13 @@ git remote add origin https://github.com/<owner>/<repo>.git
 git remote -v
 ```
 
-## 首次提交
+## 首次提交记录
 
-配置提交身份和远程仓库后，再执行首次提交：
+本项目已执行首次项目结构提交。如果需要以后提交新内容，使用：
 
 ```powershell
 git add .
-git commit -m "chore: initialize project structure"
+git commit -m "描述本次改动"
 git push -u origin main
 ```
 
