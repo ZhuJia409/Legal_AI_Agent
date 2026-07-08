@@ -280,12 +280,20 @@ Fallback：`BAAI/bge-reranker-v2-m3`
 - DeepAgents 工具注册与权限边界
 - 观测、日志、评测与安全审计
 
+## 当前配置状态
+
+已完成本地开发配置：
+
+- 后端 FastAPI 最小应用、健康检查接口、配置模块、测试配置和 AI/数据库依赖清单。
+- 前端 Next.js App Router、React、TypeScript、Tailwind CSS、shadcn/ui 配置和 AI SDK 依赖。
+- 本地 Docker Compose 配置，包含 MySQL 8.4、Redis、MongoDB、MinIO、etcd、Milvus standalone。
+- 根目录 `.env.example`，保留真实密钥和密码为空。
+- Git 提交作者配置为 `Zhujia409 <657864108@qq.com>`。
+
 ## 当前阶段不做的内容
 
-- 不执行 `docker compose`
-- 不执行 `pnpm install`
-- 不执行 `uv sync`
-- 不生成锁文件
-- 不初始化数据库
-- 不启动后端或前端服务
+- 不填写真实 API key、token 或生产密码。
+- 不下载 `Qwen/Qwen3-Reranker-4B` 权重。
+- 不启动 GPU 推理服务。
+- 不强制启动 Docker Desktop 或数据库容器。
 - 不编写业务代码

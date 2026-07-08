@@ -10,10 +10,10 @@
 - 当前分支：`main`
 - 本项目已启用 Git Credential Manager：`credential.helper=manager`
 - 本项目换行策略：`core.autocrlf=false`、`core.eol=lf`
-- 提交作者：`Zhujia409 <Zhujia409@users.noreply.github.com>`
+- 提交作者：`Zhujia409 <657864108@qq.com>`
 - 远程仓库：`https://github.com/ZhuJia409/Legal_AI_Agent.git`
 
-注意：如果你希望 GitHub 提交记录绑定到另一个邮箱，可以修改当前仓库的 `user.email` 后再提交新内容。
+注意：提交作者邮箱已按你提供的真实邮箱配置为 `657864108@qq.com`。
 
 项目已补充以下 Git 项目级配置文件：
 
