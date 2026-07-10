@@ -10,7 +10,7 @@
 
 - 后端：FastAPI、Pydantic v2、SQLAlchemy 2、Alembic、LangChain、LangGraph、DeepAgents。
 - 前端：Next.js App Router、React、TypeScript、Vercel AI SDK、shadcn/ui、Tailwind CSS。
-- 数据库与存储：MySQL、Milvus、Redis、MongoDB、MinIO。
+- 数据库与存储：MySQL、Milvus、Redis、MongoDB、MinIO、Neo4j。
 - 模型：OpenAI-compatible API 网关、本地 embedding、本地 reranker。
 
 ## 目录职责
@@ -38,6 +38,18 @@
 
 遇到问题时先定位根因，再修复代码。不要靠反复试错堆补丁。
 
+## 本地启动规范
+
+本项目允许使用 PyCharm 一键启动本地开发环境，但启动配置必须遵守：
+
+- PyCharm Run Configuration 只调用项目脚本，不写入真实 API Key、Token、数据库密码或个人绝对路径。
+- 本地密钥和模型服务配置只放在根目录 `.env`，不得提交到仓库。
+- 一键启动脚本放在 `scripts/` 目录，脚本应清晰区分基础设施、后端和前端进程。
+- 启动后端应使用 `uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000`。
+- 启动前端应使用 `pnpm.cmd dev --hostname 127.0.0.1 --port 3000`。
+- 启动基础设施应使用 `docker compose -f infra/docker-compose.yml up -d`。
+- 如果只开发前后端页面，可跳过 Docker 基础设施，但不得修改代码绕过真实模型调用路径。
+
 复杂功能应先明确：
 
 - 输入输出。
@@ -61,6 +73,29 @@ Python 版本固定为 `3.12`，包管理使用 `uv`。
 - 异步 I/O 优先使用 async 客户端。
 - 不在代码里硬编码真实密钥、账号、密码、模型供应商私有配置。
 
+## 案件分析与合同审查后端模块规范
+
+案件分析与合同审查模块是当前后端优先建设的业务能力，目录、接口和命名应按企业级业务模块组织。
+
+开发相关模块时应遵守：
+
+- API 路径使用版本化资源命名，例如 `/api/v1/case-analyses` 和 `/api/v1/contract-reviews`。
+- 路由代码放在 `backend/app/api/v1/`，只负责请求校验、错误响应转换和调用服务层。
+- 请求和响应 schema 放在 `backend/app/schemas/`，使用 Pydantic v2 定义明确字段类型。
+- 业务逻辑放在 `backend/app/services/`，案件分析和合同审查分别保持独立服务边界。
+- 外部模型调用封装在 `backend/app/integrations/llm/`，通过 OpenAI-compatible API 调用真实模型。
+- 运行时代码不使用 Mock fallback；缺少 API Key、网络失败或模型失败时返回受控错误。
+- 测试中可以使用 Mock LLM client，避免单元测试依赖真实外部模型服务。
+- 当前阶段不在案件分析与合同审查模块中引入 LangGraph、DeepAgents、RAG、向量检索或知识图谱流程。
+- 法律分析结果必须包含专业法律人士复核提示，不得把模型输出直接包装成确定法律结论。
+
+开发这些模块时优先参考项目 `skills/` 目录中的：
+
+- `api-design`：用于接口路径、状态码、请求响应结构和错误格式。
+- `python-patterns`：用于 Python 分层、类型标注、异常处理和可维护性。
+- `python-testing`：用于 pytest 测试、Mock 外部依赖和边界场景覆盖。
+- `verification-before-completion`：用于完成前验证 lint 和测试结果。
+
 后端提交前至少运行：
 
 ```powershell
@@ -82,6 +117,29 @@ uv run pytest
 - 所有 props 和接口数据应有明确 TypeScript 类型。
 - AI 聊天、流式响应、工具调用状态和引用来源展示要有清晰的加载、错误和空状态。
 - 不在前端暴露后端私密 API Key。
+
+## 案件分析与合同审查前端模块规范
+
+案件分析与合同审查前端模块应以法律业务工作台方式组织，不做营销页或纯展示页。
+
+开发相关模块时应遵守：
+
+- 浏览器侧只请求 Next.js `/api/v1/` 下的代理接口，不直接请求 FastAPI 地址。
+- Next.js Route Handler 负责读取 `BACKEND_API_BASE_URL` 并转发到 FastAPI。
+- 不使用 `NEXT_PUBLIC_` 暴露后端地址、模型服务地址、API Key、Token、数据库密码或对象存储密钥。
+- 页面入口放在 `frontend/src/app/`，业务组件放在 `frontend/src/components/legal-analysis/`。
+- 前端请求和响应类型放在 `frontend/src/lib/`，字段应与后端 Pydantic schema 保持一致。
+- 表单提交、错误处理和加载状态应在用户事件处理器中完成，不通过无意义 `useEffect` 触发请求。
+- 案件分析和合同审查必须具备未提交、提交中、成功、失败四类状态。
+- 结果展示必须包含摘要、风险等级、主要发现、处理建议和法律专业复核提示。
+- 桌面端和移动端布局都要避免文本溢出、按钮挤压和内容重叠。
+
+开发这些模块时优先参考项目 `skills/` 目录中的：
+
+- `frontend-design`：用于法律工作台视觉方向、信息密度、排版和交互语气。
+- `frontend-patterns`：用于 React 组件拆分、表单状态、可访问性和响应式结构。
+- `vercel-react-best-practices`：用于 Next.js 数据流、客户端边界和渲染性能。
+- `verification-before-completion`：用于完成前验证 lint、typecheck 和 build 结果。
 
 前端提交前至少运行：
 
@@ -117,8 +175,8 @@ Agent 开发必须遵守：
 
 默认模型配置：
 
-- LLM：`qwen3.6-flash`
-- Fallback LLM：`qwen-plus`
+- LLM：`qwen3.7-plus`
+- Fallback LLM：`deepseek-v4-flash`
 - Embedding：`BAAI/bge-m3`
 - Reranker：`Qwen/Qwen3-Reranker-4B`
 
@@ -133,6 +191,8 @@ Milvus 存文档 chunk 向量和语义检索索引。
 Redis 存缓存、限流、短期任务状态和临时会话状态。
 
 MongoDB 存历史对话、Agent 事件、工具调用轨迹和非强结构化中间结果。
+
+Neo4j 存法律知识图谱，例如法条、案例、主体、合同条款、证据材料、法律概念和争议焦点之间的实体关系。
 
 MinIO 存原始上传文件、解析产物、报告、附件和对象文件。
 
@@ -194,15 +254,3 @@ infra: add local milvus compose service
 - Docker volume 数据
 - 模型权重
 - 本地 IDE 缓存
-
-## 推荐参考技能
-
-本规范参考了当前环境中可用的软件开发方法类技能：
-
-- `brainstorming`：用于复杂功能前澄清架构、组件、数据流、错误处理和测试。
-- `systematic-debugging`：用于问题定位，要求先找根因再修复。
-- `test-driven-development`：用于高风险功能和 bug 修复。
-- `verification-before-completion`：用于完成前运行验证命令，以结果为准。
-- `requesting-code-review`：用于较大改动完成后做代码审查。
-
-当任务复杂、影响范围大或涉及核心架构时，应优先采用这些方法。

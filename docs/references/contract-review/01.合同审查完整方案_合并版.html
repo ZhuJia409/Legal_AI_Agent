@@ -1,0 +1,3560 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<title>合同审查完整方案 — 流程手册 × 类型知识库</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#f0f2f5;color:#2c3038;line-height:1.75;display:flex;min-height:100vh}
+
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#c0c4d0;border-radius:3px}
+
+/* ===== SIDEBAR ===== */
+.sidebar{position:fixed;top:0;left:0;width:272px;height:100vh;background:#1a1d27;color:#b0b5c0;overflow-y:auto;z-index:100;font-size:13px}
+.sidebar-header{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,0.07);position:sticky;top:0;background:#1a1d27;z-index:2}
+.sidebar-header h2{font-size:14px;font-weight:700;color:#fff;line-height:1.3}
+.sidebar-header .ver{font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px}
+.sidebar-divider{padding:10px 16px 4px;font-size:10px;font-weight:700;color:rgba(255,255,255,0.2);letter-spacing:1px;border-top:1px solid rgba(255,255,255,0.05);margin-top:6px}
+.sidebar-nav{padding:4px 0}
+.sidebar-nav ul{list-style:none}
+.sidebar-nav a{display:block;padding:5px 16px 5px 20px;color:#b0b5c0;text-decoration:none;line-height:1.45;border-left:3px solid transparent;transition:.15s;font-size:12px}
+.sidebar-nav a:hover{color:#fff;background:rgba(255,255,255,0.05)}
+.sidebar-nav a.active{color:#fff;background:rgba(79,140,255,0.13);border-left-color:#4f8cff}
+.sidebar-nav .nv-h1>a{font-weight:700;font-size:12.5px;padding-top:8px;padding-bottom:8px;color:#ddd}
+.sidebar-nav .nv-h2>a{font-weight:600;font-size:12px;padding-top:6px;padding-bottom:6px}
+.sidebar-nav .nv-contracts a{padding-left:36px;font-size:10.5px;color:rgba(176,181,192,0.55)}
+.sidebar-nav .nv-sub{max-height:0;overflow:hidden;transition:max-height .3s}
+.sidebar-nav .nv-has.open .nv-sub{max-height:8000px}
+.sidebar-nav .nv-has>a::after{content:" ▾";font-size:10px;opacity:.4}
+.sidebar-nav .nv-has.open>a::after{content:" ▴"}
+
+.sb-toggle{display:none;position:fixed;top:10px;left:10px;z-index:200;width:38px;height:38px;border-radius:6px;background:#1a1d27;color:#fff;border:none;cursor:pointer;font-size:20px;align-items:center;justify-content:center}
+
+/* ===== MAIN CONTENT ===== */
+.main{margin-left:272px;flex:1;max-width:960px;padding:32px 40px 80px}
+.main h2.section-title{font-size:22px;font-weight:700;color:#1a1d27;margin:40px 0 16px;padding-bottom:10px;border-bottom:3px solid #4f8cff;line-height:1.3}
+.main h3{font-size:17px;font-weight:700;color:#2c3038;margin:28px 0 10px}
+.main h4{font-size:14.5px;font-weight:600;color:#4a4f5a;margin:18px 0 8px}
+.main h5{font-size:13.5px;font-weight:600;color:#6b7280;margin:12px 0 6px}
+.main h6{font-size:12.5px;font-weight:500;color:#8b9099;margin:8px 0 4px}
+.main p{margin:6px 0;font-size:14px;line-height:1.8}
+
+.v6-section{margin-bottom:12px}
+.v6-subsection{background:#fff;border-radius:8px;padding:18px 22px;margin-bottom:14px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.v6-subsection h3{margin-top:0;font-size:15px;color:#1a1d27;padding-bottom:8px;border-bottom:1px solid #eee}
+.v6-subsection h4{color:#4f8cff;font-size:13.5px;margin-top:14px}
+.v6-subsection h5{color:#666;font-size:13px}
+.v6-subsection h6{color:#888;font-size:12px}
+.v6-subsection p{font-size:13.5px;color:#555}
+
+.contracts-container{margin-top:12px}
+.contract-section{background:#fff;border-radius:8px;padding:20px 24px;margin-bottom:18px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.contract-section h3{margin-top:0;font-size:16px;color:#1a1d27;padding-bottom:8px;border-bottom:2px solid #4f8cff}
+.contract-section h4{font-size:14px;color:#4a4f5a;margin:16px 0 6px}
+.contract-section h5{font-size:13px;color:#6b7280;margin:10px 0 4px}
+.contract-section p,.contract-section li{font-size:13.5px;color:#555;line-height:1.7}
+
+.tbl-w{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+table.ckl thead th{background:#f7f8fa;color:#4a4f5a;font-weight:600;padding:8px 10px;text-align:left;border-bottom:2px solid #d0d5dd;white-space:nowrap;font-size:12px}
+table.ckl tbody td{padding:8px 10px;border-bottom:1px solid #eef0f4;vertical-align:top;line-height:1.6}
+table.ckl tbody tr:hover{background:#f9fafb}
+table.ckl tbody td:first-child{font-weight:600}
+table thead th{background:#f7f8fa;color:#4a4f5a;font-weight:600;padding:8px 10px;text-align:left;border-bottom:2px solid #d0d5dd;font-size:12px}
+table tbody td{padding:8px 10px;border-bottom:1px solid #eef0f4;font-size:13px}
+
+.risk-fatal{color:#dc2626;font-weight:700}
+.risk-high{color:#ea580c;font-weight:700}
+.risk-mid{color:#ca8a04;font-weight:700}
+.risk-low{color:#16a34a}
+
+.doc-lst{margin:10px 0;padding-left:20px}
+.doc-lst li{margin:6px 0;font-size:13.5px;line-height:1.7}
+
+hr{border:none;border-top:1px solid #e5e7eb;margin:14px 0}
+
+.btop{position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:50%;background:#4f8cff;color:#fff;border:none;cursor:pointer;font-size:18px;opacity:0;transition:.3s;z-index:99;pointer-events:none}
+.btop.on{opacity:1;pointer-events:auto}
+
+.highlight-box{background:#fef9e7;border-left:4px solid #f59e0b;padding:12px 16px;margin:12px 0;border-radius:0 6px 6px 0;font-size:13.5px}
+.highlight-box strong{color:#b45309}
+
+.info-tag{display:inline-block;background:#f0f4ff;color:#4f8cff;font-size:11px;padding:2px 8px;border-radius:3px;margin-right:4px}
+
+@media(max-width:900px){
+.sidebar{transform:translateX(-100%);transition:.3s}
+.sidebar.open{transform:translateX(0)}
+.main{margin-left:0;padding:24px 18px 60px}
+.sb-toggle{display:flex}
+}
+
+@media print{
+.sidebar{display:none}
+.main{margin-left:0}
+}
+</style>
+</head>
+<body>
+<button class="sb-toggle" id="sbt" onclick="tsb()">☰</button>
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sb">
+<div class="sidebar-header">
+<h2>合同审查完整方案</h2>
+<div class="ver">V1.0 · 流程手册 × 类型知识库</div>
+</div>
+<nav class="sidebar-nav">
+<div class="sidebar-divider">━━ 审查流程（V6）━━</div>
+<ul>
+<li class="nv-h1"><a href="#v6-prep">一、审查合同背景</a></li>
+<li class="nv-h1"><a href="#v6-party">二、主体资格审查</a></li>
+<li class="nv-h1"><a href="#v6-form">三、形式与结构审查</a></li>
+<li class="nv-h1 nv-has"><a href="#v6-substantive">四、实质审查（核心）</a>
+<ul class="nv-sub">
+<li class="nv-h2"><a href="#v6-validity">· 效力审查</a></li>
+<li class="nv-h2"><a href="#v6-dispute">· 争议解决与退出</a></li>
+<li class="nv-h2 nv-has"><a href="#v6-contracts">· 合同类型专项审查 ▼</a>
+<ul class="nv-sub">
+<li class="nv-contracts"><a href="#ct-1">01. 买卖合同</a></li>
+<li class="nv-contracts"><a href="#ct-2">02. 供用电/水/气/热力合同</a></li>
+<li class="nv-contracts"><a href="#ct-3">03. 赠与合同</a></li>
+<li class="nv-contracts"><a href="#ct-4">04. 借款合同</a></li>
+<li class="nv-contracts"><a href="#ct-5">05. 租赁合同</a></li>
+<li class="nv-contracts"><a href="#ct-6">06. 融资租赁合同</a></li>
+<li class="nv-contracts"><a href="#ct-7">07. 承揽合同</a></li>
+<li class="nv-contracts"><a href="#ct-8">08. 建设工程合同</a></li>
+<li class="nv-contracts"><a href="#ct-9">09. 运输合同</a></li>
+<li class="nv-contracts"><a href="#ct-10">10. 技术合同</a></li>
+<li class="nv-contracts"><a href="#ct-11">11. 保管合同</a></li>
+<li class="nv-contracts"><a href="#ct-12">12. 仓储合同</a></li>
+<li class="nv-contracts"><a href="#ct-13">13. 委托合同</a></li>
+<li class="nv-contracts"><a href="#ct-14">14. 物业服务合同</a></li>
+<li class="nv-contracts"><a href="#ct-15">15. 行纪合同</a></li>
+<li class="nv-contracts"><a href="#ct-16">16. 中介合同</a></li>
+<li class="nv-contracts"><a href="#ct-17">17. 合伙合同</a></li>
+<li class="nv-contracts"><a href="#ct-18">18. 保证合同</a></li>
+<li class="nv-contracts"><a href="#ct-19">19. 保理合同</a></li>
+<li class="nv-contracts"><a href="#ct-20">20. 劳动合同</a></li>
+<li class="nv-contracts"><a href="#ct-21">21. 保密协议 / NDA</a></li>
+<li class="nv-contracts"><a href="#ct-22">22. SaaS / 软件服务协议</a></li>
+<li class="nv-contracts"><a href="#ct-23">23. 股权转让协议</a></li>
+<li class="nv-contracts"><a href="#ct-24">24. 采购框架协议</a></li>
+<li class="nv-contracts"><a href="#ct-25">25. 特许经营合同</a></li>
+<li class="nv-contracts"><a href="#ct-26">26. 投资/增资协议</a></li>
+<li class="nv-contracts"><a href="#ct-27">27. 资产/业务收购协议</a></li>
+<li class="nv-contracts"><a href="#ct-28">28. 债权转让/债务承担协议</a></li>
+<li class="nv-contracts"><a href="#ct-29">29. 抵押/质押合同</a></li>
+<li class="nv-contracts"><a href="#ct-30">30. 知识产权许可合同</a></li>
+<li class="nv-contracts"><a href="#ct-31">31. 保险合同</a></li>
+<li class="nv-contracts"><a href="#ct-32">32. 合资/联营协议</a></li>
+<li class="nv-contracts"><a href="#ct-33">33. 数据处理协议（DPA）</a></li>
+<li class="nv-contracts"><a href="#ct-34">34. 资产托管合同</a></li>
+</ul>
+</li>
+<li class="nv-h2"><a href="#v6-completeness">· 条款完整性</a></li>
+<li class="nv-h2"><a href="#v6-balance">· 权利义务对等</a></li>
+<li class="nv-h2"><a href="#v6-liability">· 违约责任与风险</a></li>
+<li class="nv-h2"><a href="#v6-anticorruption">· 廉洁/反腐败审查</a></li>
+<li class="nv-h2"><a href="#v6-data">· 数据合规审查</a></li>
+</ul>
+</li>
+<li class="nv-h1"><a href="#v6-report">五、出具审查意见/报告</a></li>
+</ul>
+</nav>
+</aside>
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main" id="mc">
+<div style="margin-bottom:32px">
+<h2 class="section-title" style="margin-top:0;font-size:26px;border-bottom-color:#4f8cff">合同审查完整方案</h2>
+<p style="color:#6b7280;font-size:14px">
+<span class="info-tag">流程手册 V6</span> 审查SOP — 按流程走 · 五大模块
+    <span style="margin:0 8px">×</span>
+<span class="info-tag">类型知识库 V3</span> 34类合同 — 按类型查 · 审查清单+特殊陷阱
+  </p>
+</div>
+<!-- ========== MODULE 1 ========== -->
+<section class="v6-section" id="v6-prep">
+<h2 class="section-title">一、审查合同背景</h2>
+<div class="v6-subsection"><h3>确认6个基础问题</h3>
+<h4>这笔交易的商业目的</h4>
+<h4>合同立场：买方/卖方、甲方/乙方</h4>
+<h4>对方身份，关联关系</h4>
+<h4>合同金额 / 期限 / 标的规模</h4>
+<h4>业务方特殊关注点</h4>
+<h4>紧急程度和 Deadline</h4>
+</div>
+<div class="v6-subsection"><h3>初步判定合同大类</h3>
+<h4>合同标题判定</h4>
+<h4>业务描述判定</h4>
+<h4>标的物判定</h4>
+</div>
+<div class="v6-subsection"><h3>收集关联文件（11类）</h3>
+<h4>审查是否有《合同审查关联文件清单》</h4>
+<h4>审查是否有洽谈纪要 / 会议记录</h4>
+<h4>审查是否有往来邮件截图 / 导出</h4>
+<h4>审查是否有微信聊天记录（关键段落）</h4>
+<h4>审查是否有框架协议 / 主合同（如有）</h4>
+<h4>审查是否有招投标文件 + 中标通知书（如适用）</h4>
+<h4>审查是否有技术规格书 / SOW / 需求文档</h4>
+<h4>审查是否有与对方的历史合同（如有）</h4>
+<h4>审查是否有尽调报告（如有）</h4>
+<h4>审查是否有业务方的项目立项文件 / 审批文件</h4>
+<h4>审查是否有对方提供的宣传资料 / 报价单</h4>
+</div>
+<div class="v6-subsection"><h3>⚠ 陷阱</h3>
+<h4>名实不符的认定</h4>
+<p>不看标题，通读全部条款后判断法律性质。特别是标题含"合作""战略""框架"等模糊词汇时，必须深入审查。</p>
+<h4>意向书（LOI）效力</h4>
+<p>逐条审查意向书中的每一条表述——看措辞是否构成法律承诺，不看标题。</p>
+<h4>缔约过失责任的隐蔽触发</h4>
+<p>• 洽谈中一方故意隐瞒重大不利信息<br/>
+• 一方明知不可能实现的条件——假意磋商，承担缔约过失责任<br/>
+• 合同未签但一方已开始投入——如对方有过错，需赔偿准备投入损失<br/>
+• 未尽通知义务导致对方损失<br/>
+• 泄露对方在洽谈中提供的保密信息——缔约过失责任 + 保密违约责任</p>
+</div>
+</section>
+<!-- ========== MODULE 2 ========== -->
+<section class="v6-section" id="v6-party">
+<h2 class="section-title">二、主体资格审查</h2>
+<div class="v6-subsection"><h3>审查清单（13项）</h3>
+<h4>特殊个体——个体工商户、合伙企业、分公司、分支机构签约完整审查</h4>
+<h4>营业执照——核验是否有效存续、注册资本、法定代表人</h4>
+<h4>经营范围——合同标的是否在对方经营范围内</h4>
+<h4>资质许可——特殊行业（建筑/医疗/金融/教育等）是否具备法定资质</h4>
+<h4>信用状况——查询涉诉情况、被执行人信息、失信记录（企查查/天眼查/执行信息公开网）</h4>
+<h4>涉诉/行政处罚记录——通过裁判文书网、信用中国查询</h4>
+<h4>履约能力——财务状况评估、过往合作记录、行业口碑</h4>
+<h4>授权代表——签约人是否为法定代表人或持有有效授权委托书</h4>
+<h4>关联关系——是否存在关联交易需特别披露的情形</h4>
+<h4>分支机构——如为分公司签约，是否有总公司授权 <span class="risk-fatal">【重要】</span></h4>
+<h4>跨境主体——境外主体的存续证明（Certificate of Good Standing）、授权代表的认证文件（公证+领事认证）<span class="risk-fatal">【重要】</span></h4>
+<h4>公司章程审查——核查章程对对外签约/担保/重大交易的内部决策程序要求 <span class="risk-fatal">【致命】</span></h4>
+<h4>法定代表人越权代表（表见代表）<span class="risk-fatal">【致命】</span></h4>
+</div>
+<div class="v6-subsection"><h3>常见红线问题</h3>
+<h4>对方已被列入失信被执行人名单仍拟签约</h4>
+<h4>对方经营范围不包含合同标的（超范围经营）</h4>
+<h4>签约人无授权委托书，事后被对方否认</h4>
+<h4>对方已被吊销营业执照但尚未注销</h4>
+</div>
+<div class="v6-subsection"><h3>关联文件收集 - 补充权限文件</h3>
+<h4>对方营业执照副本 | 公司章程 | 董事会/股东会决议（如适用）</h4>
+<h4>授权委托书（签约人非法定代表人时）| 资质证书/行业许可</h4>
+<h4>信用查询报告（企查查/天眼查/执行信息公开网）</h4>
+</div>
+<div class="v6-subsection"><h3>⚠ 陷阱</h3>
+<h4>印章类型</h4>
+<p>审核各类印章的效力范围；印章与主体名称是否一致；是否缺少防伪编码或备案编号；分公司使用总公司印章或总公司使用分公司印章是否越权。</p>
+<h4>签字页空白风险</h4>
+<p>审核签字页后有空白页但未标注"以下空白"；合同正文与签字页之间是否有空白页；签字页是否留有空白栏位；电子合同是否锁定版本。</p>
+</div>
+</section>
+<!-- ========== MODULE 3 ========== -->
+<section class="v6-section" id="v6-form">
+<h2 class="section-title">三、形式与结构审查</h2>
+<div class="v6-subsection"><h3>审查清单（11项）</h3>
+<h4>结构完整性——是否包含首部（当事人信息）、正文（条款）、尾部（签章）三部分</h4>
+<h4>目录与编号——条款编号是否连续、层级是否清晰</h4>
+<h4>排版格式——金额大小写一致性；币种标注；单位统一；无占位符</h4>
+<h4>语言准确性——错别字、歧义表述、前后矛盾；"定金"≠"订金"</h4>
+<h4>合同语言——中英文双语：优先语言约定、术语一致性、翻译偏差</h4>
+<h4>术语一致性——同一概念全文使用统一表述</h4>
+<h4>逻辑自洽——付款条件与交付条件是否矛盾</h4>
+<h4>签章规范——签章页信息完整、公章与主体一致、有签署日期</h4>
+<h4>版本核对——确认审查的是最终版本</h4>
+<h4>附件完整性——引用附件齐全、版本一致</h4>
+<h4>签署日期——识别倒签风险、格式规范</h4>
+</div>
+<div class="v6-subsection"><h3>验证与修正合同类型</h3>
+<h4>合同标题 vs 实际内容是否一致 → 修正（如"合作框架协议"实为买卖合同）</h4>
+<h4>有名合同 vs 无名合同判定 → 不属于19类典型合同的归入无名合同</h4>
+<h4>混合合同识别 → 拆分审查各部分（买卖+服务+技术许可）</h4>
+<h4>格式合同识别 → 触发格式条款特别审查规则</h4>
+<h4>从合同判定 → 确认主合同有效性</h4>
+<p style="margin-top:12px;padding:8px 12px;background:#f0f4ff;border-radius:6px;color:#4f8cff">
+<strong>↓ 确认合同类型后，跳转至下方「合同类型专项审查」选择对应的审查清单 ↓</strong>
+</p>
+</div>
+<div class="v6-subsection"><h3>电子合同专项审查</h3>
+<h4>电子签名认证——CA机构认证、证书有效</h4>
+<h4>电子合同平台资质——电子认证服务许可、等保三级</h4>
+<h4>区块链存证——司法联盟链、哈希值可独立核验</h4>
+<h4>版本锁定——签署后立即锁定、留存哈希值和可信时间戳</h4>
+<h4>电子送达条款——明确邮箱/手机号/平台账号、生效时间</h4>
+<h4>证据链完整性——实名认证记录、意愿验证、签署IP、时间戳</h4>
+</div>
+<div class="v6-subsection"><h3>⚠ 陷阱</h3>
+<h4>倒签/补签合同</h4><p>核对签署日期与业务实际时间的逻辑一致性</p>
+<h4>阴阳合同</h4><p>判断是否存在两份内容不同的合同</p>
+<h4>预约合同 vs 本约合同混淆</h4><p>判断是否包含本约的全部必备条款且具备直接履行条件</p>
+<h4>"签字盖章" vs "签字并盖章"</h4><p>措辞不同，法律效果不同</p>
+<h4>合同语言版本冲突</h4><p>明确优先语言；逐字核对关键条款中英文一致性；定义双语术语表</p>
+</div>
+</section>
+<!-- ========== MODULE 4: 实质审查 ========== -->
+<section class="v6-section" id="v6-substantive">
+<h2 class="section-title">四、实质审查（核心环节）</h2>
+<div class="v6-subsection" id="v6-validity"><h3>效力审查 — 合同是否有效？</h3>
+<h4>主体适格——签约主体是否具备相应的民事行为能力</h4>
+<h4>意思表示真实——是否存在欺诈、胁迫、重大误解、显失公平</h4>
+<h4>内容合法——是否违反法律行政法规的强制性规定（民法典第153条）</h4>
+<h4>公序良俗——是否违反公共秩序和善良风俗</h4>
+<h4>形式合规——法律规定需要审批/登记/要式的是否满足</h4>
+<h4>格式条款效力——是否履行提示说明义务、是否存在无效情形（排除对方主要权利等）</h4>
+</div>
+<div class="v6-subsection"><h3>⚠ 效力审查陷阱</h3>
+<h4>格式条款判定</h4>
+<p>核对是否标注"协商签订"但对方表示"条款不可修改"；是否行业惯例通用条款；是否引用附件标准条款；是否网站"用户协议/使用条款"。</p>
+<h4>"最终解释权"条款</h4>
+<p>审查是否存在此类无效条款。</p>
+</div>
+<div class="v6-subsection" id="v6-dispute"><h3>争议解决与退出机制审查</h3>
+<h4>管辖法院/仲裁机构约定是否明确 | 涉外合同的适用法律</h4>
+<h4>是否约定前置程序（协商/调解）| 是否有单方解除权</h4>
+<h4>解除后的清算/返还/赔偿 | 终止后存续条款与交接义务</h4>
+<h4 style="margin-top:16px">⚠ 陷阱</h4>
+<h5>管辖隐蔽冲突 → 被告住所地变更、签订地证据缺失、双方均为原告、仲裁+诉讼并存、多合同管辖不一致、仲裁机构名称错误</h5>
+<h5>解除权行使期限（除斥期间）→ 审查是否约定</h5>
+<h5>先决条件条款 → 具体明确、截止期限、失败处理</h5>
+<h5>"不放弃权利"条款 | 通知送达定义陷阱（多种送达方式+生效标准）</h5>
+<h5>跨境法律适用与管辖 → 约定的法律是否对自己有利</h5>
+<h5>债权转让通知 vs 债务承担（民法典第545条重大变化）→ 金钱债权限制无效、债务承担须债权人同意</h5>
+</div>
+<!-- ===== 合同类型专项审查（V3 34类嵌入） ===== -->
+<div id="v6-contracts" style="margin:24px 0 12px">
+<h3 style="font-size:20px;color:#1a1d27;border-bottom:3px solid #4f8cff;padding-bottom:10px;margin-bottom:16px">
+  合同类型专项审查 — 34类合同完整知识库
+</h3>
+<p style="color:#6b7280;margin-bottom:20px;font-size:13.5px">
+  来源：V3《合同审查法律性质分类体系与审核要点》▼ 覆盖《民法典》19类典型合同+15类商业高频无名合同。每类含法律依据、亚类型差异、审查清单表（审查模块→审查要点→风险等级🔴🟠🟡→审查动作）、特殊陷阱提示。
+</p>
+<div class="contracts-container">
+<div class="contract-section" id="ct-1">
+<h3 id="一买卖合同">一、买卖合同</h3>
+<p><strong>法律依据</strong>：《民法典》第595–647条</p><h4 id="亚类型与特别规则">亚类型与特别规则</h4><div class="tbl-w"><table><thead><tr>
+<th>亚类型</th>
+<th>特别法定规则</th>
+<th>核心审查要点</th>
+<th>审查动作</th></tr></thead><tbody>
+<tr>
+<td>**一般买卖**</td>
+<td>基本规则</td>
+<td>标的物特定化、质量标准、检验期限</td>
+<td>核查合同包含民法典买卖合同全部必备要素、重点确认标的物特定化和质量标准</td></tr>
+<tr>
+<td>**分期付款买卖**</td>
+<td>未付到期价款达总价 1/5 时，卖方有法定解除权（或要求全部付清）</td>
+<td>各期付款节点、解除后恢复原状的处理</td>
+<td>核查各期/批次付款节点与比例是否明确、违约后整体合同是否受影响、是否存在法定解约触发</td></tr>
+<tr>
+<td>**试用买卖**</td>
+<td>试用期内买方可随时退还；试用期满未表态→视为购买</td>
+<td>试用期限、试用期间毁损灭失责任</td>
+<td>核查试用期限是否明确、试用期间毁损灭失责任归属、试用期满后默认定规是否对己方不利</td></tr>
+<tr>
+<td>**凭样品买卖**</td>
+<td>样品封存义务；交付标的物应与样品一致</td>
+<td>样品封存程序、批量品质一致性保证</td>
+<td>核查样品封存程序是否约定、批量交付品质一致性保证机制、样品与批量交付的差异允差</td></tr>
+<tr>
+<td>**竞买拍卖**</td>
+<td>适用《拍卖法》</td>
+<td>拍卖公告效力、落槌即成交、瑕疵担保责任特殊规则</td>
+<td>核查拍卖公告与成交确认书条款是否一致、瑕疵担保责任是否被不当排除</td></tr>
+</tbody></table></div><h4 id="通用审查清单">通用审查清单</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**主体资格**</td>
+<td>卖方是否具备标的物处分权（所有权/代理权）</td>
+<td>🔴</td>
+<td>核查相关资质证书/许可证照，确认是否在有效期内</td>
+</tr>
+<tr>
+<td></td>
+<td>买方是否具备相应付款能力</td>
+<td>🟡</td>
+<td>核查相关资质证书/许可证照，确认是否在有效期内</td>
+</tr>
+<tr>
+<td>**标的物条款**</td>
+<td>名称、规格、型号、数量是否具体明确</td>
+<td>🟠</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td></td>
+<td>标的物上是否存在抵押/质押/查封</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td></td>
+<td>是否约定标的物质量标准和检验期限</td>
+<td>🟠</td>
+<td>全文检索对应关键词，确认合同中是否有相关条款约定</td>
+</tr>
+<tr>
+<td>**价款条款**</td>
+<td>单价、总价、币种、含税与否是否明确</td>
+<td>🟠</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td></td>
+<td>价格是否附条件（如随原材料波动）</td>
+<td>🟡</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**交付条款**</td>
+<td>交付时间、地点、方式是否明确</td>
+<td>🟠</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td></td>
+<td>风险转移节点是否约定（交付 vs 付款）</td>
+<td>🟠</td>
+<td>全文检索对应关键词，确认合同中是否有相关条款约定</td>
+</tr>
+<tr>
+<td>**所有权保留**</td>
+<td>是否约定所有权保留条款</td>
+<td>🟡</td>
+<td>全文检索对应关键词，确认合同中是否有相关条款约定</td>
+</tr>
+<tr>
+<td></td>
+<td>所有权保留是否办理登记（对抗第三人）</td>
+<td>🟠</td>
+<td>登录主管部门公示系统查询登记/备案状态</td>
+</tr>
+<tr>
+<td>**违约责任**</td>
+<td>迟延交付/迟延付款的违约金比例</td>
+<td>🟡</td>
+<td>计算违约金占合同金额比例，与法定上限和司法实践标准对比</td>
+</tr>
+<tr>
+<td></td>
+<td>根本违约的解除条件和后果</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**争议解决**</td>
+<td>管辖法院或仲裁机构是否明确</td>
+<td>🟡</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>所有权保留未经登记</strong>：不得对抗善意第三人，买方转卖后卖方无法追回标的物<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查合同中是否约定了所有权保留，如是则确认是否已办理登记以取得对抗效力</span></li>
+<li><strong>检验期限过短</strong>：买方可能因未及时检验而丧失质量问题异议权<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查检验期限是否合理（建议不少于15日），过短则提示买方可能丧失质量异议权</span></li>
+<li><strong>风险转移节点不清</strong>：标的物毁损灭失责任归属不明<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查风险转移节点是否明确，与贸易术语/交付方式是否一致</span></li>
+<li><strong>分批交货下的合同解除</strong>：某批货物不合格是否导致整个合同解除，须明确约定<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查分批交货条款中是否明确约定部分违约对整体合同的影响</span></li>
+<li><strong>招标投标买卖合同</strong>：中标通知书的效力（是否即构成合同成立）、实质性背离中标条件的合同条款无效<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查合同实质性条款是否与中标通知书及招标文件一致，是否存在背离</span></li>
+</ul><h4>业务场景变体</h4><h4 id="采购合同买方视角">采购合同（买方视角）</h4><div class="tbl-w"><table><thead><tr>
+<th>审查重点</th>
+<th>具体要点</th>
+<th>审查动作</th>
+<td>检索合同对应条款，逐项确认该要点是否已明确约定且可执行</td>
+</tr></thead><tbody>
+<tr>
+<td>供应商资质</td>
+<td>营业执照、行业资质、生产能力、过往履约记录</td>
+<td>核查供应商营业执照和行业资质证书，通过企查查/天眼查核实是否存在重大诉讼或经营异常</td>
+</tr>
+<tr>
+<td>交货期保障</td>
+<td>迟延交货的违约金（建议为合同金额0.5‰-1‰/天）</td>
+<td>逐条审阅迟延交货违约金条款，比对行业惯例(0.5‰-1‰/天)，确认是否存在封顶限制和免责例外</td>
+</tr>
+<tr>
+<td>质量保证金</td>
+<td>扣留5%-10%货款作为质保金，质保期满后退还</td>
+<td>核对质保金扣留比例(行业惯例5%-10%)和退还条件，逐项确认质保期限、范围和排除情形是否合理</td>
+</tr>
+<tr>
+<td>验收条款</td>
+<td>到货检验+安装调试检验+试运行检验，分阶段验收</td>
+<td>逐项核查验收条款的三阶段(到货/安装调试/试运行)是否均有明确时间节点和验收标准</td>
+</tr>
+<tr>
+<td>知识产权保证</td>
+<td>供应商保证所供货物不侵犯第三方知识产权</td>
+<td>检索知识产权保证条款，确认保证范围是否覆盖全部交付物，保证期限是否与合同履行期匹配</td>
+</tr>
+<tr>
+<td>替代供应</td>
+<td>供应商无法按时交货时的替代供应方案</td>
+<td>核查替代供应条款的触发条件是否明确(如迟延超过X天)，替代供应方的选择权和费用承担方是否已约定</td>
+</tr>
+</tbody></table></div><h4 id="销售合同卖方视角">销售合同（卖方视角）</h4><div class="tbl-w"><table><thead><tr>
+<th>审查重点</th>
+<th>具体要点</th>
+<th>审查动作</th>
+<td>检索合同对应条款，逐项确认该要点是否已明确约定且可执行</td>
+</tr></thead><tbody>
+<tr>
+<td>买方资信</td>
+<td>信用状况、付款能力、是否存在重大诉讼</td>
+<td>通过企查查/天眼查核查买方工商信息和涉诉记录，必要时要求买方提供近一期审计报告或银行资信证明</td>
+</tr>
+<tr>
+<td>所有权保留</td>
+<td>约定"货款付清前，标的物所有权归卖方所有"</td>
+<td>检索合同第X条所有权保留条款，确认"货款付清前所有权归卖方"是否明确约定，必要时建议增加取回权的行使程序</td>
+</tr>
+<tr>
+<td>价款支付</td>
+<td>预付款比例（建议≥30%）、进度款、尾款节点</td>
+<td>逐项核查付款节点和比例:确认预付款比例(买方视角建议≤30%，卖方视角建议≥30%)、进度款触发条件和尾款支付节点</td>
+</tr>
+<tr>
+<td>迟延付款责任</td>
+<td>逾期付款违约金（建议为应付金额0.5‰-1‰/天）</td>
+<td>逐条审阅迟延付款违约金条款，比对行业惯例(0.5‰-1‰/天)，确认是否存在封顶限制</td>
+</tr>
+<tr>
+<td>检验期限</td>
+<td>约定检验期限（建议为到货后7-15天内）</td>
+<td>核查检验期限约定是否合理(卖方视角建议7-15天)，超期未检验的法律后果是否明确(视为验收合格)</td>
+</tr>
+<tr>
+<td>合同解除</td>
+<td>买方严重迟延付款时卖方的单方解除权</td>
+<td>核查单方解除权的触发条件是否明确，解除后已交付货物的处理和已付款项的退还是否已约定</td>
+</tr>
+</tbody></table></div><hr/><h3 id="技术服务合同业务场景变体详解">技术服务合同业务场景变体详解</h3><hr/>
+</div>
+<div class="contract-section" id="ct-2">
+<h3 id="二供用电水气热力合同">二、供用电/水/气/热力合同</h3>
+<p><strong>法律依据</strong>：《民法典》第648–656条</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**主体资格**</td>
+<td>供应方是否具备特许经营资质</td>
+<td>🔴</td>
+<td>核查相关资质证书/许可证照，确认是否在有效期内</td>
+</tr>
+<tr>
+<td>**供应标准**</td>
+<td>供应质量、压力/温度/纯度标准是否明确</td>
+<td>🟠</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td>**计量方式**</td>
+<td>计量表具检定、抄表周期、异议处理</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**价格机制**</td>
+<td>计价标准、调价机制和程序</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**中断供应**</td>
+<td>计划检修通知义务、紧急中断的责任</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**违约责任**</td>
+<td>供应中断的赔偿标准</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="业务场景变体">业务场景变体</h4><div class="tbl-w"><table><thead><tr>
+<th>场景</th>
+<th>额外审查要点</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>工业用电</td>
+<td>需量电价、功率因数调整、停电损失赔偿上限</td>
+<td>核查需量电价的计算方式、功率因数调整电费规则，计算停电损失赔偿上限是否足以覆盖用户实际日产值损失</td>
+</tr>
+<tr>
+<td>居民供用</td>
+<td>格式条款提示义务、断供程序合法性</td>
+<td>对照《民法典》第496条，核查格式合同中免除/限制供应方责任的条款是否以合理方式提示用户注意</td>
+</tr>
+</tbody></table></div><hr/>
+</div>
+<div class="contract-section" id="ct-3">
+<h3 id="三赠与合同">三、赠与合同</h3>
+<p><strong>法律依据</strong>：《民法典》第657–666条</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**赠与性质**</td>
+<td>是否附义务（附义务赠与 vs 纯赠与）</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**赠与撤销**</td>
+<td>赠与人在财产权利转移前可撤销（公证赠与、公益赠与除外）</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**法定撤销权**</td>
+<td>受赠人严重侵害赠与人或其近亲属时，赠与人可撤销（即使已完成赠与）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**瑕疵担保**</td>
+<td>赠与人一般不承担瑕疵担保责任（故意不告知或保证无瑕疵除外）</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**公益赠与**</td>
+<td>具有救灾、扶贫等公益性质的赠与不得撤销</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>名为赠与实为贿赂</strong>：商业场景中的"赠与"可能被认定为商业贿赂<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查赠与背景和目的，确认不存在变相商业贿赂或其他违法行为</span></li>
+<li><strong>附义务赠与的义务边界不清</strong>：受赠人未履行附随义务时的处理<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查附随义务的范围是否明确、可执行，以及受赠人未履行义务时的处理方式</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-4">
+<h3 id="四借款合同">四、借款合同</h3>
+<p><strong>法律依据</strong>：《民法典》第667–680条；《民间借贷司法解释》</p><h4 id="亚类型与审查差异">亚类型与审查差异</h4><div class="tbl-w"><table><thead><tr>
+<th>亚类型</th>
+<th>监管强度</th>
+<th>核心法律约束</th>
+<th>审查重点</th>
+<th>审查动作</th></tr></thead><tbody>
+<tr>
+<td>**金融借款**</td>
+<td>强监管（银保监会）</td>
+<td>金融机构贷款利率已全面市场化，需审查具体条款的合规性</td>
+<td>交叉违约条款、财务承诺条款、加速到期条款</td>
+<td>核查利率条款、提前还款限制、担保措施完备性、交叉违约条款范围</td></tr>
+<tr>
+<td>**民间借贷**</td>
+<td>LPR4倍利率上限</td>
+<td>超出LPR4倍的部分不受司法保护</td>
+<td>款项交付凭证、利率、预扣利息认定</td>
+<td>核查利率是否超过LPR四倍上限、是否存在砍头息或复利、出借人是否为职业放贷人</td></tr>
+<tr>
+<td>**企业间借贷**</td>
+<td>限于生产经营需要</td>
+<td>以自有资金、不以放贷为业的临时拆借通常有效</td>
+<td>出借方是否构成职业放贷人（可能无效）</td>
+<td>核查合同中是否涉及此亚类型，如是则逐条对照上述特别规则和审查要点，确认合同条款已妥善处理</td></tr>
+<tr>
+<td>**委托贷款**</td>
+<td>银行作为通道，适用金融借款规则</td>
+<td>三方权利义务、银行是否承担信用风险</td>
+<td>委托人与借款人直接的权利义务安排</td>
+<td>核查利率条款、提前还款限制、担保措施完备性、交叉违约条款范围</td></tr>
+</tbody></table></div><h4 id="通用审查清单">通用审查清单</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**主体资格**</td>
+<td>出借方是否具备放贷资质（金融业务需许可）</td>
+<td>🔴</td>
+<td>核查相关资质证书/许可证照，确认是否在有效期内</td>
+</tr>
+<tr>
+<td>**借款金额**</td>
+<td>本金数额、币种、支付方式是否明确</td>
+<td>🟠</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td>**利率约定**</td>
+<td>年利率是否超过LPR4倍（民间借贷）</td>
+<td>🔴</td>
+<td>计算合同约定数值，与法定标准进行比对</td>
+</tr>
+<tr>
+<td></td>
+<td>是否同时约定利息和违约金（总额受限）</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**借款期限**</td>
+<td>借款起止日期、展期条件是否明确</td>
+<td>🟡</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td>**还款方式**</td>
+<td>等额本息/等额本金/到期一次性还本付息</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**担保措施**</td>
+<td>是否有抵押/质押/保证担保</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**提前还款**</td>
+<td>是否允许提前还款、是否收取违约金</td>
+<td>🟡</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**违约责任**</td>
+<td>逾期利率是否明确（可约定但不超法定上限）</td>
+<td>🟠</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td>**交叉违约**</td>
+<td>借款人在其他债务违约是否构成本合同违约（金融借款常见）</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>"砍头息"</strong>：预先扣除利息的，按实际出借金额认定本金<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查利息计算基数是否为实际出借金额，排查是否存在预扣利息</span></li>
+<li><strong>复利计算</strong>：利息计入本金再生息，超出法定上限部分无效<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查是否存在利息计入本金再生息的约定，确认未超出法定利率上限</span></li>
+<li><strong>保证期间与诉讼时效混淆</strong>：保证期间为除斥期间，不适用中止中断<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查保证期间约定是否明确，确认其作为除斥期间不适用中止中断</span></li>
+<li><strong>职业放贷人</strong>：未经批准多次以营利为目的放贷，借款合同可能无效<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查出借人是否为经批准的金融机构，多次以营利为目的放贷可能致合同无效</span></li>
+<li><strong>LPR报价变动</strong>：合同约定的"LPR"是固定签约时点版本还是每年更新版本<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查LPR引用版本是否明确，建议约定每年1月1日更新至最新LPR</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-5">
+<h3 id="五租赁合同">五、租赁合同</h3>
+<p><strong>法律依据</strong>：《民法典》第703–734条</p><h4 id="通用审查清单">通用审查清单</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**租赁期限**</td>
+<td>不得超过20年，超过部分无效</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td></td>
+<td>是否约定续租优先权和条件</td>
+<td>🟡</td>
+<td>全文检索对应关键词，确认合同中是否有相关条款约定</td>
+</tr>
+<tr>
+<td>**租金条款**</td>
+<td>租金标准、支付周期、支付方式</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td></td>
+<td>租金调整机制（CPI挂钩/市场价调整）</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**维修义务**</td>
+<td>出租人维修义务 vs 承租人保管义务</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**转租条款**</td>
+<td>是否允许转租、转租条件</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**房屋征收**</td>
+<td>租赁期间遇征收拆迁的补偿分配</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**优先购买权**</td>
+<td>出租人出卖租赁房屋时承租人的优先购买权</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**违约责任**</td>
+<td>迟延支付租金的合同解除条件</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**押金条款**</td>
+<td>押金数额、扣除条件、退还期限</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="业务场景变体">业务场景变体</h4><div class="tbl-w"><table><thead><tr>
+<th>场景</th>
+<th>额外审查要点</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>房屋租赁（住宅）</td>
+<td>优先购买权、买卖不破租赁、租赁备案</td>
+<td>核查优先购买权通知程序(法定15日)是否符合《民法典》第726条，租赁备案状态</td>
+</tr>
+<tr>
+<td>房屋租赁（商业）</td>
+<td>装修期免租、营业中断补偿、招牌位使用权</td>
+<td>核查装修期免租的具体天数、营业中断补偿的触发条件和计算方式、招牌位使用权是否明确</td>
+</tr>
+<tr>
+<td>设备租赁</td>
+<td>设备维护责任、事故赔偿责任、设备报废处理</td>
+<td>核查设备维护标准和费用承担方，事故责任的划分(操作不当/设备缺陷)，报废残值归属</td>
+</tr>
+<tr>
+<td>车辆租赁</td>
+<td>保险责任、违章处理、事故责任划分</td>
+<td>核查保险险种(交强险/商业险)、保额设置、违章处理时限和责任分配</td>
+</tr>
+<tr>
+<td>土地租赁</td>
+<td>土地用途管制、征收补偿分配、地上附着物处理</td>
+<td>核查土地用途是否与规划许可证一致，征收补偿的分配方案(土地补偿vs附着物补偿)，地上附着物拆除/转移的责任方</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>"买卖不破租赁"的例外</strong>：房屋抵押权设立在先、租赁在后时，租赁不得对抗已登记的抵押权<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查买方是否知情且同意带租约受让，确认租赁合同主要条款已披露</span></li>
+<li><strong>承租人之优先购买权</strong>：出租人未通知承租人直接出售的，承租人可请求赔偿损失<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>租赁备案与合同效力</strong>：未备案不影响合同效力，但可能影响对抗第三人的效力<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查合同中是否存在导致合同不成立、无效、效力待定或可撤销的情形</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-6">
+<h3 id="六融资租赁合同">六、融资租赁合同</h3>
+<p><strong>法律依据</strong>：《民法典》第735–760条</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**合同性质**</td>
+<td>是否实际构成融资租赁（有租赁物+有租赁）</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td></td>
+<td>名为融资租赁实为借贷的风险</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**租赁物**</td>
+<td>租赁物是否特定化、是否存在权属瑕疵</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td></td>
+<td>租赁物购买价款与租金总额的比例是否合理</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**租金构成**</td>
+<td>租金是否包含租赁物成本+利息+费用</td>
+<td>🟡</td>
+<td>逐项列出应覆盖的要素清单，逐一核对该合同是否全部涵盖</td>
+</tr>
+<tr>
+<td>**索赔权**</td>
+<td>租赁物质量瑕疵的索赔权是否约定由承租人行使</td>
+<td>🟠</td>
+<td>全文检索对应关键词，确认合同中是否有相关条款约定</td>
+</tr>
+<tr>
+<td>**期满归属**</td>
+<td>租赁期满后租赁物归属（留购/续租/退还）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**违约责任**</td>
+<td>承租人违约时出租人的取回权</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><hr/>
+</div>
+<div class="contract-section" id="ct-7">
+<h3 id="七承揽合同">七、承揽合同</h3>
+<p><strong>法律依据</strong>：《民法典》第770–787条</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**工作内容**</td>
+<td>加工/定作/修理/复制/测试/检验的具体要求</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**材料提供**</td>
+<td>原材料由定作人提供 vs 承揽人自行采购</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**质量标准**</td>
+<td>技术标准、验收标准、检验方法</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**成果交付**</td>
+<td>交付时间、地点、方式、风险转移</td>
+<td>🟠</td>
+<td>确认合同中风险转移的具体节点，评估是否合理</td>
+</tr>
+<tr>
+<td>**定作人变更**</td>
+<td>定作人中途变更要求的费用承担</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**承揽人转包**</td>
+<td>承揽人是否可将工作交由第三人完成</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**留置权**</td>
+<td>承揽人对完成的工作成果享有留置权</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**保密义务**</td>
+<td>定作人提供的图纸/技术资料的保密</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="业务场景变体">业务场景变体</h4><div class="tbl-w"><table><thead><tr>
+<th>场景</th>
+<th>额外审查要点</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>定作合同</td>
+<td>原材料质量责任、成品验收标准、知识产权归属</td>
+<td>核查原材料品质标准和供应商指定权，成品验收标准的可量化程度和检测方法</td>
+</tr>
+<tr>
+<td>修理合同</td>
+<td>修理范围、使用配件品质、保修期</td>
+<td>逐项核查修理范围(全修/部分修)、配件的品牌和品质等级、保修期的起算日和期限</td>
+</tr>
+</tbody></table></div><hr/>
+</div>
+<div class="contract-section" id="ct-8">
+<h3 id="八建设工程合同">八、建设工程合同</h3>
+<p><strong>法律依据</strong>：《民法典》第788–808条；《建筑法》；《建设工程司法解释》</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**主体资质**</td>
+<td>承包人是否具备相应建筑业企业资质</td>
+<td>🔴</td>
+<td>核查相关资质证书/许可证照，确认是否在有效期内</td>
+</tr>
+<tr>
+<td></td>
+<td>资质等级与工程规模是否匹配</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**转包禁止**</td>
+<td>禁止转包和违法分包（效力性强制性规定）</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**招投标合规**</td>
+<td>依法必须招标的项目是否经过招投标</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**合同价格**</td>
+<td>固定总价/固定单价/可调价格，计价方式明确</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**工期条款**</td>
+<td>开工日期、竣工日期、工期顺延条件</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**质量条款**</td>
+<td>质量保修范围、保修期限、质量保证金</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**付款节点**</td>
+<td>预付款/进度款/竣工款/结算款比例</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**竣工验收**</td>
+<td>验收条件、验收程序、未验收先使用的法律后果</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**竣工结算**</td>
+<td>结算期限、逾期审核视为认可的条件</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="业务场景变体">业务场景变体</h4><div class="tbl-w"><table><thead><tr>
+<th>场景</th>
+<th>额外审查要点</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>勘察合同</td>
+<td>勘察深度要求、勘察成果的准确性责任</td>
+<td>核查勘察任务书中的勘察深度要求是否明确，勘察成果准确性的责任标准和免责范围</td>
+</tr>
+<tr>
+<td>设计合同</td>
+<td>设计深度、设计变更程序、设计责任期限</td>
+<td>核查设计深度等级(方案/初步/施工图)，设计变更的提出、审批和费用调整程序，设计责任期限是否覆盖工程全生命周期</td>
+</tr>
+<tr>
+<td>施工合同</td>
+<td>农民工工资专户、安全生产责任、环保要求</td>
+<td>核查是否设立农民工工资专用账户、工伤保险参保情况、安全生产责任的分配和环保措施要求</td>
+</tr>
+<tr>
+<td>工程总承包（EPC）</td>
+<td>设计-采购-施工一体化责任划分、交钥匙标准</td>
+<td>核查设计深度等级(方案/初步/施工图)，设计变更的提出、审批和费用调整程序，设计责任期限是否覆盖工程全生命周期</td>
+</tr>
+<tr>
+<td>装饰装修合同</td>
+<td>材料品牌规格、环保标准、隐蔽工程验收</td>
+<td>核查是否设立农民工工资专用账户、工伤保险参保情况、安全生产责任的分配和环保措施要求</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>阴阳合同</strong>：备案合同与实际履行合同不一致的，以备案合同为准（招投标项目）<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>转包/违法分包</strong>：合同无效，发包人有权要求改正并追究违约责任<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>承包人垫资</strong>：垫资条款有效，但约定的垫资利息不得高于LPR<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查LPR引用版本是否明确，建议约定每年1月1日更新至最新LPR</span></li>
+<li><strong>竣工日期认定</strong>：以竣工验收合格之日、承包人提交验收报告之日或发包人擅自使用之日认定<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-9">
+<h3 id="九运输合同">九、运输合同</h3>
+<p><strong>法律依据</strong>：《民法典》第809–842条</p><h4 id="亚类型审查差异">亚类型审查差异</h4><div class="tbl-w"><table><thead><tr>
+<th>亚类型</th>
+<th>适用法规</th>
+<th>核心审查差异</th>
+<th>审查动作</th></tr></thead><tbody>
+<tr>
+<td>**客运合同**</td>
+<td>《民法典》第814–824条</td>
+<td>承运人对旅客人身伤亡的无过错责任（旅客自身健康原因/故意/重大过失除外）；承运人的救助义务；迟延运输的赔偿责任</td>
+<td>核查合同中是否涉及此亚类型，如是则逐条对照上述特别规则和审查要点，确认合同条款已妥善处理</td></tr>
+<tr>
+<td>**货运合同（公路）**</td>
+<td>《民法典》第825–837条</td>
+<td>货物毁损灭失的过错责任推定；保价运输 vs 限额赔偿；收货人的检验义务</td>
+<td>核查合同中是否涉及此亚类型，如是则逐条对照上述特别规则和审查要点，确认合同条款已妥善处理</td></tr>
+<tr>
+<td>**货运合同（铁路/航空/海运）**</td>
+<td>专门法优先适用（铁路法/民航法/海商法）</td>
+<td>专门法规定的责任限额；索赔时效与民法典不同</td>
+<td>核查合同中是否涉及此亚类型，如是则逐条对照上述特别规则和审查要点，确认合同条款已妥善处理</td></tr>
+<tr>
+<td>**多式联运**</td>
+<td>《民法典》第838–842条</td>
+<td>多式联运经营人对全程运输承担责任；区段承运人的责任划分；隐蔽损害的处理</td>
+<td>核查合同中是否涉及此亚类型，如是则逐条对照上述特别规则和审查要点，确认合同条款已妥善处理</td></tr>
+</tbody></table></div><h4 id="通用审查清单货运">通用审查清单（货运）</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**承运人资质**</td>
+<td>是否具备道路运输经营许可证</td>
+<td>🔴</td>
+<td>核查相关资质证书/许可证照，确认是否在有效期内</td>
+</tr>
+<tr>
+<td>**运输标的**</td>
+<td>货物名称、性质（普通/危险品/鲜活）、数量</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**运输路线**</td>
+<td>起运地、目的地、经停地是否明确</td>
+<td>🟡</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td>**运输期限**</td>
+<td>发车/到货时间要求</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**货物保险**</td>
+<td>是否投保、保险金额、承保范围</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**风险转移**</td>
+<td>货物毁损灭失的责任归属和赔偿标准</td>
+<td>🟠</td>
+<td>确认合同中风险转移的具体节点，评估是否合理</td>
+</tr>
+<tr>
+<td>**留置权**</td>
+<td>承运人对货物的留置权（运费未付时）</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**不可抗力**</td>
+<td>不可抗力导致货物毁损的责任分担</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><hr/>
+</div>
+<div class="contract-section" id="ct-10">
+<h3 id="十技术合同">十、技术合同</h3>
+<p><strong>法律依据</strong>：《民法典》第843–887条；《技术合同司法解释》</p><hr/><h4 id="s101-技术开发合同">10.1 技术开发合同</h4><p><strong>法律依据</strong>：《民法典》第851–861条</p><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**开发内容**</td>
+<td>技术目标、技术指标、开发进度里程碑是否明确</td>
+<td>🟠</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td>**知识产权归属**</td>
+<td>开发成果的专利申请权/版权归属（委托开发 vs 合作开发）</td>
+<td>🔴</td>
+<td>检索知识产权归属条款，确认归属方、共有安排和使用限制</td>
+</tr>
+<tr>
+<td>**背景知识产权**</td>
+<td>开发方已有知识产权列表和使用授权范围</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**源代码交付**</td>
+<td>是否交付源代码、交付标准和方式</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**验收条款**</td>
+<td>验收标准（客观指标 vs 主观满意度）、验收程序</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**开发失败风险**</td>
+<td>开发失败（在科学上已不可能）的风险承担</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**后续改进**</td>
+<td>后续改进成果的知识产权分享机制</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**开发进度款**</td>
+<td>付款与里程碑节点挂钩</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><p><strong>特殊陷阱</strong>：</p><ul class="doc-lst">
+<li><strong>委托开发 vs 合作开发</strong>：委托开发成果的知识产权默认归受托人（开发方），除非合同约定归委托人——这个默认规则与一般人的直觉相反</li>
+<li><strong>"已完成"认定</strong>：验收标准如含主观要素（如"满意"），可能无法强制执行</li>
+<li><strong>技术资料不交付</strong>：仅交付产品/代码但拒交技术文档的，构成不完整交付</li>
+</ul><hr/><h4 id="s102-技术转让合同">10.2 技术转让合同</h4><p><strong>法律依据</strong>：《民法典》第862–877条</p><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**权利真实性**</td>
+<td>转让方是否为技术的合法权利人</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**权利完整性**</td>
+<td>专利权是否已到期/被宣告无效/存在质押</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**权利负担披露**</td>
+<td>是否已对第三方进行过许可（排他/普通许可）</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**转让范围**</td>
+<td>专利权/专利申请权/技术秘密，三类转让的法律后果不同</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**对价条款**</td>
+<td>一次性买断 vs 提成 ≥ 入门费，提成基数口径须明确</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**不侵权保证**</td>
+<td>转让方对技术不侵犯第三方权利的保证范围和赔偿上限</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**保密义务**</td>
+<td>技术秘密的保密义务（即使转让后仍需保密）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**技术协助**</td>
+<td>转让方提供技术资料、技术培训、技术指导的义务</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><hr/><h4 id="s103-技术许可合同">10.3 技术许可合同</h4><p><strong>法律依据</strong>：《民法典》第862–877条</p><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**许可类型**</td>
+<td>独占许可 / 排他许可 / 普通许可的区别</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td></td>
+<td>独占许可：被许可人能否再许可第三人</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**许可范围**</td>
+<td>许可地域、许可期限、许可产品/领域</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**许可费**</td>
+<td>固定费用 vs 按销售额提成（提成基数定义须严格）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**分许可权**</td>
+<td>被许可人是否有权向第三方再许可</td>
+<td>🟡</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**改进归属**</td>
+<td>被许可人改进技术的成果归属和使用权</td>
+<td>🟠</td>
+<td>检索知识产权归属条款，确认归属方、共有安排和使用限制</td>
+</tr>
+<tr>
+<td>**被许可人义务**</td>
+<td>最低使用义务、保密义务、禁止反向工程</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**许可终止**</td>
+<td>终止后库存产品的处理、停止使用的宽限期</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><hr/><h4 id="s104-技术咨询合同">10.4 技术咨询合同</h4><p><strong>法律依据</strong>：《民法典》第878–880条</p><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**咨询内容**</td>
+<td>咨询课题、咨询范围、交付成果形式（报告/方案）</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**责任承担**</td>
+<td>委托人是否承担采纳咨询意见的风险（法律默认规则）</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**保密**</td>
+<td>委托人提供的技术资料的保密</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**费用**</td>
+<td>固定费用 vs 按工作时间计费</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><p><strong>特殊陷阱</strong>：</p><ul class="doc-lst">
+<li><strong>咨询意见的风险承担</strong>：如无特别约定，委托人采纳咨询意见造成的损失由委托人自行承担——许多委托人误以为可以追究咨询方责任</li>
+</ul><hr/><h4 id="s105-技术服务合同">10.5 技术服务合同</h4><p><strong>法律依据</strong>：《民法典》第881–887条</p><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**服务内容**</td>
+<td>具体服务项目、服务深度、服务人员资质</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**服务标准**</td>
+<td>服务响应时间、问题解决时限、服务成果交付</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**验收条款**</td>
+<td>验收标准和验收方法（避免主观性表述）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**服务费用**</td>
+<td>固定总价 vs 人天计费，差旅费承担</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**知识产权**</td>
+<td>服务过程中产生的成果的知识产权归属</td>
+<td>🟠</td>
+<td>检索知识产权归属条款，确认归属方、共有安排和使用限制</td>
+</tr>
+<tr>
+<td>**数据安全**</td>
+<td>服务方接触委托人数据的保密和安全义务</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**违约责任**</td>
+<td>服务未达标的违约金或扣减服务费机制</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱技术合同通用">特殊陷阱（技术合同通用）</h4><ul class="doc-lst">
+<li><strong>"改进成果"归属不明</strong>：未约定改进成果归属的，改进方享有专利申请权</li>
+<li><strong>技术秘密泄露责任</strong>：保密义务期限约定不明可能导致无限期保密</li>
+<li><strong>技术成果侵犯第三方权利</strong>：转让方/开发方的不侵权保证范围须明确</li>
+<li><strong>委托开发成果默认归受托人</strong>：这是最大陷阱——许多委托方误以为"我出钱，成果归我"</li>
+</ul><hr/><h4>业务场景变体</h4><h4 id="委托开发合同">委托开发合同</h4><div class="tbl-w"><table><thead><tr>
+<th>审查重点</th>
+<th>具体要点</th>
+<th>审查动作</th>
+<td>检索合同对应条款，逐项确认该要点是否已明确约定且可执行</td>
+</tr></thead><tbody>
+<tr>
+<td>知识产权归属</td>
+<td>开发成果的知识产权归属（委托方 vs 开发方 vs 共有）——默认归开发方，须约定</td>
+<td>逐条审查知识产权归属条款:委托开发成果默认归开发方(受托人)，须明确约定归属委托方或共有的具体范围</td>
+</tr>
+<tr>
+<td>背景知识产权</td>
+<td>开发方已有知识产权保留，不得因开发成果而转移</td>
+<td>核查双方背景知识产权的清单是否完整，确认"开发成果不包含任何未授权的第三方知识产权"的陈述保证</td>
+</tr>
+<tr>
+<td>源代码交付</td>
+<td>是否交付源代码、交付时间和方式</td>
+<td>核查源代码交付的范围(全部/核心模块)、交付格式(原始仓库/压缩包)、交付时间节点和是否包含第三方开源组件声明</td>
+</tr>
+<tr>
+<td>开发进度</td>
+<td>里程碑节点、各节点交付物、验收标准</td>
+<td>逐项核查里程碑节点的时间和交付物是否可量化(如"完成用户模块编码并通过单元测试")，各节点付款比例是否与交付物价值匹配</td>
+</tr>
+<tr>
+<td>需求变更</td>
+<td>需求变更的程序、费用和工期调整机制</td>
+<td>核查需求变更流程:变更申请的书面形式要求、评审时限、费用和工期调整机制是否构成闭环(提出→评估→确认→执行)</td>
+</tr>
+<tr>
+<td>开发失败</td>
+<td>开发失败的责任分担、已支付费用的退还</td>
+<td>逐条审查开发失败条款:失败的定义标准是否明确(如"连续两次验收不通过")，已支付费用的退还比例和条件是否合理</td>
+</tr>
+</tbody></table></div>
+</div>
+<div class="contract-section" id="ct-11">
+<h3 id="十一保管合同">十一、保管合同</h3>
+<p><strong>法律依据</strong>：《民法典》第888–903条</p><h4 id="亚类型审查差异">亚类型审查差异</h4><div class="tbl-w"><table><thead><tr>
+<th>亚类型</th>
+<th>法律规则</th>
+<th>审查重点</th>
+<th>审查动作</th></tr></thead><tbody>
+<tr>
+<td>**有偿保管**</td>
+<td>保管人承担一般过错责任</td>
+<td>保管条件、费用、毁损灭失的赔偿标准</td>
+<td>核查保管物清单和状况描述、保管条件和标准、保管人责任限制是否合理</td></tr>
+<tr>
+<td>**无偿保管**</td>
+<td>保管人仅承担故意或重大过失责任</td>
+<td>保管责任的举证分担、保管范围的明确</td>
+<td>核查保管物清单和状况描述、保管条件和标准、保管人责任限制是否合理</td></tr>
+<tr>
+<td>**消费保管**</td>
+<td>保管物为可替代物，保管人取得所有权</td>
+<td>消费保管 vs 借款合同的区分</td>
+<td>核查保管物清单和状况描述、保管条件和标准、保管人责任限制是否合理</td></tr>
+</tbody></table></div><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**保管物**</td>
+<td>保管物的名称、数量、状况、价值</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**保管条件**</td>
+<td>保管场所、保管方法、特殊保管要求</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**保管期限**</td>
+<td>保管起止时间、提前领取的处理</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**保管费用**</td>
+<td>计费标准、支付时间</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**毁损灭失责任**</td>
+<td>保管人过错责任（无偿保管 vs 有偿保管标准不同）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**留置权**</td>
+<td>保管人对保管物的留置权（保管费未付时）</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><hr/>
+</div>
+<div class="contract-section" id="ct-12">
+<h3 id="十二仓储合同">十二、仓储合同</h3>
+<p><strong>法律依据</strong>：《民法典》第904–918条</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**仓储物**</td>
+<td>仓储物名称、性质、数量、包装标准</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**仓储条件**</td>
+<td>温度/湿度/通风等特殊仓储要求</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**入库验收**</td>
+<td>验收标准、验收方法、验收期限</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**仓储期间**</td>
+<td>仓储起止时间、提前提取/逾期提取</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**仓储费**</td>
+<td>计费标准（按天/按量）、支付时间</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**仓储物毁损**</td>
+<td>仓储物毁损灭失的赔偿标准</td>
+<td>🟠</td>
+<td>确认合同中风险转移的具体节点，评估是否合理</td>
+</tr>
+<tr>
+<td>**仓单**</td>
+<td>仓单的记载事项、背书转让条件</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**提取条件**</td>
+<td>凭仓单提取 vs 凭仓单+身份证明提取</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>仓储方留置权限制</strong>：仅在仓储费范围内可留置仓储物<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>仓储物性质申报不实</strong>：存货人未如实申报仓储物性质的，承担损害赔偿责任<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>仓单与仓储合同的关系</strong>：仓单是提取仓储物的凭证，不等同于仓储合同<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-13">
+<h3 id="十三委托合同">十三、委托合同</h3>
+<p><strong>法律依据</strong>：《民法典》第919–936条</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**委托事项**</td>
+<td>委托事务的具体内容、权限范围</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**委托期限**</td>
+<td>委托起止时间、委托事务完成标准</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**报酬条款**</td>
+<td>报酬标准、支付条件、费用承担</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**转委托**</td>
+<td>受托人是否可将委托事务转委托第三人</td>
+<td>🟠</td>
+<td>检索合同中的再委托条款，确认是否经委托方事先书面同意</td>
+</tr>
+<tr>
+<td>**报告义务**</td>
+<td>受托人报告委托事务处理情况的义务</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**任意解除权**</td>
+<td>委托合同的双方均享有任意解除权（有偿委托解除方需赔偿）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**利益冲突**</td>
+<td>受托人同时处理双方委托的披露义务</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="业务场景变体">业务场景变体</h4><div class="tbl-w"><table><thead><tr>
+<th>场景</th>
+<th>额外审查要点</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>销售代理</td>
+<td>代理区域、代理品牌、销售指标、佣金计算</td>
+<td>核查区域独占范围和期限、销售指标的可实现性、返利计算公式的明确性、退出时的库存处理方案</td>
+</tr>
+<tr>
+<td>采购代理</td>
+<td>采购权限上限、价格审核机制、回扣禁止</td>
+<td>核查采购权限的上限金额和品类范围、价格审核机制(如比价要求)、回扣禁止条款和违约责任</td>
+</tr>
+<tr>
+<td>诉讼代理</td>
+<td>代理权限（一般授权 vs 特别授权）、律师费标准</td>
+<td>核查代理权限是一般授权还是特别授权(注意:和解/调解/上诉/执行需特别授权)，律师费的计算方式和支付节点</td>
+</tr>
+</tbody></table></div><hr/><h4>业务场景变体</h4><h4 id="广告合同">广告合同</h4><div class="tbl-w"><table><thead><tr>
+<th>审查重点</th>
+<th>具体要点</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>广告内容合规</td>
+<td>广告内容不违反《广告法》的保证义务分配</td>
+<td>逐条核查广告内容审查义务的分配，确认是否约定"广告内容不违反《广告法》"的保证条款和违约责任</td>
+</tr>
+<tr>
+<td>肖像权/著作权</td>
+<td>使用模特/明星肖像、音乐/图片的授权范围和期限</td>
+<td>核查肖像权/著作权授权的范围(用途/地域/媒体)和期限是否清晰，是否约定了超出授权范围使用的违约责任</td>
+</tr>
+<tr>
+<td>效果保证</td>
+<td>是否承诺广告效果（谨慎约定，避免虚假宣传责任）</td>
+<td>核查是否约定了广告效果的量化保证，提示:约定"保证XX曝光量/转化率"可能构成对广告主的约束，建议改为"合理努力"表述</td>
+</tr>
+<tr>
+<td>数据合规</td>
+<td>广告投放收集用户数据的合规义务分配</td>
+<td>核查数据收集和处理的合规义务分配，确认是否满足《个人信息保护法》第13-17条的告知同意要求</td>
+</tr>
+<tr>
+<td>费用结算</td>
+<td>CPM/CPC/CPA等计费方式的核对机制</td>
+<td>核查计费方式(CPM/CPC/CPA)的计算口径和核对机制，确认是否约定独立的第三方数据监测工具和异议处理流程</td>
+</tr>
+</tbody></table></div><h4 id="营销推广合同">营销推广合同</h4><div class="tbl-w"><table><thead><tr>
+<th>审查重点</th>
+<th>具体要点</th>
+<th>审查动作</th>
+<td>检索合同对应条款，逐项确认该要点是否已明确约定且可执行</td>
+</tr></thead><tbody>
+<tr>
+<td>KOL/网红合作</td>
+<td>内容审核权、发布期限、删除/修改条件</td>
+<td>核查内容审核权的归属和审核时限、发布期限的具体日期(含时区)、不符合要求内容的删除/修改权利归属和响应时限</td>
+</tr>
+<tr>
+<td>独家合作</td>
+<td>是否约定独家合作、竞业禁止范围</td>
+<td>核查独家合作的范围界定(产品类别/地域/线上vs线下)，竞业禁止的时间限制是否合理(不得超过2年)</td>
+</tr>
+<tr>
+<td>信息披露</td>
+<td>是否需标注"广告"或"推广"（合规要求）</td>
+<td>核查是否约定"广告"或"推广"的显著标识义务，确认是否符合《互联网广告管理办法》第九条的合规要求</td>
+</tr>
+</tbody></table></div>
+</div>
+<div class="contract-section" id="ct-14">
+<h3 id="十四物业服务合同">十四、物业服务合同</h3>
+<p><strong>法律依据</strong>：《民法典》第937–950条；《物业管理条例》</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**服务内容**</td>
+<td>物业服务的具体项目、服务标准</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**服务费用**</td>
+<td>物业费标准、计费方式、调整程序</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**专项维修资金**</td>
+<td>维修资金的使用条件和程序</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**业主权利**</td>
+<td>业主对物业服务质量的监督权和解除权</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**物业服务人义务**</td>
+<td>安全保障义务、保密义务</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**合同终止**</td>
+<td>合同终止后的交接义务（资料/财物/场所）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><hr/>
+</div>
+<div class="contract-section" id="ct-15">
+<h3 id="十五行纪合同">十五、行纪合同</h3>
+<p><strong>法律依据</strong>：《民法典》第951–960条</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**行纪事务**</td>
+<td>行纪人从事贸易活动的具体内容和权限</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**费用承担**</td>
+<td>行纪费用由行纪人自行承担（除非约定）</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**保管义务**</td>
+<td>行纪人对委托物的保管责任</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**价款处置**</td>
+<td>行纪人代收价款的处置和交付义务</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**介入权**</td>
+<td>行纪人是否可以自己作为买受人或出卖人</td>
+<td>🟡</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**留置权**</td>
+<td>行纪人对委托物的留置权</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><hr/>
+</div>
+<div class="contract-section" id="ct-16">
+<h3 id="十六中介合同">十六、中介合同</h3>
+<p><strong>法律依据</strong>：《民法典》第961–966条（原居间合同）</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**中介服务内容**</td>
+<td>报告订约机会 vs 提供媒介服务</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**报酬支付条件**</td>
+<td>中介报酬的支付是否以合同成立为条件</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**必要费用**</td>
+<td>中介未促成合同成立时，是否可请求必要费用</td>
+<td>🟡</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**跳单禁止**</td>
+<td>委托人利用中介提供的交易机会私下成交的责任</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**如实报告义务**</td>
+<td>中介人如实报告有关订立合同事项的义务</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>"跳单"条款的效力</strong>：中介合同中的"跳单"禁止条款有效，委托人绕过中介成交需支付报酬<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>中介未尽职的证明</strong>：委托人主张中介未履行报告义务的举证责任<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-17">
+<h3 id="十七合伙合同">十七、合伙合同</h3>
+<p><strong>法律依据</strong>：《民法典》第967–978条</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**出资条款**</td>
+<td>各合伙人出资方式、数额、缴付期限</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**利润分配**</td>
+<td>利润分配比例、亏损分担比例</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**合伙事务执行**</td>
+<td>事务执行人、决策机制（全体一致 vs 多数决）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**入伙退伙**</td>
+<td>新合伙人入伙条件、合伙人退伙条件</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**合伙终止**</td>
+<td>合伙终止事由、清算程序</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**无限连带责任**</td>
+<td>普通合伙人对合伙债务的无限连带责任</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>合伙 vs 有限责任</strong>：普通合伙人对合伙债务承担无限连带责任，与有限责任公司股东责任截然不同<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>隐名合伙</strong>：隐名合伙人不受法律保护，建议采用有限责任公司形式<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-18">
+<h3 id="十八保证合同">十八、保证合同</h3>
+<p><strong>法律依据</strong>：《民法典》第681–702条；《担保制度司法解释》</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**保证方式**</td>
+<td>是否明确约定为"一般保证"或"连带责任保证"</td>
+<td>🔴</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td></td>
+<td>未约定保证方式的，默认为一般保证（民法典重大变化）</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**保证范围**</td>
+<td>主债权/利息/违约金/损害赔偿金/实现债权费用</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**保证期间**</td>
+<td>保证期间是否明确（无约定为6个月）</td>
+<td>🔴</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td></td>
+<td>保证期间为除斥期间，不适用中止中断</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**主合同变更**</td>
+<td>主合同变更是否须经保证人书面同意</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**先诉抗辩权**</td>
+<td>一般保证人享有先诉抗辩权</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**共同保证**</td>
+<td>多个保证人之间的责任分担</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>保证期间经过</strong>：债权人未在保证期间内行使权利的，保证人不再承担保证责任<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查担保方式、担保范围、担保期间是否明确，是否按民法典最新规则处理</span></li>
+<li><strong>主债务诉讼时效与保证期间的区别</strong>：保证期间是除斥期间，保证债务的诉讼时效是3年<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>公司对外担保</strong>：公司对外担保须经董事会或股东会决议，否则担保合同可能无效<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查担保方式、担保范围、担保期间是否明确，是否按民法典最新规则处理</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-19">
+<h3 id="十九保理合同">十九、保理合同</h3>
+<p><strong>法律依据</strong>：《民法典》第761–769条（新增典型合同）</p><h4 id="亚类型审查差异">亚类型审查差异</h4><div class="tbl-w"><table><thead><tr>
+<th>亚类型</th>
+<th>核心规则</th>
+<th>审查重点</th>
+<th>审查动作</th></tr></thead><tbody>
+<tr>
+<td>**有追索权保理**</td>
+<td>保理人可向应收账款债权人主张返还保理融资款本息或回购债权</td>
+<td>回购触发条件、回购价格计算</td>
+<td>核查应收账款真实性和可转让性、追索权是否有约定、通知债务人方式和时限</td></tr>
+<tr>
+<td>**无追索权保理**</td>
+<td>保理人承担应收账款债务人的信用风险</td>
+<td>信用风险的完整转移（不能有隐性追索）</td>
+<td>核查应收账款真实性和可转让性、追索权是否有约定、通知债务人方式和时限</td></tr>
+</tbody></table></div><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**保理类型**</td>
+<td>有追索权保理 vs 无追索权保理</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**应收账款**</td>
+<td>应收账款是否真实、是否存在权利负担</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td></td>
+<td>应收账款是否存在禁止转让条款（金钱债权禁止转让约定对保理人无效）</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**转让通知**</td>
+<td>应收账款转让是否通知债务人（对债务人生效要件）</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**保理融资款**</td>
+<td>融资本金、利率、期限</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**回购义务**</td>
+<td>有追索权保理中保理人的回购请求权</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**多重转让**</td>
+<td>同一应收账款多重转让的优先顺序（登记→通知→比例清偿）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><hr/><h3 id="二十三十商业高频无名合同">二十～三十：商业高频无名合同</h3><hr/>
+</div>
+<div class="contract-section" id="ct-20">
+<h3 id="二十劳动合同">二十、劳动合同</h3>
+<p><strong>法律依据</strong>：《劳动合同法》；《劳动法》；《社会保险法》</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**试用期**</td>
+<td>试用期长度是否符合法定上限</td>
+<td>🔴</td>
+<td>根据劳动合同期限计算法定试用期上限，与合同约定进行比对</td>
+</tr>
+<tr>
+<td></td>
+<td>同一用人单位与同一劳动者只能约定一次试用期</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**劳动合同期限**</td>
+<td>固定期限/无固定期限/以完成一定工作任务为期限</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**工作时间**</td>
+<td>标准工时/不定时工时/综合计算工时（需审批）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**劳动报酬**</td>
+<td>工资标准、支付时间、加班费计算基数</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**社会保险**</td>
+<td>社保缴纳约定（法定强制，不得约定不缴）</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**服务期违约金**</td>
+<td>仅限专项培训服务和竞业限制两种情形</td>
+<td>🔴</td>
+<td>核查竞业限制的人员范围、期限(≤2年)和地域范围是否合理</td>
+</tr>
+<tr>
+<td>**竞业限制**</td>
+<td>竞业限制人员范围、期限（≤2年）、补偿金标准</td>
+<td>🔴</td>
+<td>核验竞业限制补偿金是否约定、金额是否不低于法定最低标准</td>
+</tr>
+<tr>
+<td></td>
+<td>未约定竞业限制补偿金的，竞业限制条款可能无效</td>
+<td>🔴</td>
+<td>核验竞业限制补偿金是否约定、金额是否不低于法定最低标准</td>
+</tr>
+<tr>
+<td>**解除劳动合同**</td>
+<td>用人单位单方解除的法定情形和程序</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**规章制度**</td>
+<td>涉及劳动者切身利益的规章制度是否经过民主程序</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>"自愿放弃社保"条款无效</strong>：用人单位和劳动者约定不缴社保的条款因违反法律强制性规定而无效<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>服务期违约金上限</strong>：不得超过用人单位提供的培训费用<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>竞业限制补偿金</strong>：未约定补偿金或补偿金过低的，劳动者可请求解除竞业限制协议<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查竞业禁止范围和期限是否合理、补偿金是否约定、与法定竞业限制的差异</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-21">
+<h3 id="二十一保密协议--NDA">二十一、保密协议 / NDA</h3>
+<h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**保密信息定义**</td>
+<td>保密信息的定义是否过于宽泛（可能被认定无效）</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td></td>
+<td>是否将已公开信息、接受方独立开发信息排除在外</td>
+<td>🟡</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**保密义务主体**</td>
+<td>保密义务是否及于接受方的员工、关联方、顾问</td>
+<td>🟡</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**使用限制**</td>
+<td>接受方仅可为约定目的使用保密信息</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**保密期限**</td>
+<td>保密期限是否合理（通常为3-5年，商业秘密可更长）</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**返还/销毁义务**</td>
+<td>合同终止后保密信息的返还或销毁义务</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**例外情形**</td>
+<td>已公开、依法应当披露、独立开发等例外情形</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**违约赔偿**</td>
+<td>违约金或赔偿计算方法</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**非邀约禁止**</td>
+<td>是否约定禁止招揽对方员工（可选）</td>
+<td>🟡</td>
+<td>全文检索对应关键词，确认合同中是否有相关条款约定</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>保密信息定义过宽</strong>：可能被法院认定为不合理限制，导致条款无效<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>未约定保密期限</strong>：保密义务可能被视为无限期，或对接受方不公平<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>"任何披露均构成违约"</strong>：应约定合理的披露例外（如依法应当披露）<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-22">
+<h3 id="二十二SaaS--软件服务协议">二十二、SaaS / 软件服务协议</h3>
+<h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**服务内容**</td>
+<td>软件功能清单、服务级别（SLA）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**SLA罚则**</td>
+<td>可用性保证（如99.9%）、服务中断的赔偿标准</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**数据安全**</td>
+<td>数据存储地点、加密措施、数据备份机制</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**数据迁移**</td>
+<td>合同终止后的数据导出/迁移方案和期限</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**知识产权**</td>
+<td>SaaS平台本身的知识产权归属服务商；用户数据的知识产权归属用户</td>
+<td>🔴</td>
+<td>检索知识产权归属条款，确认归属方、共有安排和使用限制</td>
+</tr>
+<tr>
+<td>**服务变更/终止**</td>
+<td>服务商单方终止或变更服务的条件</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**供应商锁定**</td>
+<td>数据格式是否开放、是否可迁移至其他平台</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**责任限制**</td>
+<td>服务商的免责条款和赔偿上限（需审查是否排除主要责任）</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>SLA无罚则</strong>：仅约定服务可用性标准但无相应违约责任的，SLA形同虚设<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>数据迁移方案缺失</strong>：合同终止后用户数据无法导出，形成供应商锁定<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查数据合规条款是否满足PIPL要求，处理目的和范围是否明确，出境是否已通过审批</span></li>
+<li><strong>责任限制条款过度扩张</strong>：排除服务商因故意或重大过失应承担的责任的条款无效<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-23">
+<h3 id="二十三股权转让协议">二十三、股权转让协议</h3>
+<p><strong>法律依据</strong>：《公司法》；《民法典》</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**转让标的**</td>
+<td>转让的股权是实缴 vs 认缴（认缴的实缴义务由受让方承担）</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**认缴出资核实**</td>
+<td>逐项核实认缴出资金额、出资期限（是否已到期）、实缴比例；核对公司章程记载的出资情况与工商登记是否一致</td>
+<td>🔴</td>
+<td>要求出让方提供验资报告或银行出资流水；对照国家企业信用信息公示系统核实认缴/实缴状态</td>
+</tr>
+<tr>
+<td>**认缴未到位处理**</td>
+<td>认缴出资尚未到位的：约定未到位出资的实缴义务由谁承担、是否在转让价款中扣除未实缴部分对应金额</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认转让价款是否已反映认缴未到位的影响；如由受让方承担后续实缴义务，应在定价中明确体现</td>
+</tr>
+<tr>
+<td>**其他股东优先购买权**</td>
+<td>其他股东是否已放弃优先购买权（有限责任公司）</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**交割先决条件**</td>
+<td>交割的前提条件（如审批通过、无重大不利变化）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**过渡期安排**</td>
+<td>股权过户完成前出让方的权利义务（不处分股权、正常经营）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**陈述与保证**</td>
+<td>出让方对股权合法性、公司财务状况的陈述保证</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td></td>
+<td>陈述保证不实的责任范围和赔偿期限</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**对价支付**</td>
+<td>股权转让价格、支付方式和期限</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**工商变更登记**</td>
+<td>办理工商变更登记的义务和期限</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**竞业限制**</td>
+<td>出让方在转让后的竞业限制义务（可选）</td>
+<td>🟡</td>
+<td>核查竞业限制的人员范围、期限(≤2年)和地域范围是否合理</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>认缴出资的实缴义务</strong>：股权转让后，受让方承担后续实缴义务，须在转让价格中考虑<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>优先购买权未妥善处理</strong>：其他股东主张优先购买权的，股权转让合同可能无法履行<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>隐藏债务</strong>：未披露的公司债务由出让方承担，须在陈述保证条款中明确<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-24">
+<h3 id="二十四采购框架协议">二十四、采购框架协议</h3>
+<h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**框架协议效力**</td>
+<td>框架协议是否构成有约束力的合同，还是仅构成意向</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**价格调整机制**</td>
+<td>原材料价格波动时的价格调整公式或重新议价机制</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**最小采购量**</td>
+<td>是否承诺最低采购量，未达标的违约责任</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**订单效力**</td>
+<td>具体订单与框架协议冲突时，以何者为准</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**验收标准**</td>
+<td>质量验收标准、验收期限、不合格品处理</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**质保与售后**</td>
+<td>质量保证期、质保金比例、售后服务标准</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**供应商替换**</td>
+<td>供应商无法履约时的替代方案</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>价格调整条款缺失</strong>：原材料价格大幅波动时，供应商可能拒绝履约或要求重新议价<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>订单条款覆盖框架协议</strong>：具体订单中的条款可能与框架协议冲突，须明确优先级<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>"框架协议+订单"双层结构</strong>：须确保两层文件的逻辑一致性和效力优先级<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-25">
+<h3 id="二十五特许经营合同--本次补全">二十五、特许经营合同</h3>
+<p><strong>法律依据</strong>：《商业特许经营管理条例》；《民法典》</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**特许人资质**</td>
+<td>特许人是否具备"两店一年"条件（2个直营店+经营满1年）</td>
+<td>🔴</td>
+<td>核查相关资质证书/许可证照，确认是否在有效期内</td>
+</tr>
+<tr>
+<td></td>
+<td>特许人是否在商务主管部门完成备案</td>
+<td>🔴</td>
+<td>登录主管部门公示系统查询登记/备案状态</td>
+</tr>
+<tr>
+<td>**信息披露**</td>
+<td>特许人是否履行了法定信息披露义务（特许经营管理条例第21-23条）</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td></td>
+<td>被特许人享有的"冷静期"权利（签约后一定期限内可单方解除）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**经营资源授权**</td>
+<td>商标/商号/专利/专有技术/经营模式的授权范围和期限</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**特许经营费**</td>
+<td>加盟费、特许权使用费（按营业额比例提取）、保证金</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**区域保护**</td>
+<td>独家区域范围、区域保护的例外（线上渠道冲突）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**运营标准**</td>
+<td>统一采购义务、质量管控标准、品牌使用规范</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**培训支持**</td>
+<td>开业培训、持续培训义务</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**合同续期**</td>
+<td>加盟期限、续约条件和费用</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**保密与竞业**</td>
+<td>被特许人的保密义务和竞业限制</td>
+<td>🟠</td>
+<td>核查竞业限制的人员范围、期限(≤2年)和地域范围是否合理</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>"两店一年"不合规</strong>：特许人不具备法定条件的，被特许人可主张解除合同并要求赔偿<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>虚假宣传/盈利承诺</strong>：特许人作出的盈利承诺不实，被特许人可主张欺诈撤销合同<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>供应链绑定</strong>：特许人通过强制高价供货赚取隐性利润，属于不公平交易<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>冷静期被剥夺</strong>：未告知被特许人冷静期权利的，合同可能被撤销<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-26">
+<h3 id="二十六投资增资协议--本次补全">二十六、投资/增资协议</h3>
+<p><strong>法律依据</strong>：《公司法》；《民法典》；《外商投资法》；《证券法》</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**投资方式**</td>
+<td>增资扩股 vs 股权转让 vs 可转债投资</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**估值与定价**</td>
+<td>投前估值/投后估值、每股价格的计算依据</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**交割先决条件**</td>
+<td>尽调满意、内部决议通过、政府审批/备案</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**特殊权利条款**</td>
+<td>优先购买权/反稀释/领售权/随售权/优先清算权/保护性条款</td>
+<td>🟠</td>
+<td>审查拖售权触发条件、行权价格底线、小股东保护机制</td>
+</tr>
+<tr>
+<td>**回购权**</td>
+<td>触发条件（未按期上市/重大违约）、回购价格计算、回购义务主体</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**对赌条款**</td>
+<td>业绩对赌 vs 上市对赌、补偿方式（现金/股权调整）</td>
+<td>🔴</td>
+<td>逐条审查对赌条款的触发条件、补偿方式和执行路径，评估与目标公司对赌的执行风险</td>
+</tr>
+<tr>
+<td>**创始人限制**</td>
+<td>竞业禁止、股权锁定/限售、全职服务承诺</td>
+<td>🟠</td>
+<td>核查竞业限制的人员范围、期限(≤2年)和地域范围是否合理</td>
+</tr>
+<tr>
+<td>**公司治理**</td>
+<td>董事会席位、一票否决权范围、观察员权</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**信息权**</td>
+<td>定期财务报表/审计报告、查阅权</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**反稀释保护**</td>
+<td>加权平均 vs 完全棘轮、例外情形（员工股权激励）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>对赌协议的效力</strong>：与目标公司对赌有效，但须经减资程序方可执行——与股东对赌更安全<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查对赌条款的触发条件、补偿方式和执行路径，评估与目标公司对赌的执行风险</span></li>
+<li><strong>对赌与明股实债的界限</strong>：若约定固定收益+无条件回购，可能被认定为借贷而非投资<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查对赌条款的触发条件、补偿方式和执行路径，评估与目标公司对赌的执行风险</span></li>
+<li><strong>外资准入负面清单</strong>：外国投资者投资限制/禁止类行业的，协议可能无效<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>创始团队锁定不足</strong>：创始人早期套现离场导致公司无人经营<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>优先清算权</strong>：不同轮次投资人的清算优先级冲突、普通股股东无剩余分配<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查清算组的组成和权限、清算财产的分配顺序是否明确</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-27">
+<h3 id="二十七资产业务收购协议--本次补全">二十七、资产/业务收购协议</h3>
+<p><strong>法律依据</strong>：《民法典》；《公司法》</p><h4 id="审查要点">审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**收购标的**</td>
+<td>资产/业务范围的界定（固定资产/无形资产/存货/合同/人员/数据）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**人员转移**</td>
+<td>员工的劳动关系转移还是"先解聘再录用"</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**合同转让**</td>
+<td>收购标的涉及的合同权利义务转让是否需要相对方同意</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**许可与审批**</td>
+<td>需要获取的政府审批（反垄断/外商投资/行业准入）</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**知识产权**</td>
+<td>专利/商标/著作权/域名/源代码的清单和权属核验</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**定价机制**</td>
+<td>固定价格 vs 交割后调整（以交割日净资产为准）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**交割后调整**</td>
+<td>净营运资本/净债务调整机制、调整争议解决</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**陈述与保证**</td>
+<td>卖方对资产权属、无负债/无诉讼/无环境污染的保证</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**卖方责任**</td>
+<td>赔偿上限、免赔额、索赔期限、托管金的设立</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**过渡期安排**</td>
+<td>交割前卖方不得处置重大资产、正常经营义务</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>资产收购不继承卖方债务</strong>：这是资产收购相比于股权收购的最大优势——但如构成"营业让与"，部分债务可能跟随转移<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>合同相对方同意</strong>：关键合同（如大客户合同）的转让需要对方同意；对方可能借机重新谈判<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>人员转移</strong>：大规模人员转移可能触发经济性裁员程序<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>隐性环境污染责任</strong>：资产买方可能承担卖方在资产所在地的历史污染治理责任<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-28">
+<h3 id="二十八债权转让债务承担协议--本次补全">二十八、债权转让/债务承担协议</h3>
+<p><strong>法律依据</strong>：《民法典》第545–556条</p><h4 id="债权转让部分">债权转让部分</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**可转让性**</td>
+<td>债权是否属于可转让范围（金钱债权限制转让条款对受让人无效）</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td></td>
+<td>是否属于"根据债权性质不得转让"的债权</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**转让通知**</td>
+<td>债权人转让债权是否通知债务人（未经通知对债务人不生效）</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**权利完整性**</td>
+<td>转让人保证债权的真实性和无权利负担</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**从权利随同转让**</td>
+<td>抵押权/质权/保证等从权利是否随主债权一并转让</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**多重转让**</td>
+<td>同一债权多重转让时，以最先通知债务人的受让人优先</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**对价**</td>
+<td>债权转让价格和支付方式</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="债务承担部分">债务承担部分</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**债权人同意**</td>
+<td>债务转移必须经债权人书面同意（否则不发生效力）</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**担保人同意**</td>
+<td>债务转移是否取得原担保人的书面同意（否则担保人免责）</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**承接债务范围**</td>
+<td>原债务的金额、利息、违约责任是否全面承接</td>
+<td>🟠</td>
+<td>逐项列出应覆盖的要素清单，逐一核对该合同是否全部涵盖</td>
+</tr>
+<tr>
+<td>**抗辩权保留**</td>
+<td>新债务人是否可主张原债务人对债权人的全部抗辩权</td>
+<td>🟡</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>金钱债权的禁止转让约定</strong>：当事人约定非金钱债权不得转让的，不得对抗善意第三人；但约定金钱债权不得转让的，该约定对受让人无效——《民法典》第545条的突破<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>债务加入 vs 保证</strong>：第三人加入债务（并存式债务承担）无需债权人单独同意，但要区分"债务加入"和"保证"——未明确的推定为保证<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查债务加入的意思表示是否明确，是否已取得债权人同意</span></li>
+<li><strong>债权让与未通知债务人</strong>：债务人向原债权人清偿的，对受让人有效；债务人收到通知后向原债权人清偿的，对受让人无效<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-29">
+<h3 id="二十九抵押质押合同--本次补全">二十九、抵押/质押合同</h3>
+<p><strong>法律依据</strong>：《民法典》第二编 物权 第四分编 担保物权；《担保制度司法解释》</p><h4 id="抵押合同审查要点">抵押合同审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**抵押财产**</td>
+<td>抵押财产是否属于可抵押的范围（禁止抵押的财产：公益设施/权属不明财产）</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td></td>
+<td>抵押财产是否已经存在其他抵押（顺位）</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**抵押权设立**</td>
+<td>不动产抵押：是否已办理抵押登记（登记生效/对抗要件）</td>
+<td>🔴</td>
+<td>登录主管部门公示系统查询登记/备案状态</td>
+</tr>
+<tr>
+<td></td>
+<td>动产抵押：是否已办理抵押登记（未经登记不得对抗善意第三人）</td>
+<td>🔴</td>
+<td>登录主管部门公示系统查询登记/备案状态</td>
+</tr>
+<tr>
+<td>**被担保债权**</td>
+<td>主债权的种类、数额、期限是否明确</td>
+<td>🟠</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td>**担保范围**</td>
+<td>是否覆盖主债权+利息+违约金+损害赔偿金+实现抵押权费用</td>
+<td>🟡</td>
+<td>逐项列出应覆盖的要素清单，逐一核对该合同是否全部涵盖</td>
+</tr>
+<tr>
+<td>**抵押财产处分**</td>
+<td>抵押期间抵押人转让抵押财产是否需要抵押权人同意</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td></td>
+<td>抵押财产转让价款的提存或提前清偿</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**实现抵押权**</td>
+<td>实现抵押权的条件和方式（折价/拍卖/变卖）</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="质押合同审查要点">质押合同审查要点</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**质权设立**</td>
+<td>动产质权：是否已交付质物（交付是设立要件）</td>
+<td>🔴</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td></td>
+<td>权利质权：是否已办理登记（应收账款/股权/基金份额/知识产权）</td>
+<td>🔴</td>
+<td>登录主管部门公示系统查询登记/备案状态</td>
+</tr>
+<tr>
+<td>**质物保管**</td>
+<td>质权人的妥善保管义务（保管不善造成毁损灭失须赔偿）</td>
+<td>🟠</td>
+<td>确认合同中风险转移的具体节点，评估是否合理</td>
+</tr>
+<tr>
+<td>**质权人使用**</td>
+<td>未经出质人同意，质权人不得使用/处分质物</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**转质**</td>
+<td>质权人是否可以转质（承诺转质 vs 责任转质）</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**应收账款的特殊规则**</td>
+<td>应收账款出质后，出质人不得转让（经质权人同意除外）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>"房地一体"原则</strong>：以建筑物抵押的，其占用范围内的建设用地使用权一并抵押；反之亦然——即使只登记了其中一项<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>流押/流质条款无效</strong>：约定"债务人不履行时抵押/质押财产归债权人所有"的条款无效，只能依法优先受偿<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>动产抵押对抗规则</strong>：同一动产上存在多个担保物权的，清偿顺序为：留置权 > 登记的抵押权 > 质权 > 未登记的抵押权（《民法典》第415、416条的复杂排序）<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查担保方式、担保范围、担保期间是否明确，是否按民法典最新规则处理</span></li>
+<li><strong>公司以自身财产为他人担保</strong>：需经董事会/股东会决议，否则担保合同可能无效<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查担保方式、担保范围、担保期间是否明确，是否按民法典最新规则处理</span></li>
+<li><strong>最高额抵押</strong>：最高债权额的界定和决算期的约定<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-30">
+<h3 id="三十知识产权许可合同--本次补全">三十、知识产权许可合同</h3>
+<p><strong>法律依据</strong>：《专利法》；《商标法》；《著作权法》；《民法典》技术合同章节；《技术进出口管理条例》</p><h4 id="亚类型审查差异">亚类型审查差异</h4><div class="tbl-w"><table><thead><tr>
+<th>许可类型</th>
+<th>法律特征</th>
+<th>审查要点</th>
+<th>审查动作</th></tr></thead><tbody>
+<tr>
+<td>**专利许可**</td>
+<td>专利有效期内方可许可；许可后专利权被宣告无效的后果</td>
+<td>专利权有效性核查、专利到期后的许可费处理</td>
+<td>核查许可类型（独占/排他/普通）、地域和期限、改进成果归属、分许可是否允许</td></tr>
+<tr>
+<td>**商标许可**</td>
+<td>须向商标局备案（对抗要件）；被许可人须标明产地和企业名称</td>
+<td>商品/服务质量控制条款、许可期满后的标识清除</td>
+<td>核查许可类型（独占/排他/普通）、地域和期限、改进成果归属、分许可是否允许</td></tr>
+<tr>
+<td>**著作权许可**</td>
+<td>人身权不可转让/许可；财产权可许可</td>
+<td>许可的具体权项（复制/发行/改编/信息网络传播等须逐项约定）</td>
+<td>核查许可类型（独占/排他/普通）、地域和期限、改进成果归属、分许可是否允许</td></tr>
+<tr>
+<td>**技术秘密许可**</td>
+<td>无固定保护期，依赖保密措施</td>
+<td>保密期限（一般应>许可期限+合理留存期）</td>
+<td>核查许可类型（独占/排他/普通）、地域和期限、改进成果归属、分许可是否允许</td></tr>
+</tbody></table></div><h4 id="通用审查清单">通用审查清单</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**许可类型**</td>
+<td>独占许可/排他许可/普通许可/分许可权</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**许可范围**</td>
+<td>许可地域、许可产品/服务领域、许可期限</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**许可费**</td>
+<td>固定许可费 vs 按销售额/产量提成；提成基数定义（净销售额 vs 毛销售额）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**权利保证**</td>
+<td>许可方保证其对所许可的知识产权享有合法权利</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**不侵权保证**</td>
+<td>知识产权不侵犯第三方权利的保证及赔偿</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**侵权打击**</td>
+<td>第三方侵权时，谁有权提起诉讼、费用和赔偿分配</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**质量管控**</td>
+<td>被许可人的产品质量标准、许可方的检验权（商标许可必备）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**改进归属**</td>
+<td>被许可人改进成果的权利归属和使用安排</td>
+<td>🟠</td>
+<td>检索知识产权归属条款，确认归属方、共有安排和使用限制</td>
+</tr>
+<tr>
+<td>**许可终止**</td>
+<td>终止后库存产品的处理、商标/标识的清除</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**许可备案**</td>
+<td>许可合同备案义务（尤其是专利/商标）</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**跨境许可**</td>
+<td>是否属于技术进出口管制范围、是否需商务部门登记</td>
+<td>🔴</td>
+<td>登录主管部门公示系统查询登记/备案状态</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>专利权被宣告无效后</strong>：已支付的许可费是否退还，需在合同中明确约定<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>商标"裸许可"风险</strong>：商标许可若未约定质量管控条款，可能被认定为"裸许可"导致商标被撤销<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>著作权许可的具体权项</strong>：仅写"许可使用著作权"不够——复制权/发行权/改编权/信息网络传播权等权项须逐一列明，未明确列出的权项视为未许可<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>跨境技术许可的管制</strong>：属于《中国禁止进口限制进口技术目录》范围的技术许可，须经商务部门审批<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>分许可权的控制</strong>：允许分许可可能导致许可方失去对知识产权的控制；必须约定分许可的批准权、收益分享和终止时处理<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查知识产权归属条款是否明确区分背景IP、前景IP和改进IP</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-31">
+<h3 id="三十一保险合同--V21新增">三十一、保险合同</h3>
+<p><strong>法律依据</strong>：《保险法》及其司法解释（一）～（四）</p><p>保险合同是独立合同类型，有《保险法》专门规范。当前 30 类中缺失，但财产险/人身险/责任险/信用险/保证保险是商业和金融领域的高频合同。</p><h4 id="亚类型与审查差异">亚类型与审查差异</h4><div class="tbl-w"><table><thead><tr>
+<th>亚类型</th>
+<th>法律特征</th>
+<th>核心审查要点</th>
+<th>审查动作</th></tr></thead><tbody>
+<tr>
+<td>**财产保险**</td>
+<td>补偿原则（填补实际损失，不得获利）；保险金额不得超过保险价值</td>
+<td>保险利益存在性、重复保险分摊、代位求偿权行使</td>
+<td>核查保险责任范围、免责条款是否明确提示、理赔程序及时限、如实告知义务</td></tr>
+<tr>
+<td>**人身保险**</td>
+<td>定额给付（非补偿）；无代位求偿权；受益权独立于遗产</td>
+<td>如实告知义务的边界、受益人指定（避免遗产纠纷）、自杀条款</td>
+<td>核查保险责任范围、免责条款是否明确提示、理赔程序及时限、如实告知义务</td></tr>
+<tr>
+<td>**责任保险**</td>
+<td>以被保险人对第三者的赔偿责任为标的；保险人参与权</td>
+<td>被保险人的出险通知义务时限、第三者直接请求权、索赔时效</td>
+<td>核查保险责任范围、免责条款是否明确提示、理赔程序及时限、如实告知义务</td></tr>
+<tr>
+<td>**信用/保证保险**</td>
+<td>以债务人不履行债务为承保风险；实质为担保</td>
+<td>投保人（债务人）的还款义务、保险人的追偿权、与保证合同的竞合</td>
+<td>核查保证方式是一般保证还是连带保证、保证期间是否明确、保证范围是否与主债务匹配</td></tr>
+<tr>
+<td>**再保险**</td>
+<td>保险人将其承保的风险部分转给再保险人</td>
+<td>原保险与再保险相互独立（原被保险人对再保险人无直接请求权）</td>
+<td>核查保险责任范围、免责条款是否明确提示、理赔程序及时限、如实告知义务</td></tr>
+</tbody></table></div><h4 id="通用审查清单">通用审查清单</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**保险利益**</td>
+<td>投保人在投保时是否对保险标的具有保险利益（财产险：所有权/抵押权/保管责任；人身险：本人/配偶/子女/父母/有抚养关系的近亲属/有劳动关系的劳动者）</td>
+<td>🔴</td>
+<td>核查投保人对保险标的是否具有法定保险利益(所有权/抵押权/抚养关系等)</td>
+</tr>
+<tr>
+<td>**如实告知**</td>
+<td>投保人的如实告知义务（限于保险人询问的范围）、保险人是否履行询问程序</td>
+<td>🔴</td>
+<td>核查投保单询问事项是否具体明确，投保人答复是否完整</td>
+</tr>
+<tr>
+<td>**保险责任**</td>
+<td>承保的风险范围是否明确（基本险 vs 综合险 vs 一切险）、保险责任的起讫时间</td>
+<td>🔴</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td>**责任免除**</td>
+<td>免责条款是否在合同订立时以足以引起注意的方式提示、是否以书面或口头形式明确说明</td>
+<td>🔴</td>
+<td>核查保险人对免责条款是否以加粗/单独签字等方式履行明确说明义务</td>
+</tr>
+<tr>
+<td>**保险金额/保险价值**</td>
+<td>财产险是否超额保险（超出部分无效）、人身险的给付金额是否合理</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**保险期间**</td>
+<td>起保日期、终止日期、追溯期（责任险）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**保费支付**</td>
+<td>保费金额、支付期限、未付保费是否导致合同中止或解除</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**出险通知**</td>
+<td>被保险人出险后通知保险人的时限、未及时通知的后果（能否免除保险责任取决于是否影响定责定损）</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**索赔程序**</td>
+<td>索赔所需材料、保险人核赔时限（收到索赔后30日/60日）、拒赔须说明理由</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**代位求偿权**</td>
+<td>保险人赔付后取得代位求偿权、被保险人不得放弃对第三者的赔偿请求权（放弃则保险人不赔对应部分）</td>
+<td>🟠</td>
+<td>审查代位求偿权条款，确认被保险人不得放弃对第三者赔偿请求权</td>
+</tr>
+<tr>
+<td>**合同解除**</td>
+<td>投保人解除（退保）的现金价值、保险人解除的法定情形（欺诈/未如实告知等）</td>
+<td>🟠</td>
+<td>核查投保单询问事项是否具体明确，投保人答复是否完整</td>
+</tr>
+<tr>
+<td>**受益人**</td>
+<td>受益人指定（可变更/不可变更）、未指定受益人时保险金作为遗产处理</td>
+<td>🟡</td>
+<td>确认受益人的姓名/身份关系是否明确，变更程序是否约定</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>免责条款的说明义务</strong>：保险人对免责条款仅做"阅读提示"不够，须作"明确说明"（即让投保人理解该条款的法律后果）——否则该条款不产生效力，这是《保险法》第17条第2款的特殊规则<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>如实告知的边界</strong>：投保人仅对保险人"询问的事项"有告知义务，保险人未询问的无需主动告知。但实务中保险人问卷往往设计宽泛——"是否有其他未提及的健康异常"——边界模糊<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>保险价值与保险金额倒挂</strong>：财产险中保险金额远高于保险价值的，超额部分无效且保费不退还；保险金额低于保险价值的，以比例赔付（不足额投保）<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>受益人指定不清</strong>：人身保险"法定受益人"不等于指定——保险合同写"法定受益人"视为未指定，保险金作为被保险人遗产，须先清偿遗产债务<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>重复保险隐瞒</strong>：投保人对同一保险标的向多家保险人投保而未告知的，出险时各保险人仅按比例赔付，被保险人不得累加获利<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>出险通知迟延</strong>：事故发生后未在合同约定的时限内（通常24-48小时）通知保险人，若导致损失无法认定或扩大的，保险人可相应扣减赔付金或拒赔<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-32">
+<h3 id="三十二合资联营协议--V21新增">三十二、合资/联营协议</h3>
+<p><strong>法律依据</strong>：《公司法》；《外商投资法》；《民法典》合伙合同章节；《合伙企业法》</p><p>合资/联营协议与现行第 17 类「合伙合同」性质根本不同：合伙合同仅适用于合伙型联营（不设独立法人），而股权型合资设立独立法人，适用《公司法》，公司治理结构、僵局处理、退出机制等审查要点完全不同。</p><h4 id="亚类型与审查差异">亚类型与审查差异</h4><div class="tbl-w"><table><thead><tr>
+<th>亚类型</th>
+<th>法律特征</th>
+<th>核心审查要点</th>
+<th>审查动作</th></tr></thead><tbody>
+<tr>
+<td>**股权型合资（Equity JV）**</td>
+<td>设立独立法人（有限责任公司/股份有限公司）；适用《公司法》</td>
+<td>公司治理结构（董事会/股东会/监事会席位分配）、僵局处理机制、优先购买权/拖售权/随售权</td>
+<td>核查合同中是否涉及此亚类型，如是则逐条对照上述特别规则和审查要点，确认合同条款已妥善处理</td></tr>
+<tr>
+<td>**契约型合作（Contractual JV）**</td>
+<td>不设法人，以合同为纽带；适用《民法典》合伙合同规则</td>
+<td>各方投入的资产归属、利润/亏损分担比例、共同决策机制、退出解约条款</td>
+<td>核查出资方式和比例、利润分配与亏损分担比例、退伙条件与财产份额处理</td></tr>
+<tr>
+<td>**中外合资经营**</td>
+<td>适用《外商投资法》（原三资企业法已废止）；外资准入负面清单</td>
+<td>技术出资的评估/验资、外方技术转让条件、外汇管制合规</td>
+<td>核查增资定价基准日、交割先决条件、反稀释条款、优先权条款</td></tr>
+<tr>
+<td>**项目联营**</td>
+<td>为单一项目的短期合作</td>
+<td>资源投入清单、项目管理权分配、合作终止后的资产处置</td>
+<td>核查合同中是否涉及此亚类型，如是则逐条对照上述特别规则和审查要点，确认合同条款已妥善处理</td></tr>
+</tbody></table></div><h4 id="通用审查清单">通用审查清单</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**出资安排**</td>
+<td>各方出资金额/方式（现金/实物/知识产权/土地使用权）、出资期限、出资不实的违约责任</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td></td>
+<td>非现金出资的作价依据和评估（非货币出资必须评估）</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**公司治理**</td>
+<td>董事会席位分配、董事长/副董事长、总经理/财务总监的任命权</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td></td>
+<td>股东会/董事会的表决机制（简单多数 vs 绝对多数 vs 全体一致）</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**僵局处理**</td>
+<td>董事会僵局的认定标准（如连续 X 次无法形成决议）、打破机制（协商→第三方调解→Russian Roulette / Texas Shootout）</td>
+<td>🔴</td>
+<td>审查僵局认定标准和打破机制，确认是否有Russian Roulette等条款</td>
+</tr>
+<tr>
+<td>**股权转让限制**</td>
+<td>锁定期限、优先购买权、随售权（Tag-along）/ 拖售权（Drag-along）、转让价格计算</td>
+<td>🟠</td>
+<td>审查拖售权触发条件、行权价格底线、小股东保护机制</td>
+</tr>
+<tr>
+<td>**利润分配**</td>
+<td>分配比例（是否与持股比例一致）、分配时机（强制分红/董事会决定）、可分配利润定义</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**竞业禁止**</td>
+<td>各方在合资期间的竞业禁止义务范围、合资终止后的竞业限制</td>
+<td>🟠</td>
+<td>核查竞业限制的人员范围、期限(≤2年)和地域范围是否合理</td>
+</tr>
+<tr>
+<td>**保护性条款**</td>
+<td>小股东对重大事项的一票否决权范围（增资/减资/合并分立/重大资产处置/修改章程）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**知识产权**</td>
+<td>各方投入的背景 IP 权利归属和使用安排、合资期间产生的新 IP 归属、退出后的 IP 使用权</td>
+<td>🟠</td>
+<td>检索知识产权归属条款，确认归属方、共有安排和使用限制</td>
+</tr>
+<tr>
+<td>**退出机制**</td>
+<td>死锁条款、强制回购权/卖出期权（Put Option）、IPO 对赌、清算解散程序</td>
+<td>🔴</td>
+<td>逐条审查对赌条款的触发条件、补偿方式和执行路径，评估与目标公司对赌的执行风险</td>
+</tr>
+<tr>
+<td>**信息权**</td>
+<td>各方的知情权范围（财务报表/审计报告/重大合同）、查阅权、审计权</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**适用法律与管辖**</td>
+<td>外商投资企业的适用法律选择、境内合资的争议管辖（仲裁 vs 法院）</td>
+<td>🟠</td>
+<td>确认管辖条款是否排除了专属管辖情形，仲裁机构名称是否准确</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>僵局条款缺失</strong>：持股 50:50 的合资，若没有僵局打破机制，一旦双方对重大事项有分歧，公司完全瘫痪——实务中 Russian Roulette（一方报价收购、另一方要么接受要么按同价反向收购报价方）或 Texas Shootout（双方密封报价、高价方收购低价方）是常见解决方式<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>保护性条款范围过大</strong>：小股东对几乎一切事项都有否决权→公司实质上无法经营，最终变成"互相牵制、一事无成"<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>外资负面清单</strong>：合资经营范围落入《外商投资准入特别管理措施（负面清单）》的限制类或禁止类，合资协议可能无效<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>知识产权的"出资陷阱"</strong>：外方以知识产权使用权（非所有权）作价出资时，退出后 IP 无法保留在合资公司——须明确约定出资的是所有权还是使用权、退出后的许可安排<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查知识产权归属条款是否明确区分背景IP、前景IP和改进IP</span></li>
+<li><strong>利润分配僵局</strong>：一方坚持不分红（防止对方回本退出），另一方急需分红——若无强制分红或退出机制，小股东被无限期锁定<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>控股权的"暗度陈仓"</strong>：董事会席位看似公平（2:2），但关键委员会（如薪酬委员会/审计委员会）全部由一方控制，实质控制经营<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-33">
+<h3 id="三十三数据处理协议DPA--V21新增">三十三、数据处理协议（DPA）</h3>
+<p><strong>法律依据</strong>：《个人信息保护法》（PIPL）；《数据安全法》；《网络安全法》；《民法典》第1034-1039条；GDPR（如涉及欧盟数据）</p><p>DPA（Data Processing Agreement）在 PIPL 和 GDPR 框架下已从附属条款演变为独立的必备合同文件。任何涉及个人信息"委托处理"的业务关系，均须签署 DPA。</p><h4 id="亚类型与审查差异">亚类型与审查差异</h4><div class="tbl-w"><table><thead><tr>
+<th>亚类型</th>
+<th>法律特征</th>
+<th>核心审查要点</th>
+<th>审查动作</th></tr></thead><tbody>
+<tr>
+<td>**委托处理 DPA**</td>
+<td>受托方按委托方指示处理个人信息；《个保法》第21条强制要求</td>
+<td>处理目的和期限限定、再委托限制、处理完毕后的删除/返还义务</td>
+<td>核查委托事项范围是否明确、代理人权限边界、转委托是否允许、报告义务和频率</td></tr>
+<tr>
+<td>**共同处理协议**</td>
+<td>双方共同决定处理目的和方式、协议约定各自权利义务</td>
+<td>各自义务和责任的分配、对个人信息主体的连带责任</td>
+<td>核查合同中是否涉及此亚类型，如是则逐条对照上述特别规则和审查要点，确认合同条款已妥善处理</td></tr>
+<tr>
+<td>**数据跨境传输协议**</td>
+<td>个人信息/重要数据向境外提供（委托处理的特殊形态）</td>
+<td>安全评估/标准合同条款（SCC）/个人信息保护认证；境外接收方的数据保护水平</td>
+<td>核查准据法选择是否对己方有利、争议解决地点是否可执行、外汇管制合规性</td></tr>
+<tr>
+<td>**第三方 SDK 数据处理**</td>
+<td>App 集成第三方 SDK 涉及的数据采集和处理</td>
+<td>SDK 方的数据处理目的、数据类型、是否涉及敏感个人信息</td>
+<td>核查数据处理目的和范围、数据跨境传输合规路径、数据安全事件通知时限</td></tr>
+</tbody></table></div><h4 id="通用审查清单">通用审查清单</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**处理目的与方式**</td>
+<td>数据处理的目的、方式是否明确限定（不得超出约定目的处理）</td>
+<td>🔴</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td>**数据类型与范围**</td>
+<td>处理的数据类型（一般个人信息/敏感个人信息/生物识别信息/不满14周岁未成年人信息）、数据量级</td>
+<td>🔴</td>
+<td>核查是否获得个人信息主体的单独同意，处理必要性是否成立</td>
+</tr>
+<tr>
+<td>**处理期限**</td>
+<td>数据处理期限是否明确约定、到期后的删除/返还义务及证明方式</td>
+<td>🔴</td>
+<td>检索合同对应条款，逐项确认各要素是否已明确表述且无歧义</td>
+</tr>
+<tr>
+<td>**再委托限制**</td>
+<td>受托方是否可再委托第三方处理（须委托方事先书面同意）；再委托后受托方对第三方的监督义务</td>
+<td>🔴</td>
+<td>检索合同中的再委托条款，确认是否经委托方事先书面同意</td>
+</tr>
+<tr>
+<td>**安全保护措施**</td>
+<td>受托方应采取的数据安全保护措施（加密/脱敏/访问控制/审计日志/最小权限原则）</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**数据跨境**</td>
+<td>是否涉及数据跨境传输，是否完成安全评估/签署标准合同/获得认证（PIPL第38条）</td>
+<td>🔴</td>
+<td>核查是否完成安全评估/签署标准合同/获得PIPL认证</td>
+</tr>
+<tr>
+<td>**个人信息主体权利响应**</td>
+<td>协助委托方响应数据主体的查阅/更正/删除/转移/撤回同意/注销账户等请求</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**安全事件通知**</td>
+<td>数据泄露等安全事件发生后通知委托方的时限（PIPL要求"立即"通知）和程序</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**个人信息保护影响评估**</td>
+<td>委托处理敏感个人信息前是否进行影响评估（DPIA）并保存记录</td>
+<td>🟠</td>
+<td>核查是否获得个人信息主体的单独同意，处理必要性是否成立</td>
+</tr>
+<tr>
+<td>**审计权**</td>
+<td>委托方是否保留对受托方数据处理活动的定期/突击审计权</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**赔偿责任**</td>
+<td>受托方违反 DPA 导致的损失赔偿（包括行政罚款的分担机制）</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**合同终止后处理**</td>
+<td>数据处理服务终止后，受托方须删除/返还个人信息并提供删除证明</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**管辖法律**</td>
+<td>涉外数据处理的适用法律和争议解决</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>再委托的"隐蔽通道"</strong>：受托方通过云服务架构调整（如启用某 SaaS 子模块）实现事实上的第三方处理，但合同中未明确该 SaaS 方是否经授权→可能违反 PIPL 第21条"未经个人信息处理者同意，受托方不得转委托"<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>数据跨境的无感知</strong>：受托方使用的云服务底层基础设施在境外（即使前端服务在中国大陆），数据处理过程涉及数据跨境——DPA 中未约定此情况，委托方承担违法风险<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查数据合规条款是否满足PIPL要求，处理目的和范围是否明确，出境是否已通过审批</span></li>
+<li><strong>删除义务的不可验证性</strong>：受托方承诺删除数据但无技术验证手段（如第三方审计），委托方无法确认数据是否被彻底删除<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查数据合规条款是否满足PIPL要求，处理目的和范围是否明确，出境是否已通过审批</span></li>
+<li><strong>罚则分担不对等</strong>：PIPL 罚款最高 5000 万或年营收 5%——DPA 中受托方赔偿上限远低于潜在罚款额时，委托方承担了无法转嫁的巨大监管风险<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查赔偿上限是否包含间接损失、故意或重大过失是否有上限约束</span></li>
+<li><strong>标准合同条款版本管理</strong>：使用过时的 SCC 版本（如未适配 PIPL 的新版标准合同）→监管部门不认可，数据跨境失去合法基础<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查数据合规条款是否满足PIPL要求，处理目的和范围是否明确，出境是否已通过审批</span></li>
+<li><strong>敏感个人信息处理未单独同意</strong>：DPA 覆盖敏感个人信息（如人脸/位置/健康数据），但未验证个人信息处理者是否已获得个人信息主体的"单独同意"——受托方处理合法性不完整<br/><span style="color:#4f8cff;font-size:12px">审查动作：核查数据合规条款是否满足PIPL要求，处理目的和范围是否明确，出境是否已通过审批</span></li>
+</ul><hr/>
+</div>
+<div class="contract-section" id="ct-34">
+<h3 id="三十四资产托管合同--V21新增">三十四、资产托管合同</h3>
+<p><strong>法律依据</strong>：《证券投资基金法》；《信托法》；《企业年金基金管理办法》；《证券投资基金托管业务管理办法》</p><p>资产托管合同与现行第 11 类「保管合同」性质完全不同。保管合同仅涉及普通物品的物理保管（不涉及财产管理、投资监督、估值核算），而资产托管是金融基础设施的核心环节——托管人承担资产隔离、估值核对、投资监督的独立职责。</p><h4 id="亚类型与审查差异">亚类型与审查差异</h4><div class="tbl-w"><table><thead><tr>
+<th>亚类型</th>
+<th>法律特征</th>
+<th>核心审查要点</th>
+<th>审查动作</th></tr></thead><tbody>
+<tr>
+<td>**证券投资基金托管**</td>
+<td>《基金法》强制要求公募基金须由商业银行托管；持牌准入（商业银行/券商）</td>
+<td>托管人资格牌照、基金资产与托管人自有资产隔离、投资指令的合规审核</td>
+<td>核查增资定价基准日、交割先决条件、反稀释条款、优先权条款</td></tr>
+<tr>
+<td>**信托财产托管**</td>
+<td>信托公司管理、托管银行保管与监督</td>
+<td>信托财产独立性（区别于信托公司固有财产）、托管账户单独开立、收益分配的核算</td>
+<td>核查托管资产清单和交付方式、托管人责任标准和免责范围、费用结构与调整机制</td></tr>
+<tr>
+<td>**企业年金托管**</td>
+<td>受托人/托管人/投资管理人/账户管理人四方制衡</td>
+<td>四方职责划分、托管人独立于其他角色的合规要求</td>
+<td>核查增资定价基准日、交割先决条件、反稀释条款、优先权条款</td></tr>
+<tr>
+<td>**私募基金托管**</td>
+<td>非强制（仅契约型基金建议托管）；合伙型/公司型基金可不托管但须在基金合同中约定</td>
+<td>托管协议法定必备条款、估值方法约定、清算分配程序</td>
+<td>核查出资方式和比例、利润分配与亏损分担比例、退伙条件与财产份额处理</td></tr>
+<tr>
+<td>**资金/交易托管**</td>
+<td>为特定交易（如M&amp;A保证金、跨境交易资金）提供托管</td>
+<td>托管资金释放条件、释放指令的签章核实、利息归属</td>
+<td>核查保证方式是一般保证还是连带保证、保证期间是否明确、保证范围是否与主债务匹配</td></tr>
+</tbody></table></div><h4 id="通用审查清单">通用审查清单</h4><div class="tbl-w"><table class="ckl"><thead><tr>
+<th>审查模块</th>
+<th>审查要点</th>
+<th>风险等级</th>
+<th>审查动作</th>
+</tr></thead><tbody>
+<tr>
+<td>**托管人资格**</td>
+<td>托管人是否持有监管机构颁发的托管业务牌照（商业银行/证券公司须持托管牌照）</td>
+<td>🔴</td>
+<td>登录金融监管机构官网查询托管人牌照持有情况和有效性</td>
+</tr>
+<tr>
+<td>**资产隔离**</td>
+<td>托管资产是否独立于托管人自有财产、是否单独开立托管账户和单独核算（法定要求）</td>
+<td>🔴</td>
+<td>核查托管账户开立情况和资产核算方式，确认与自有财产严格隔离</td>
+</tr>
+<tr>
+<td>**托管账户管理**</td>
+<td>托管账户的开立/变更/注销程序、资金划拨的授权签章和指令复核流程</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**投资监督**</td>
+<td>托管人对管理人投资指令的合规性审核范围（是否超越投资范围、是否突破投资比例限制、是否违反禁止性规定）</td>
+<td>🟠</td>
+<td>逐项核对该条款是否明确约定，若未约定则提示法定默认定规则及风险</td>
+</tr>
+<tr>
+<td>**估值核对**</td>
+<td>资产估值方法约定（公允价值/摊余成本法）、托管人与管理人核对估值的频率（通常每日）、估值差异的调整处理</td>
+<td>🟠</td>
+<td>审查估值方法约定是否明确，估值分歧解决机制是否完备</td>
+</tr>
+<tr>
+<td>**收益分配**</td>
+<td>收益的确认、计算期间、分配方案、分配时间和方式</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**托管费**</td>
+<td>托管费率、计算基数（通常为资产净值日均值或期末值）、计提周期、支付方式</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**信息披露**</td>
+<td>托管人定期向委托人/受益人/监管机构（公募）报告托管资产情况的义务和频率</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**责任豁免**</td>
+<td>托管人对管理人投资决策的责任豁免（托管人不承担投资风险，仅承担保管和监督责任）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td></td>
+<td>托管人按管理人书面指令划付资金，对指令本身的真实性/适当性不承担责任（除非有明显瑕疵）</td>
+<td>🟠</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**托管人变更**</td>
+<td>托管人辞职/被解任的条件（通常须经委托人/受益人同意）、新任托管人的选聘程序、交接期间资产安全</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**终止与清算**</td>
+<td>托管合同终止后的资产清算程序、剩余资产的移交和分配</td>
+<td>🔴</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+<tr>
+<td>**不可抗力**</td>
+<td>系统故障/网络攻击导致托管服务中断时的责任分担和应急方案</td>
+<td>🟡</td>
+<td>逐条审阅该条款内容，确认是否与我方利益一致</td>
+</tr>
+</tbody></table></div><h4 id="特殊陷阱">特殊陷阱</h4><ul class="doc-lst">
+<li><strong>托管人资格瑕疵</strong>：非持牌机构（如普通公司/咨询机构）担任基金托管人——合同因违反监管强制性规定而无效，《基金法》明确规定只有商业银行和持牌券商可作为公募基金托管人<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>托管账户混同风险</strong>：托管人将多个客户的托管资金混入同一账户（甚至与自有资金混同）→严重违反资产独立性原则，一旦托管人破产客户资产可能被卷入破产财产<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>投资监督的形式化陷阱</strong>：托管人仅做"表面审查"（是否超过投资上限？是否属于投资范围？），但监管实践中期望托管人发挥"看门人"角色——托管人疏于审查导致管理人挪用资金的，托管人可能承担补充赔偿责任<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>估值方法分歧</strong>：托管人与管理人对同一资产的估值方法不同（如信用债/非标资产的估值），导致净值差异→影响投资者申赎价格的公平性——须在托管协议中约定估值分歧的解决机制<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>管理人挪用指令</strong>：管理人伪造交易指令划付资金→托管人按正常流程审核表面真实性后划付，资金被挪用——托管人是否免责，取决于其审核义务标准（是否达到了"合理注意"）<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+<li><strong>四方角色的利益冲突</strong>（企业年金）**：受托人兼任投资管理人再兼任托管人——角色混同导致监督失效，《企业年金基金管理办法》禁止托管人与投资管理人不得为同一机构、不得相互出资或持有股份<br/><span style="color:#4f8cff;font-size:12px">审查动作：全文搜索相关关键词，核查合同中是否涉及此陷阱条款，如有则评估风险并提出修改建议</span></li>
+</ul><hr/>
+</div>
+</div>
+</div>
+<!-- Continue V6 after contracts -->
+<div class="v6-subsection" id="v6-completeness"><h3>条款完整性审查 — 有没有缺漏？</h3>
+<div class="highlight-box"><strong>适用说明</strong>：必备条款（8项）和条款矛盾排查适用于全部合同类型；重要约定条款（10项）和陷阱中的"知识产权衍生/改进归属""不侵权保证边界"仅适用于涉及知识产权条款的合同（约20类），按合同类型筛选适用。</div>
+<h4>必备条款（8项）</h4>
+<p>当事人信息 · 标的条款 · 数量条款 · 质量条款 · 价款/报酬 · 履行条款 · 违约责任 · 争议解决</p>
+<h4>重要约定条款（10项）</h4>
+<p>保密条款 · 知识产权条款 · 不可抗力条款 · 通知送达条款 · 合同变更条款 · 转让限制条款 · 解除/终止条款 · 排他/竞业条款 · 完整协议条款 · 可分割性条款</p>
+<h4>条款矛盾排查（6类）</h4>
+<p><strong>管辖冲突</strong>——框架协议仲裁 vs 订单法院诉讼；同一合同仲裁+诉讼并存<br/>
+<strong>权利保留冲突</strong>——"不放弃权利" vs "视为放弃"<br/>
+<strong>期限冲突</strong>——"验收后30日" vs "交付后60日"<br/>
+<strong>金额冲突</strong>——正文 vs 附件报价单不一致<br/>
+<strong>定义冲突</strong>——保密信息定义范围不一致<br/>
+<strong>主从合同冲突</strong>——担保范围与主债务不匹配</p>
+</div>
+<div class="v6-subsection"><h3>⚠ 条款完整性陷阱</h3>
+<h4>完整协议条款排他性</h4>
+<h5>核对是否写："本协议构成双方之间的完整协议，取代此前所有讨论、谈判和协议"</h5>
+<h4>价款含税与发票类型</h4>
+<h5>核对价款是否明确、发票类型、税率调整、开票时间、发票责任</h5>
+<h4>背靠背条款（Pay-if-Paid）</h4><h5>核对是否存在</h5>
+<h4>质量保证期 vs 质保金混淆</h4>
+<h5>核对质保期期限、质保金比例、退还条件、维修责任、质保期与保修期区分</h5>
+<h4>模糊引用"相关法律法规"</h4>
+<p>核对是否列出主要法律法规名称和编号、是否限定"签订时已生效的法律法规"</p>
+<h4>知识产权"衍生/改进"归属</h4>
+<p>核对定义和判断标准、归属规则、改进方使用权利、"独立开发"与"改进"的区分</p>
+<h4>知识产权"不侵权保证"边界</h4>
+<p>核对时间范围、地域范围、发现侵权后处理方案、赔偿范围构成</p>
+</div>
+<div class="v6-subsection" id="v6-balance"><h3>审查权利义务是否对等</h3>
+<div class="highlight-box"><strong>适用说明</strong>：适用于双务合同（买卖、租赁、承揽、服务等）。单务合同（如赠与合同、保证合同）改为审查"义务合理性"而非对等性——即义务是否超出当事人合理承受范围、是否存在显失公平。</div>
+<h4>列出双方义务清单，逐条比对</h4>
+<h4>检查权利行使条件是否对称 | 对比双方违约责任是否相当</h4>
+<h4>检查风险转移节点是否合理 | 审计权/检查权/信息获取权是否对称</h4>
+<h4 style="margin-top:16px">⚠ 陷阱</h4>
+<h5>"视为"条款法律拟制 → 反向审查"视为"条款</h5>
+<h5>"有权/应当/可以" → 全文搜索，逐一核对其法律性质是否与条款意图一致</h5>
+<h5>"尽力" vs "确保"义务程度 → 关键承诺条款是否使用确定性义务表述</h5>
+<h5>"和/或"逻辑 → 全文搜索，逐一核实</h5>
+<h5>单方变更权条款 → 全文搜索"有权"词，逐一核实</h5>
+</div>
+<div class="v6-subsection" id="v6-liability"><h3>审查违约责任与风险分配</h3>
+<div class="highlight-box"><strong>适用说明</strong>：违约金比例、赔偿上限、不可抗力等核心审查项适用于全部合同类型。以下陷阱按合同类型按需适用：所有权保留（仅买卖/动产交付类合同）、保险代位求偿权弃权（仅含保险条款的合同）、保证期间vs诉讼时效（仅含担保条款的合同）。</div>
+<h4>审查是否明确列举违约行为 | 违约金比例、上限</h4>
+<h4>审查是否限定赔偿范围 | 免责条款范围是否合理</h4>
+<h4>审查是否设置赔偿上限 | 不可抗力的处理</h4>
+<h4>审查标的物毁损灭失风险转移节点 | 保证/担保条款</h4>
+<h4 style="margin-top:16px">⚠ 陷阱：赔偿上限易遗漏点</h4>
+<h5>赔偿上限是否包含间接损失、违约金</h5>
+<h5>故意/重大过失是否有上限约束——法律上不得约定上限免除</h5>
+<h5>人身损害是否约定免除 | 第三方索赔绕过上限</h5>
+<h4>⚠ 其他关键陷阱</h4>
+<h5>不可抗力过度扩张 → 三个"不能"缺一不可</h5>
+<h5>定金/保证金/履约保证金混淆 → 全文搜索逐一核实</h5>
+<h5>情势变更 vs 商业风险边界 → 明确界定两者范围</h5>
+<h5>保证期间 vs 诉讼时效混淆 | 连带保证默认推定（民法典重大变化）</h5>
+<h5>后合同义务延续 → 明确约定"哪些条款在终止后继续有效"</h5>
+<h5>默示变更阻断 → 约定"合同变更须双方书面确认"</h5>
+<h5>所有权保留 → 破产财产归属、善意取得、灭失风险、登记对抗</h5>
+<h5>保险代位求偿权弃权</h5>
+</div>
+<div class="v6-subsection" id="v6-anticorruption"><h3>廉洁/反腐败条款审查（合规审查）</h3>
+<div class="highlight-box"><strong>适用说明</strong>：适用于涉外合同、涉及政府客户的合同、大型采购/工程合同、投资并购协议等对商业合规要求较高的场景（约20类）；纯粹个人间赠与、简单买卖等可跳过。</div>
+<h4>约定适用外国反腐败法（FCPA/UKBA）→ 触发外国法长臂管辖</h4>
+<h4>"任何关联人员的违规行为视为公司违反" → 公司责任不可控</h4>
+<h4>缺乏"商业贿赂"明确界定 → 正常商务招待 vs 商业贿赂边界不清</h4>
+<p style="margin-top:10px">审查操作：廉洁条款应明确界定"商业贿赂"范围、违约认定标准、与正常商务行为的区分。</p>
+</div>
+<div class="v6-subsection" id="v6-data"><h3>数据合规与个人信息保护审查（涉及个人信息/数据处理时审查）</h3>
+<div class="highlight-box"><strong>触发条件</strong>：仅当合同涉及个人信息收集、存储、使用、委托处理、共同处理或数据出境时执行本模块。以下合同类型通常触发：SaaS/软件服务协议、DPA、物业服务合同、委托合同、劳动合同、保险合同、技术合同、中介合同、资产托管合同等（约12类明确触发，约8类视具体业务场景）。不涉及个人信息处理的纯货物买卖、赠与、保证等合同（约14类）可跳过。</div>
+<h4>告知同意——处理目的、方式、种类、保存期限的明确告知义务（PIPL第13条）</h4>
+<h4>委托处理——处理目的期限、保护措施、返还/删除义务、禁止转委托（PIPL第21条）</h4>
+<h4>共同处理/提供——各自权利义务、告知义务和单独同意（PIPL第20、23条）</h4>
+<h4>数据出境——安全评估/标准合同/认证之一（PIPL第38-40条）</h4>
+<h4>数据安全义务——加密、访问控制、安全事件通知≤72小时、审计权（DSL第27、29条）</h4>
+<h4>匿名化 vs 去标识化——严格区分（PIPL第73条）</h4>
+<h4>数据主体权利响应——查阅、更正、删除、可携带权（PIPL第44-48条）</h4>
+</div>
+<div class="v6-subsection"><h3>关联文件深度比对（如有关联文件时审查）</h3>
+<div class="highlight-box"><strong>触发条件</strong>：本模块为条件性步骤——仅当合同存在关联文件（框架协议、招投标文件、洽谈纪要、技术规格书、既有合同、章程决议等）时执行。建设工程合同、采购框架协议、投资/增资协议等通常伴随关联文件；赠与合同、简单买卖、保证合同等通常无关联文件可跳过。</div>
+<h4>合同 vs 框架协议 → 条款是否冲突、优先级是否明确</h4>
+<h4>合同 vs 招投标文件 → 实质性条款是否背离</h4>
+<h4>合同 vs 洽谈纪要 → 承诺是否落实、是否有遗漏</h4>
+<h4>合同 vs 技术规格 → 交付标准是否衔接</h4>
+<h4>合同 vs 既有合同 → 条款是否合理差异</h4>
+<h4>合同 vs 章程决议 → 签约权限是否合规</h4>
+</div>
+</section>
+<!-- ========== MODULE 5: 出具审查意见/报告 ========== -->
+<section class="v6-section" id="v6-report">
+<h2 class="section-title">五、出具审查意见/报告</h2>
+<div class="v6-subsection"><h3>审查报告标准结构</h3>
+<h4>合同基本信息——合同名称、编号、类型；签约双方；金额/期限；审查日期、审查人</h4>
+<h4>审查范围与依据——审查的合同版本；引用的法律法规；参考的行业惯例</h4>
+<h4>审查发现的问题——按风险等级排列（致命→高→中→低）</h4>
+<h4 style="color:#4f8cff;font-size:13px;margin-top:-4px">每个问题包含：风险描述 + 法律后果 + 修改建议 + 谈判策略</h4>
+<h4>综合审查结论——总体风险评级；是否建议签署；签署的前提条件</h4>
+<h4>附件——修改对比版合同；引用法规清单；主体调查报告</h4>
+</div>
+<div class="v6-subsection"><h3>风险分级标准</h3>
+<table class="ckl">
+<thead><tr><th style="width:60px">等级</th><th>定义</th><th>处理方式</th></tr></thead>
+<tbody>
+<tr><td><span class="risk-fatal">致命</span></td><td>违法或导致合同无效/不成立的风险</td><td>必须修改，否则建议不签署</td></tr>
+<tr><td><span class="risk-high">高</span></td><td>重大利益失衡或可能导致重大损失的条款</td><td>强烈建议修改；不修改需业务部门书面确认</td></tr>
+<tr><td><span class="risk-mid">中</span></td><td>存在不合理但影响可控的条款</td><td>建议修改；业务部门可自主决定</td></tr>
+<tr><td><span class="risk-low">低</span></td><td>措辞不严谨，可优化但无实质风险</td><td>建议优化，非必须修改</td></tr>
+</tbody>
+</table>
+<p style="margin-top:14px;padding:10px 14px;background:#f0f4ff;border-radius:6px;font-size:13px">
+<strong>风险等级对照：</strong>致命/高/中/低 ↔ 知识库的 🔴🟠🟡 标识。🔴≈致命/高，🟠≈高/中，🟡≈中/低。
+</p>
+</div>
+<div class="v6-subsection"><h3>合同修改标记规范</h3>
+<h4>修改版本类型</h4>
+<h5>清洁版（Clean）——接受所有修改后的最终文本（对外发送、签署用）</h5>
+<h5>批注版（Redline）——保留修订痕迹+批注说明修改理由（内部沟通、谈判用）</h5>
+<h5>对比版（Comparison）——新旧版本对照（审重复核、重大变更确认用）</h5>
+<h5>风险版（Risk Matrix）——仅标注风险点和修改建议（初步审查、快速反馈用）</h5>
+<h4 style="margin-top:16px">修改建议标准写法（四件套）</h4>
+<div class="highlight-box">
+<p><strong>【风险描述】</strong>第X条约定"……"，使我方在XX情形下承担XX责任</p>
+<p><strong>【法律后果】</strong>一旦触发，我方可能损失XX，且难以追偿</p>
+<p><strong>【修改建议】</strong>建议修改为："……"（附具体替代条文）</p>
+<p><strong>【谈判策略】</strong>如对方不接受完全删除，可争取：A方案（……）B方案（……）</p>
+</div>
+<h4 style="margin-top:16px">修改标记规范</h4>
+<h5>删除内容 → <span style="color:#dc2626;text-decoration:line-through">红色删除线</span> | 新增内容 → <span style="color:#2563eb;text-decoration:underline">蓝色下划线</span></h5>
+<h5>批注 → 黄色高亮+侧边批注框 | 条款编号 → 修改后重新编号 | 交叉引用 → 全文更新</h5>
+<h4 style="margin-top:16px">版本命名规范</h4>
+<p><code>合同名称_对方名称_原稿_YYYYMMDD_v1</code><br/>
+<code>合同名称_对方名称_批注版_YYYYMMDD_v2_审查人</code><br/>
+<code>合同名称_对方名称_清洁版_YYYYMMDD_v3_审查人</code><br/>
+<code>合同名称_对方名称_签署版_YYYYMMDD_FINAL</code></p>
+</div>
+</section>
+</main>
+<button class="btop" id="bt" onclick="scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+function tsb(){document.getElementById("sb").classList.toggle("open")}
+document.getElementById("mc").addEventListener("click",function(){if(window.innerWidth<=900)document.getElementById("sb").classList.remove("open")})
+
+window.addEventListener("scroll",function(){
+  document.getElementById("bt").className=window.scrollY>400?"btop on":"btop";
+  var headings=document.querySelectorAll(".main [id]");
+  var links=document.querySelectorAll(".sidebar-nav a");
+  var current="";
+  headings.forEach(function(e){if(e.getBoundingClientRect().top<=120) current=e.id});
+  links.forEach(function(a){
+    a.classList.remove("active");
+    if(a.getAttribute("href")=="#"+current){
+      a.classList.add("active");
+      var p=a.closest(".nv-has");
+      if(p) p.classList.add("open");
+    }
+  });
+});
+
+document.addEventListener("DOMContentLoaded",function(){
+  var first=document.querySelector(".sidebar-nav .nv-has");
+  if(first) first.classList.add("open");
+});
+</script>
+</body>
+</html>
