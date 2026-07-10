@@ -56,3 +56,4 @@ Thumbs.db
 # Codex / agent local state
 .agents/
 .workbuddy/
+.worktrees/
