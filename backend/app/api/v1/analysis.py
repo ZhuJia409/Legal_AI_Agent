@@ -735,9 +735,13 @@ async def create_contract_review_report(
             result.report_document = report_pdf.to_document_info(task_id)
         except PdfRendererUnavailableError as exc:
             logger.warning(
-                "contract_review_pdf_renderer_unavailable task_id=%s error_type=%s",
+                "contract_review_pdf_renderer_unavailable task_id=%s error_type=%s "
+                "failure_stage=%s cause_type=%s return_code=%s",
                 task_id,
                 exc.__class__.__name__,
+                exc.failure_stage,
+                exc.cause_type or "none",
+                exc.return_code if exc.return_code is not None else "none",
             )
             return _error_response(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -746,9 +750,13 @@ async def create_contract_review_report(
             )
         except ReportPdfGenerationError as exc:
             logger.warning(
-                "contract_review_pdf_generation_failed task_id=%s error_type=%s",
+                "contract_review_pdf_generation_failed task_id=%s error_type=%s "
+                "failure_stage=%s cause_type=%s return_code=%s",
                 task_id,
                 exc.__class__.__name__,
+                exc.failure_stage,
+                exc.cause_type or "none",
+                exc.return_code if exc.return_code is not None else "none",
             )
             return _error_response(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -1,17 +1,8 @@
-import logging
-
 from fastapi import FastAPI
 
 from app.api.health import router as health_router
 from app.api.v1.analysis import router as analysis_router
-
-
-def configure_logging() -> None:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)-8s %(name)s %(message)s",
-    )
-    logging.getLogger("legal_ai").setLevel(logging.INFO)
+from app.core.logging import configure_logging
 
 
 def create_app() -> FastAPI:

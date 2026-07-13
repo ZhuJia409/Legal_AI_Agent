@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import logging
 from datetime import datetime
 from io import BytesIO
 from typing import Any
@@ -313,8 +314,23 @@ def test_contract_review_report_persistence_error_is_controlled(client: TestClie
 @pytest.mark.parametrize(
     ("error", "status_code", "error_code"),
     [
-        (PdfRendererUnavailableError("missing"), 503, "pdf_renderer_unavailable"),
-        (ReportPdfGenerationError("failed"), 500, "report_pdf_generation_error"),
+        (
+            PdfRendererUnavailableError(
+                "missing",
+                failure_stage="renderer_unavailable",
+            ),
+            503,
+            "pdf_renderer_unavailable",
+        ),
+        (
+            ReportPdfGenerationError(
+                "failed",
+                failure_stage="compile_exit",
+                return_code=1,
+            ),
+            500,
+            "report_pdf_generation_error",
+        ),
     ],
 )
 def test_contract_review_report_pdf_error_is_controlled(
@@ -337,6 +353,37 @@ def test_contract_review_report_pdf_error_is_controlled(
 
     assert response.status_code == status_code
     assert response.json()["error"]["code"] == error_code
+
+
+def test_contract_review_report_pdf_error_logs_only_safe_diagnostics(
+    client: TestClient,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    error = ReportPdfGenerationError(
+        "不得记录的合同秘密",
+        failure_stage="compile_exit",
+        cause_type="RuntimeError",
+        return_code=17,
+    )
+    app.dependency_overrides[get_contract_review_graph_service] = (
+        lambda: StubContractReviewGraphService()
+    )
+    app.dependency_overrides[get_contract_review_persistence_service] = (
+        lambda: StubReportPersistenceService()
+    )
+    app.dependency_overrides[get_contract_review_pdf_renderer] = (
+        lambda: StubPdfRenderer(error=error)
+    )
+    caplog.set_level(logging.WARNING, logger="legal_ai.api.analysis")
+
+    response = client.post("/api/v1/contract-review-reports", json={"content": "合同正文"})
+
+    assert response.status_code == 500
+    assert response.json()["error"]["code"] == "report_pdf_generation_error"
+    assert "failure_stage=compile_exit" in caplog.text
+    assert "cause_type=RuntimeError" in caplog.text
+    assert "return_code=17" in caplog.text
+    assert "不得记录的合同秘密" not in caplog.text
 
 
 def test_contract_review_report_document_download_headers(client: TestClient) -> None:

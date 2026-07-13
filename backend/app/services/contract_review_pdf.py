@@ -10,6 +10,7 @@ import asyncio
 import hashlib
 import os
 import re
+import subprocess
 import tempfile
 import unicodedata
 from dataclasses import dataclass
@@ -68,6 +69,20 @@ _BACKGROUND_FIELDS = (
 class ReportPdfGenerationError(RuntimeError):
     """报告模板渲染或 PDF 结果校验失败。"""
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        failure_stage: str,
+        cause_type: str | None = None,
+        return_code: int | None = None,
+    ) -> None:
+        # 仅携带可安全进入日志的分类信息，不保存合同、LaTeX 或编译器输出。
+        super().__init__(message)
+        self.failure_stage = failure_stage
+        self.cause_type = cause_type
+        self.return_code = return_code
+
 
 class PdfRendererUnavailableError(ReportPdfGenerationError):
     """Tectonic 不存在或无法启动，调用方可将其映射为 503。"""
@@ -120,9 +135,17 @@ class TectonicCompiler:
         return self._cache_directory
 
     async def compile(self, latex_source: str) -> bytes:
+        # Windows reload/multi-worker 使用 SelectorEventLoop，需在线程中隔离同步子进程边界。
+        return await asyncio.to_thread(self._compile_sync, latex_source)
+
+    def _compile_sync(self, latex_source: str) -> bytes:
         if not self._executable_path.is_file():
             missing_error = FileNotFoundError(self._executable_path)
-            raise PdfRendererUnavailableError("Tectonic PDF 渲染器不可用") from missing_error
+            raise PdfRendererUnavailableError(
+                "Tectonic PDF 渲染器不可用",
+                failure_stage="renderer_unavailable",
+                cause_type=missing_error.__class__.__name__,
+            ) from missing_error
 
         # 临时目录退出即清理 LaTeX、日志和辅助文件，避免合同正文残留在工作树。
         with tempfile.TemporaryDirectory(prefix="contract-review-pdf-") as temp_dir:
@@ -133,49 +156,68 @@ class TectonicCompiler:
             process_environment = os.environ.copy()
             process_environment["TECTONIC_CACHE_DIR"] = str(self._cache_directory)
 
+            command = [
+                str(self._executable_path),
+                "--only-cached",
+                "--keep-logs",
+                "--outdir",
+                str(working_directory),
+                "report.tex",
+            ]
             try:
-                process = await asyncio.create_subprocess_exec(
-                    str(self._executable_path),
-                    "--only-cached",
-                    "--keep-logs",
-                    "--outdir",
-                    str(working_directory),
-                    "report.tex",
+                completed = subprocess.run(
+                    command,
                     cwd=str(working_directory),
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
                     env=process_environment,
+                    timeout=self._timeout_seconds,
+                    check=False,
+                    shell=False,
                 )
-            except OSError as exc:
-                raise PdfRendererUnavailableError("Tectonic PDF 渲染器无法启动") from exc
-
-            try:
-                await asyncio.wait_for(
-                    process.communicate(), timeout=self._timeout_seconds
-                )
-            except TimeoutError as exc:
-                await _terminate_process(process)
-                raise ReportPdfGenerationError("合同审查报告 PDF 编译超时") from exc
-            except asyncio.CancelledError:
-                # 请求取消不转换业务错误，但必须先回收子进程和临时合同文本。
-                await _terminate_process(process)
-                raise
-            except Exception as exc:
-                await _terminate_process(process)
-                raise ReportPdfGenerationError("Tectonic 编译通信失败") from exc
-
-            if process.returncode != 0:
+            except subprocess.TimeoutExpired as exc:
                 raise ReportPdfGenerationError(
-                    f"Tectonic 编译失败（退出码 {process.returncode}）"
+                    "合同审查报告 PDF 编译超时",
+                    failure_stage="compile_timeout",
+                    cause_type=exc.__class__.__name__,
+                ) from exc
+            except OSError as exc:
+                raise PdfRendererUnavailableError(
+                    "Tectonic PDF 渲染器无法启动",
+                    failure_stage="process_start",
+                    cause_type=exc.__class__.__name__,
+                ) from exc
+            except Exception as exc:
+                # 未知 runner 异常只保留类型，避免异常原文携带合同或命令输出进入日志。
+                raise ReportPdfGenerationError(
+                    "Tectonic 编译通信失败",
+                    failure_stage="compile_exit",
+                    cause_type=exc.__class__.__name__,
+                ) from exc
+
+            if completed.returncode != 0:
+                raise ReportPdfGenerationError(
+                    f"Tectonic 编译失败（退出码 {completed.returncode}）",
+                    failure_stage="compile_exit",
+                    return_code=completed.returncode,
                 )
             if not output_path.is_file():
-                raise ReportPdfGenerationError("Tectonic 未生成报告 PDF 文件")
+                raise ReportPdfGenerationError(
+                    "Tectonic 未生成报告 PDF 文件",
+                    failure_stage="output_validation",
+                )
 
             content = output_path.read_bytes()
             if not content:
-                raise ReportPdfGenerationError("Tectonic 生成了空的报告 PDF 文件")
+                raise ReportPdfGenerationError(
+                    "Tectonic 生成了空的报告 PDF 文件",
+                    failure_stage="output_validation",
+                )
             if not content.startswith(b"%PDF-"):
-                raise ReportPdfGenerationError("Tectonic 输出缺少有效的 PDF 文件头")
+                raise ReportPdfGenerationError(
+                    "Tectonic 输出缺少有效的 PDF 文件头",
+                    failure_stage="output_validation",
+                )
             return content
 
 
@@ -405,7 +447,11 @@ class ContractReviewPdfRenderer:
         try:
             latex_source = self._environment.get_template(self._template_name).render(**context)
         except TemplateError as exc:
-            raise ReportPdfGenerationError("合同审查报告模板渲染失败") from exc
+            raise ReportPdfGenerationError(
+                "合同审查报告模板渲染失败",
+                failure_stage="template_render",
+                cause_type=exc.__class__.__name__,
+            ) from exc
 
         try:
             content = await self._compiler.compile(latex_source)
@@ -413,10 +459,17 @@ class ContractReviewPdfRenderer:
             # 专用编译错误及其未来子类保留原始类型，供 API 层精确转换。
             raise
         except Exception as exc:
-            raise ReportPdfGenerationError("合同审查报告 PDF 编译失败") from exc
+            raise ReportPdfGenerationError(
+                "合同审查报告 PDF 编译失败",
+                failure_stage="compile_exit",
+                cause_type=exc.__class__.__name__,
+            ) from exc
         # 编译器属于外部边界，返回值必须在进入存储层前做最小格式校验。
         if not content.startswith(b"%PDF-"):
-            raise ReportPdfGenerationError("报告编译结果缺少有效的 PDF 文件头")
+            raise ReportPdfGenerationError(
+                "报告编译结果缺少有效的 PDF 文件头",
+                failure_stage="output_validation",
+            )
 
         filename = build_report_filename(
             title=title,
@@ -476,17 +529,3 @@ def _finding_context(finding: ReviewFinding) -> dict[str, object]:
         "source_refs": [_source_ref_context(ref) for ref in finding.source_refs],
         "requires_human_review": finding.requires_human_review,
     }
-
-
-async def _terminate_process(process: asyncio.subprocess.Process) -> None:
-    """仅在子进程仍存活时终止，并等待系统完成句柄回收。"""
-
-    if process.returncode is None:
-        try:
-            process.kill()
-        except ProcessLookupError:
-            pass
-    try:
-        await asyncio.shield(process.wait())
-    except ProcessLookupError:
-        pass

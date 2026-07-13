@@ -1,4 +1,6 @@
 import asyncio
+import subprocess
+import threading
 from datetime import UTC, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -34,41 +36,6 @@ from app.services.contract_review_pdf import (
     create_latex_environment,
     latex_escape,
 )
-
-
-class FakeTectonicProcess:
-    def __init__(
-        self,
-        *,
-        returncode: int | None = 0,
-        stdout: bytes = b"",
-        stderr: bytes = b"",
-        hang: bool = False,
-        communicate_error: Exception | None = None,
-    ) -> None:
-        self.returncode = returncode
-        self.stdout = stdout
-        self.stderr = stderr
-        self.hang = hang
-        self.communicate_error = communicate_error
-        self.killed = False
-        self.waited = False
-
-    async def communicate(self) -> tuple[bytes, bytes]:
-        if self.hang:
-            await asyncio.Event().wait()
-        if self.communicate_error is not None:
-            raise self.communicate_error
-        return self.stdout, self.stderr
-
-    def kill(self) -> None:
-        self.killed = True
-
-    async def wait(self) -> int:
-        self.waited = True
-        if self.returncode is None:
-            self.returncode = -9 if self.killed else 0
-        return self.returncode
 
 
 def _report_response(*, status: str = "complete") -> ContractReviewReportResponse:
@@ -496,7 +463,10 @@ async def test_renderer_wraps_ordinary_compiler_errors_with_exception_chain() ->
 
 @pytest.mark.asyncio
 async def test_renderer_preserves_specialized_generation_errors() -> None:
-    sentinel = PdfRendererUnavailableError("renderer unavailable")
+    sentinel = PdfRendererUnavailableError(
+        "renderer unavailable",
+        failure_stage="renderer_unavailable",
+    )
     renderer = ContractReviewPdfRenderer(compiler=RaisingCompiler(sentinel))
 
     with pytest.raises(PdfRendererUnavailableError) as exc_info:
@@ -526,7 +496,7 @@ async def test_renderer_rejects_compiler_output_without_pdf_header() -> None:
 
 
 @pytest.mark.asyncio
-async def test_tectonic_compiler_uses_expected_command_and_cleans_temp_dir(
+async def test_tectonic_compiler_uses_threaded_subprocess_without_asyncio_process(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -534,16 +504,20 @@ async def test_tectonic_compiler_uses_expected_command_and_cleans_temp_dir(
     executable.write_bytes(b"fake")
     captured: dict[str, object] = {}
 
-    async def fake_create_subprocess_exec(*args: object, **kwargs: object) -> FakeTectonicProcess:
+    async def fail_if_called(*args: object, **kwargs: object) -> None:
+        raise AssertionError("不得依赖 asyncio 子进程")
+
+    def fake_run(args: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
         captured["args"] = args
         captured["kwargs"] = kwargs
-        working_directory = Path(str(kwargs["cwd"]))
-        captured["working_directory"] = working_directory
-        assert (working_directory / "report.tex").read_text(encoding="utf-8") == "中文正文"
-        (working_directory / "report.pdf").write_bytes(b"%PDF-1.7\ncompiled")
-        return FakeTectonicProcess()
+        output_directory = Path(args[args.index("--outdir") + 1])
+        captured["working_directory"] = output_directory
+        assert (output_directory / "report.tex").read_text(encoding="utf-8") == "中文正文"
+        (output_directory / "report.pdf").write_bytes(b"%PDF-1.7\ncompiled")
+        return subprocess.CompletedProcess(args, 0)
 
-    monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_create_subprocess_exec)
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", fail_if_called)
+    monkeypatch.setattr(subprocess, "run", fake_run)
     repository_root = tmp_path / "repository"
     compiler = TectonicCompiler(
         tectonic_path=executable,
@@ -555,24 +529,54 @@ async def test_tectonic_compiler_uses_expected_command_and_cleans_temp_dir(
 
     working_directory = captured["working_directory"]
     assert isinstance(working_directory, Path)
-    assert captured["args"] == (
+    assert captured["args"] == [
         str(executable),
         "--only-cached",
         "--keep-logs",
         "--outdir",
         str(working_directory),
         "report.tex",
-    )
+    ]
     process_options = captured["kwargs"]
     assert isinstance(process_options, dict)
     assert process_options["cwd"] == str(working_directory)
-    assert process_options["stdout"] == asyncio.subprocess.PIPE
-    assert process_options["stderr"] == asyncio.subprocess.PIPE
+    assert process_options["stdout"] is subprocess.DEVNULL
+    assert process_options["stderr"] is subprocess.DEVNULL
+    assert process_options["timeout"] == 3
+    assert process_options["check"] is False
+    assert process_options["shell"] is False
     assert process_options["env"]["TECTONIC_CACHE_DIR"] == str(
         (repository_root / ".tools" / "tectonic" / "cache").resolve()
     )
     assert content == b"%PDF-1.7\ncompiled"
     assert not working_directory.exists()
+
+
+@pytest.mark.asyncio
+async def test_tectonic_timeout_has_safe_diagnostics(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    executable = tmp_path / "tectonic.exe"
+    executable.write_bytes(b"fake")
+
+    def raise_timeout(*args: object, **kwargs: object) -> None:
+        raise subprocess.TimeoutExpired(
+            cmd="tectonic",
+            timeout=0.01,
+            stderr="完整合同机密不得进入错误或日志".encode(),
+        )
+
+    monkeypatch.setattr(subprocess, "run", raise_timeout)
+    compiler = TectonicCompiler(tectonic_path=executable, timeout_seconds=0.01)
+
+    with pytest.raises(ReportPdfGenerationError, match="超时") as exc_info:
+        await compiler.compile("合同正文")
+
+    assert exc_info.value.failure_stage == "compile_timeout"
+    assert exc_info.value.cause_type == "TimeoutExpired"
+    assert exc_info.value.return_code is None
+    assert "完整合同机密" not in str(exc_info.value)
 
 
 def test_tectonic_compiler_resolves_relative_path_from_repository_root(tmp_path: Path) -> None:
@@ -606,6 +610,8 @@ async def test_tectonic_compiler_reports_missing_executable_as_unavailable(tmp_p
         await compiler.compile("safe")
 
     assert isinstance(exc_info.value.__cause__, FileNotFoundError)
+    assert exc_info.value.failure_stage == "renderer_unavailable"
+    assert exc_info.value.cause_type == "FileNotFoundError"
 
 
 @pytest.mark.asyncio
@@ -616,16 +622,18 @@ async def test_tectonic_compiler_wraps_process_start_failure_as_unavailable(
     executable = tmp_path / "tectonic.exe"
     executable.write_bytes(b"fake")
 
-    async def fail_start(*args: object, **kwargs: object) -> FakeTectonicProcess:
+    def fail_start(*args: object, **kwargs: object) -> None:
         raise OSError("process launch failed")
 
-    monkeypatch.setattr(asyncio, "create_subprocess_exec", fail_start)
+    monkeypatch.setattr(subprocess, "run", fail_start)
     compiler = TectonicCompiler(tectonic_path=executable)
 
     with pytest.raises(PdfRendererUnavailableError) as exc_info:
         await compiler.compile("safe")
 
     assert isinstance(exc_info.value.__cause__, OSError)
+    assert exc_info.value.failure_stage == "process_start"
+    assert exc_info.value.cause_type == "OSError"
 
 
 @pytest.mark.asyncio
@@ -635,12 +643,12 @@ async def test_tectonic_compiler_never_exposes_nonzero_exit_stderr(
 ) -> None:
     executable = tmp_path / "tectonic.exe"
     executable.write_bytes(b"fake")
-    stderr = ("完整合同机密位于开头" + "编译错误" * 300).encode()
+    def fail_compile(
+        args: list[str], **kwargs: object
+    ) -> subprocess.CompletedProcess[bytes]:
+        return subprocess.CompletedProcess(args, 1)
 
-    async def fake_create_subprocess_exec(*args: object, **kwargs: object) -> FakeTectonicProcess:
-        return FakeTectonicProcess(returncode=1, stderr=stderr)
-
-    monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_create_subprocess_exec)
+    monkeypatch.setattr(subprocess, "run", fail_compile)
     compiler = TectonicCompiler(tectonic_path=executable)
 
     with pytest.raises(ReportPdfGenerationError, match="退出码 1") as exc_info:
@@ -648,96 +656,104 @@ async def test_tectonic_compiler_never_exposes_nonzero_exit_stderr(
 
     assert str(exc_info.value) == "Tectonic 编译失败（退出码 1）"
     assert "完整合同机密" not in str(exc_info.value)
+    assert exc_info.value.failure_stage == "compile_exit"
+    assert exc_info.value.return_code == 1
 
 
 @pytest.mark.asyncio
-async def test_tectonic_compiler_kills_process_after_timeout(
+async def test_tectonic_compiler_cleans_temp_dir_after_timeout(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     executable = tmp_path / "tectonic.exe"
     executable.write_bytes(b"fake")
-    process = FakeTectonicProcess(returncode=None, hang=True)
     captured_directory: Path | None = None
 
-    async def fake_create_subprocess_exec(*args: object, **kwargs: object) -> FakeTectonicProcess:
+    def timeout(*args: object, **kwargs: object) -> None:
         nonlocal captured_directory
         captured_directory = Path(str(kwargs["cwd"]))
-        return process
+        raise subprocess.TimeoutExpired(cmd="tectonic", timeout=0.01)
 
-    monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_create_subprocess_exec)
+    monkeypatch.setattr(subprocess, "run", timeout)
     compiler = TectonicCompiler(tectonic_path=executable, timeout_seconds=0.01)
 
     with pytest.raises(ReportPdfGenerationError, match="超时") as exc_info:
         await compiler.compile("safe")
 
-    assert isinstance(exc_info.value.__cause__, TimeoutError)
-    assert process.killed is True
-    assert process.waited is True
+    assert isinstance(exc_info.value.__cause__, subprocess.TimeoutExpired)
+    assert exc_info.value.failure_stage == "compile_timeout"
     assert captured_directory is not None
     assert not captured_directory.exists()
 
 
 @pytest.mark.asyncio
-async def test_tectonic_compiler_cancellation_terminates_process_and_cleans_temp_dir(
+async def test_tectonic_compiler_cancellation_propagates_and_worker_cleans_temp_dir(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     executable = tmp_path / "tectonic.exe"
     executable.write_bytes(b"fake")
-    process = FakeTectonicProcess(returncode=None, hang=True)
     captured_directory: Path | None = None
+    started = threading.Event()
+    release = threading.Event()
+    finished = threading.Event()
 
-    async def fake_create_subprocess_exec(*args: object, **kwargs: object) -> FakeTectonicProcess:
+    def finish_after_release(
+        args: list[str], **kwargs: object
+    ) -> subprocess.CompletedProcess[bytes]:
         nonlocal captured_directory
         captured_directory = Path(str(kwargs["cwd"]))
-        return process
+        started.set()
+        assert release.wait(timeout=1)
+        (captured_directory / "report.pdf").write_bytes(b"%PDF-1.7\ncompiled")
+        finished.set()
+        return subprocess.CompletedProcess(args, 0)
 
-    monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_create_subprocess_exec)
+    monkeypatch.setattr(subprocess, "run", finish_after_release)
     compiler = TectonicCompiler(tectonic_path=executable)
     task = asyncio.create_task(compiler.compile("取消时也必须清理"))
-    await asyncio.sleep(0)
+    assert await asyncio.to_thread(started.wait, 1)
     task.cancel()
 
     with pytest.raises(asyncio.CancelledError):
         await task
 
-    assert process.killed is True
-    assert process.waited is True
+    release.set()
+    assert await asyncio.to_thread(finished.wait, 1)
     assert captured_directory is not None
+    for _ in range(20):
+        if not captured_directory.exists():
+            break
+        await asyncio.sleep(0.01)
     assert not captured_directory.exists()
 
 
 @pytest.mark.asyncio
-async def test_tectonic_compiler_communication_error_terminates_process_and_cleans_temp_dir(
+async def test_tectonic_compiler_unexpected_runner_error_is_safely_wrapped(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     executable = tmp_path / "tectonic.exe"
     executable.write_bytes(b"fake")
-    communication_error = RuntimeError("通信异常中的合同秘密")
-    process = FakeTectonicProcess(
-        returncode=None,
-        communicate_error=communication_error,
-    )
+    runner_error = RuntimeError("通信异常中的合同秘密")
     captured_directory: Path | None = None
 
-    async def fake_create_subprocess_exec(*args: object, **kwargs: object) -> FakeTectonicProcess:
+    def fail_runner(*args: object, **kwargs: object) -> None:
         nonlocal captured_directory
         captured_directory = Path(str(kwargs["cwd"]))
-        return process
+        raise runner_error
 
-    monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_create_subprocess_exec)
+    monkeypatch.setattr(subprocess, "run", fail_runner)
     compiler = TectonicCompiler(tectonic_path=executable)
 
     with pytest.raises(ReportPdfGenerationError) as exc_info:
         await compiler.compile("通信异常时也必须清理")
 
     assert str(exc_info.value) == "Tectonic 编译通信失败"
-    assert exc_info.value.__cause__ is communication_error
+    assert exc_info.value.__cause__ is runner_error
     assert "合同秘密" not in str(exc_info.value)
-    assert process.killed is True
-    assert process.waited is True
+    assert exc_info.value.failure_stage == "compile_exit"
+    assert exc_info.value.cause_type == "RuntimeError"
     assert captured_directory is not None
     assert not captured_directory.exists()
 
@@ -756,16 +772,20 @@ async def test_tectonic_compiler_rejects_invalid_output(
     executable = tmp_path / "tectonic.exe"
     executable.write_bytes(b"fake")
 
-    async def fake_create_subprocess_exec(*args: object, **kwargs: object) -> FakeTectonicProcess:
+    def fake_run(
+        args: list[str], **kwargs: object
+    ) -> subprocess.CompletedProcess[bytes]:
         working_directory = Path(str(kwargs["cwd"]))
         (working_directory / "report.pdf").write_bytes(pdf_content)
-        return FakeTectonicProcess()
+        return subprocess.CompletedProcess(args, 0)
 
-    monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_create_subprocess_exec)
+    monkeypatch.setattr(subprocess, "run", fake_run)
     compiler = TectonicCompiler(tectonic_path=executable)
 
-    with pytest.raises(ReportPdfGenerationError, match=message):
+    with pytest.raises(ReportPdfGenerationError, match=message) as exc_info:
         await compiler.compile("safe")
+
+    assert exc_info.value.failure_stage == "output_validation"
 
 
 def test_setup_tectonic_script_pins_release_checksum_and_runs_chinese_smoke() -> None:
