@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -44,6 +44,15 @@ class Settings(BaseSettings):
     mineru_model_version: str = "vlm"
     mineru_poll_interval_seconds: float = 2
     mineru_poll_timeout_seconds: float = 180
+
+    tectonic_path: str = Field(default=".tools/tectonic/tectonic.exe", min_length=1)
+    tectonic_timeout_seconds: float = Field(default=90, gt=0)
+
+    @field_validator("tectonic_path", mode="before")
+    @classmethod
+    def _normalize_tectonic_path(cls, value: object) -> object:
+        # 空白路径无法定位编译器，配置加载阶段即拒绝，避免延迟到报告生成时失败。
+        return value.strip() if isinstance(value, str) else value
 
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),

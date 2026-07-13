@@ -1,6 +1,9 @@
 import type { ApiErrorResponse, LegalAnalysisRequest, LegalAnalysisResponse } from "./legal-analysis-types";
 
-export type LegalAnalysisEndpoint = "case-analyses" | "contract-reviews";
+export type LegalAnalysisEndpoint =
+  | "case-analyses"
+  | "contract-reviews"
+  | "contract-review-reports";
 
 const DEFAULT_ERROR_MESSAGE = "分析服务暂时不可用，请稍后重试。";
 
@@ -19,6 +22,9 @@ export async function submitLegalAnalysis(
     payload.relatedFiles?.forEach((relatedFile) => {
       formData.append("related_files", relatedFile);
     });
+    if (payload.reviewPerspective) {
+      formData.append("review_perspective", payload.reviewPerspective);
+    }
     requestInit = {
       method: "POST",
       body: formData,
@@ -29,7 +35,11 @@ export async function submitLegalAnalysis(
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ title: payload.title, content: payload.content }),
+      body: JSON.stringify({
+        title: payload.title,
+        content: payload.content,
+        review_perspective: payload.reviewPerspective,
+      }),
     };
   }
 

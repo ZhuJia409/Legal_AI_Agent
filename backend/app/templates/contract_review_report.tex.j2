@@ -1,0 +1,270 @@
+\documentclass[UTF8,a4paper,11pt,fontset=fandol]{ctexart}
+
+\usepackage[a4paper,margin=2.3cm,headheight=16pt,footskip=1.2cm]{geometry}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{longtable}
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+
+\definecolor{LegalGreen}{HTML}{174C3C}
+\definecolor{LegalGreenLight}{HTML}{E8F1ED}
+\definecolor{LegalGold}{HTML}{A47B32}
+\definecolor{WarningRed}{HTML}{A61B1B}
+\hypersetup{colorlinks=true,linkcolor=LegalGreen,urlcolor=LegalGreen}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlist[itemize]{leftmargin=1.6em,itemsep=0.25em,topsep=0.25em}
+\renewcommand{\arraystretch}{1.35}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\color{LegalGreen}\small 合同审查报告}
+\fancyhead[R]{\color{LegalGreen}\small << status_label|latex_escape >>}
+<% if status == "partial" %>
+\fancyfoot[C]{\color{WarningRed}\bfseries 不完整报告——不可作为签署依据\quad 第\thepage 页}
+<% else %>
+\fancyfoot[C]{\color{LegalGreen}\small 第\thepage 页}
+<% endif %>
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\newcommand{\reportsection}[1]{%
+  \phantomsection%
+  \addcontentsline{toc}{section}{#1}%
+  \vspace{0.6em}%
+  {\Large\bfseries\color{LegalGreen} #1}\par%
+  \vspace{0.2em}\color{LegalGreen}\hrule\color{black}\vspace{0.5em}%
+}
+\newcommand{\reportsubsection}[1]{%
+  \vspace{0.35em}{\large\bfseries\color{LegalGreen} #1}\par\vspace{0.15em}%
+}
+\newcommand{\fieldlabel}[1]{\textbf{\color{LegalGreen}#1}}
+
+\begin{document}
+
+\begin{titlepage}
+  \pagecolor{LegalGreenLight}
+  \vspace*{1.7cm}
+  {\Huge\bfseries\color{LegalGreen} 合同审查报告}\par
+  \vspace{0.5cm}
+  {\Large\color{LegalGold} << title|latex_escape >>}\par
+  \vspace{1.2cm}
+
+<% if status == "partial" %>
+  \fcolorbox{WarningRed}{white}{%
+    \parbox{0.88\textwidth}{%
+      \centering\Large\bfseries\color{WarningRed}
+      << partial_warning|latex_escape >>
+    }%
+  }
+  \vspace{1cm}
+<% endif %>
+
+  \renewcommand{\arraystretch}{1.55}
+  \begin{tabular}{>{\bfseries\color{LegalGreen}}p{3.6cm}p{9.2cm}}
+    任务编号 & << task_id|latex_escape >> \\
+    报告状态 & << status_label|latex_escape >> \\
+    审查立场 & << review_perspective_label|latex_escape >> \\
+    原始文件 & << source_filename|latex_escape >> \\
+    生成时间 & << generated_at|latex_escape >> \\
+  \end{tabular}
+
+  \vfill
+  {\small\color{LegalGreen}
+    本报告仅提供法律审查辅助信息，不构成确定法律结论。\\
+    所有结论、建议及引用均须由法律专业人士结合完整材料复核。
+  }
+\end{titlepage}
+\nopagecolor
+
+\tableofcontents
+\newpage
+
+\reportsection{一、合同基本信息}
+\begin{longtable}{>{\bfseries\color{LegalGreen}}p{3.8cm}p{10.2cm}}
+  合同名称 & << title|latex_escape >> \\
+  来源文件 & << source_filename|latex_escape >> \\
+  合同大类 & << contract_category_label|latex_escape >> \\
+  审查立场 & << review_perspective_label|latex_escape >> \\
+  报告状态 & << status_label|latex_escape >> \\
+\end{longtable}
+
+\reportsubsection{合同类型识别}
+<% if contract_types %>
+\begin{itemize}
+<% for contract_type in contract_types %>
+  \item \textbf{<< contract_type.label|latex_escape >><% if contract_type.is_primary %>（主类型）<% endif %>}：
+  << contract_type.reason|latex_escape >>
+  <% if contract_type.source_refs %>
+  \begin{itemize}
+  <% for ref in contract_type.source_refs %>
+    \item 证据：<< ref.document_name|latex_escape >>，<< ref.clause_path|latex_escape >>，
+    段落 << ref.paragraph_id|latex_escape >>；原文“<< ref.quote|latex_escape >>”
+  <% endfor %>
+  \end{itemize}
+  <% endif %>
+<% endfor %>
+\end{itemize}
+<% else %>
+未从材料确认。
+<% endif %>
+
+\reportsection{二、Phase 0 背景审查}
+\fieldlabel{背景摘要：}<< background_summary|latex_escape >>
+
+\begin{longtable}{>{\bfseries\color{LegalGreen}}p{4cm}p{10cm}}
+<% for field in background_fields %>
+  << field.label|latex_escape >> & << field.text|latex_escape >> \\
+<% endfor %>
+\end{longtable}
+
+\reportsubsection{关联文件状态}
+<% if related_documents %>
+\begin{itemize}
+<% for document in related_documents %>
+  \item << document.name|latex_escape >>：<< document.status_label|latex_escape >>
+<% endfor %>
+\end{itemize}
+<% else %>
+未从材料确认。
+<% endif %>
+
+\reportsubsection{待补充问题}
+<% if missing_questions %>
+\begin{itemize}
+<% for question in missing_questions %>
+  \item << question|latex_escape >>
+<% endfor %>
+\end{itemize}
+<% else %>
+未从材料确认。
+<% endif %>
+
+\reportsubsection{初步陷阱}
+<% if pitfalls %>
+<% for pitfall in pitfalls %>
+\textbf{<< pitfall.name|latex_escape >>}\par
+风险判断：<< pitfall.risk|latex_escape >>\par
+复核动作：<< pitfall.review_action|latex_escape >>
+<% endfor %>
+<% else %>
+未从材料确认。
+<% endif %>
+
+{\small\color{LegalGreen}\fieldlabel{Phase 0 提示：}<< background_disclaimer|latex_escape >>}
+
+\reportsection{三、审查范围与依据}
+本次报告仅覆盖下列模块及已提供材料。模块失败、跳过或证据缺失均会限制结论可靠性；
+报告不包含修改版合同，也不替代逐条人工法律复核。
+
+\begin{longtable}{>{\bfseries\color{LegalGreen}}p{4cm}p{2.5cm}p{7.5cm}}
+  审查模块 & 状态 & 范围说明 \\
+  \hline
+<% for module in modules %>
+  << module.label|latex_escape >> & << module.status_label|latex_escape >> & << module.summary|latex_escape >> \\
+<% endfor %>
+\end{longtable}
+
+\reportsection{四、总体结论}
+\fieldlabel{总体风险：}<< overall_risk_label|latex_escape >>\par
+\fieldlabel{签署建议：}<< signing_recommendation_label|latex_escape >>\par
+\fieldlabel{结论摘要：}<< executive_summary|latex_escape >>
+
+\reportsubsection{风险计数}
+\begin{tabular}{>{\bfseries\color{LegalGreen}}p{5cm}p{3cm}}
+  致命风险 & << risk_counts.fatal >> \\
+  高风险 & << risk_counts.high >> \\
+  中风险 & << risk_counts.medium >> \\
+  低风险 & << risk_counts.low >> \\
+\end{tabular}
+
+\reportsection{五、详细风险事项}
+<% if findings %>
+<% for finding in findings %>
+\reportsubsection{<< loop.index >>. << finding.issue|latex_escape >>}
+\fieldlabel{风险等级：}<< finding.risk_label|latex_escape >>\quad
+\fieldlabel{审查模块：}<< finding.module_label|latex_escape >>\par
+\fieldlabel{合同位置：}<< finding.contract_location|latex_escape >>\par
+\fieldlabel{问题：}<< finding.issue|latex_escape >>\par
+\fieldlabel{依据：}<< finding.basis|latex_escape >>\par
+\fieldlabel{影响：}<< finding.impact|latex_escape >>\par
+\fieldlabel{修改建议：}<< finding.suggestion|latex_escape >>\par
+\fieldlabel{谈判策略：}<< finding.negotiation_strategy|latex_escape >>
+
+\textbf{\color{LegalGreen}证据引用：}
+<% if finding.source_refs %>
+\begin{itemize}
+<% for ref in finding.source_refs %>
+  \item << ref.document_name|latex_escape >>；<< ref.clause_path|latex_escape >>；
+  段落 << ref.paragraph_id|latex_escape >>；原文“<< ref.quote|latex_escape >>”
+<% endfor %>
+\end{itemize}
+<% else %>
+未从材料确认。
+<% endif %>
+<% if finding.requires_human_review %>
+{\small\color{WarningRed}本项必须由法律专业人士复核。}
+<% endif %>
+<% endfor %>
+<% else %>
+未从材料确认具体风险事项。
+<% endif %>
+
+\reportsection{六、模块状态、缺失材料与错误}
+<% for module in modules %>
+\reportsubsection{<< module.label|latex_escape >>（<< module.status_label|latex_escape >>）}
+<< module.summary|latex_escape >>
+
+\fieldlabel{缺失材料：}
+<% if module.missing_evidence %>
+\begin{itemize}
+<% for evidence in module.missing_evidence %>
+  \item << evidence|latex_escape >>
+<% endfor %>
+\end{itemize}
+<% else %>
+未从材料确认存在额外缺失材料。
+<% endif %>
+
+<% if module.error_message %>
+\fieldlabel{模块错误：}<< module.error_code|latex_escape >>——<< module.error_message|latex_escape >>
+<% endif %>
+<% endfor %>
+
+\reportsection{七、签署前提}
+<% if preconditions %>
+\begin{itemize}
+<% for precondition in preconditions %>
+  \item << precondition|latex_escape >>
+<% endfor %>
+\end{itemize}
+<% else %>
+未从材料确认可直接满足的签署前提，仍应由法律专业人士复核。
+<% endif %>
+
+\reportsection{八、审查限制}
+<% if limitations %>
+\begin{itemize}
+<% for limitation in limitations %>
+  \item << limitation|latex_escape >>
+<% endfor %>
+\end{itemize}
+<% else %>
+除材料完整性与人工复核要求外，未记录其他限制。
+<% endif %>
+<% if status == "partial" %>
+\fcolorbox{WarningRed}{white}{%
+  \parbox{0.9\textwidth}{\bfseries\color{WarningRed}<< partial_warning|latex_escape >>}%
+}
+<% endif %>
+
+\reportsection{九、免责声明}
+<< disclaimer|latex_escape >>
+
+本报告由人工智能基于当前材料辅助生成，不构成律师正式法律意见、诉讼结果预测或确定法律结论。
+合同签署、修改、履行或争议处置前，必须由具备相应资质的法律专业人士结合原始合同、关联文件、
+交易背景及最新有效法律规则进行复核。
+
+\end{document}

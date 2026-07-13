@@ -1,12 +1,27 @@
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
 import anyio
 from pymongo import MongoClient
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from app.db.models import ContextSnapshot, ContractParagraph, ReviewDocument, ReviewTask
+
+
+@dataclass(frozen=True, slots=True)
+class ReviewDocumentRecord:
+    """跨越 repository 边界的只读文档元数据，避免向服务层暴露 ORM 会话对象。"""
+
+    task_id: str
+    document_type: str
+    filename: str
+    content_type: str
+    size_bytes: int
+    sha256: str
+    object_key: str
+    created_at: datetime
 
 
 class SqlAlchemyContractReviewSnapshotRepository:
@@ -43,6 +58,37 @@ class SqlAlchemyContractReviewSnapshotRepository:
                         ),
                     )
                 )
+
+    async def get_latest_document(
+        self,
+        *,
+        task_id: str,
+        document_type: str,
+    ) -> ReviewDocumentRecord | None:
+        async with self.session_factory() as session:
+            result = await session.execute(
+                select(ReviewDocument)
+                .where(
+                    ReviewDocument.task_id == task_id,
+                    ReviewDocument.document_type == document_type,
+                )
+                # 当前每个任务只发布一份报告；倒序仍兼容未来重新生成。
+                .order_by(ReviewDocument.created_at.desc(), ReviewDocument.id.desc())
+                .limit(1)
+            )
+            document = result.scalar_one_or_none()
+            if document is None:
+                return None
+            return ReviewDocumentRecord(
+                task_id=document.task_id,
+                document_type=document.document_type,
+                filename=document.filename,
+                content_type=document.content_type,
+                size_bytes=document.size_bytes,
+                sha256=document.sha256,
+                object_key=document.object_key,
+                created_at=document.created_at,
+            )
 
     async def save_paragraphs(self, *, task_id: str, paragraphs: list[dict[str, object]]) -> None:
         async with self.session_factory() as session:
@@ -85,7 +131,8 @@ class SqlAlchemyContractReviewSnapshotRepository:
                 )
                 task = await session.get(ReviewTask, task_id)
                 if task is not None:
-                    task.status = "succeeded"
+                    # 完整审查允许保存 partial，Phase 0 未提供状态时仍视为成功。
+                    task.status = str(snapshot.get("status") or "succeeded")
 
 
 class PymongoContractReviewAuditRepository:

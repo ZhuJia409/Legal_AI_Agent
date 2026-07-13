@@ -46,6 +46,7 @@ mongodb-data/
 logs/
 tmp/
 temp/
+.tools/
 
 # IDE and OS files
 .idea/

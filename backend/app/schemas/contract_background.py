@@ -57,6 +57,11 @@ class SourceRef(BaseModel):
     """由服务层根据模型返回的段落号解析出的完整证据引用。"""
 
     paragraph_id: str = Field(description="稳定的合同段落或表格行标识。")
+    document_name: str | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="证据所属文件；主合同时为空。",
+    )
     clause_path: str | None = Field(
         default=None,
         description="识别到的合同条款路径；无法识别时为空。",

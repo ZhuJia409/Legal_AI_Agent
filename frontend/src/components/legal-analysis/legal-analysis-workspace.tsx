@@ -23,12 +23,15 @@ import type {
   CaseAnalysisResponse,
   ContractBackgroundResponse,
   ContractCategory,
+  ContractReviewReportResponse,
   LegalAnalysisResponse,
   RelatedDocumentStatus,
   RiskLevel,
+  ReviewPerspective,
   SourceRef,
 } from "@/lib/legal-analysis-types";
 import { cn } from "@/lib/utils";
+import { ContractReviewReportResult } from "./contract-review-report-result";
 
 type ModuleId = "case" | "contract";
 
@@ -36,6 +39,7 @@ type FormState = {
   title: string;
   file?: File;
   relatedFiles: File[];
+  reviewPerspective: ReviewPerspective;
 };
 
 type ModuleConfig = {
@@ -61,16 +65,17 @@ const MODULES: ModuleConfig[] = [
   {
     id: "contract",
     label: "合同审查",
-    endpoint: "contract-reviews",
+    endpoint: "contract-review-reports",
     icon: ClipboardCheck,
     titlePlaceholder: "例如：技术服务合同",
-    submitLabel: "开始合同背景审查",
+    submitLabel: "开始完整合同审查",
   },
 ];
 
 const EMPTY_FORM: FormState = {
   title: "",
   relatedFiles: [],
+  reviewPerspective: "neutral",
 };
 
 const RISK_LABELS: Record<RiskLevel, string> = {
@@ -161,6 +166,12 @@ function isContractBackgroundResponse(
   result: LegalAnalysisResponse,
 ): result is ContractBackgroundResponse {
   return result.module === "contract_background";
+}
+
+function isContractReviewReportResponse(
+  result: LegalAnalysisResponse,
+): result is ContractReviewReportResponse {
+  return result.module === "contract_review_report";
 }
 
 export function LegalAnalysisWorkspace() {
@@ -270,6 +281,8 @@ export function LegalAnalysisWorkspace() {
         title: form.title.trim() || null,
         file: form.file,
         relatedFiles: activeModule.id === "contract" ? form.relatedFiles : [],
+        reviewPerspective:
+          activeModule.id === "contract" ? form.reviewPerspective : undefined,
       });
       setResult(response);
     } catch (submitError) {
@@ -409,72 +422,95 @@ export function LegalAnalysisWorkspace() {
             </label>
 
             {activeModule.id === "contract" ? (
-              <section aria-labelledby="related-files-label">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <h2 className="text-sm font-medium text-zinc-800" id="related-files-label">
-                      关联文件（可选）
-                    </h2>
-                    <p className="mt-1 text-xs leading-5 text-zinc-500">
-                      可上传多个 PDF/DOCX；本阶段仅根据文件名判断关联文件类型。
-                    </p>
-                  </div>
-                  <button
-                    className="inline-flex h-9 items-center gap-2 rounded-md border border-zinc-300 bg-white px-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#214a4b]/30"
-                    onClick={() => relatedFilesInputRef.current?.click()}
-                    type="button"
-                  >
-                    <Upload aria-hidden="true" className="h-4 w-4" />
-                    选择关联文件
-                  </button>
-                  <input
-                    accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    className="hidden"
-                    multiple
+              <div className="space-y-6">
+                <label className="block">
+                  <span className="text-sm font-medium text-zinc-800">审查立场</span>
+                  <select
+                    className="mt-2 h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-[#214a4b] focus-visible:ring-2 focus-visible:ring-[#214a4b]/30"
                     onChange={(event) =>
-                      handleRelatedFilesSelect(Array.from(event.target.files ?? []))
+                      setForm((current) => ({
+                        ...current,
+                        reviewPerspective: event.target.value as ReviewPerspective,
+                      }))
                     }
-                    ref={relatedFilesInputRef}
-                    type="file"
-                  />
-                </div>
+                    value={form.reviewPerspective}
+                  >
+                    <option value="neutral">中立审查</option>
+                    <option value="party_a">按甲方利益审查</option>
+                    <option value="party_b">按乙方利益审查</option>
+                  </select>
+                  <span className="mt-1 block text-xs leading-5 text-zinc-500">
+                    修改建议和谈判策略将按所选立场生成；不确定时请选择中立。
+                  </span>
+                </label>
 
-                {form.relatedFiles.length ? (
-                  <div className="mt-3 space-y-2">
-                    {form.relatedFiles.map((file, index) => (
-                      <div
-                        className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2"
-                        key={`${file.name}-${file.size}-${file.lastModified}`}
-                      >
-                        <div className="flex min-w-0 items-center gap-2">
-                          <FileText
-                            aria-hidden="true"
-                            className="h-4 w-4 shrink-0 text-[#214a4b]"
-                          />
-                          <div className="min-w-0">
-                            <p className="truncate text-sm text-zinc-700">{file.name}</p>
-                            <p className="text-xs text-zinc-500">{formatFileSize(file.size)}</p>
-                          </div>
-                        </div>
-                        <button
-                          className="shrink-0 rounded-md px-2 py-1 text-xs text-zinc-500 transition-colors hover:bg-white hover:text-zinc-900"
-                          onClick={() => removeRelatedFile(index)}
-                          type="button"
-                        >
-                          删除
-                        </button>
-                      </div>
-                    ))}
+                <section aria-labelledby="related-files-label">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h2 className="text-sm font-medium text-zinc-800" id="related-files-label">
+                        关联文件（可选）
+                      </h2>
+                      <p className="mt-1 text-xs leading-5 text-zinc-500">
+                        可上传多个 PDF/DOCX；系统将解析内容并与主合同进行深度比对。
+                      </p>
+                    </div>
+                    <button
+                      className="inline-flex h-9 items-center gap-2 rounded-md border border-zinc-300 bg-white px-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#214a4b]/30"
+                      onClick={() => relatedFilesInputRef.current?.click()}
+                      type="button"
+                    >
+                      <Upload aria-hidden="true" className="h-4 w-4" />
+                      选择关联文件
+                    </button>
+                    <input
+                      accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      className="hidden"
+                      multiple
+                      onChange={(event) =>
+                        handleRelatedFilesSelect(Array.from(event.target.files ?? []))
+                      }
+                      ref={relatedFilesInputRef}
+                      type="file"
+                    />
                   </div>
-                ) : null}
 
-                {relatedFilesError ? (
-                  <p className="mt-2 flex items-center gap-2 text-sm text-rose-700">
-                    <AlertTriangle aria-hidden="true" className="h-4 w-4" />
-                    {relatedFilesError}
-                  </p>
-                ) : null}
-              </section>
+                  {form.relatedFiles.length ? (
+                    <div className="mt-3 space-y-2">
+                      {form.relatedFiles.map((file, index) => (
+                        <div
+                          className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2"
+                          key={`${file.name}-${file.size}-${file.lastModified}`}
+                        >
+                          <div className="flex min-w-0 items-center gap-2">
+                            <FileText
+                              aria-hidden="true"
+                              className="h-4 w-4 shrink-0 text-[#214a4b]"
+                            />
+                            <div className="min-w-0">
+                              <p className="truncate text-sm text-zinc-700">{file.name}</p>
+                              <p className="text-xs text-zinc-500">{formatFileSize(file.size)}</p>
+                            </div>
+                          </div>
+                          <button
+                            className="shrink-0 rounded-md px-2 py-1 text-xs text-zinc-500 transition-colors hover:bg-white hover:text-zinc-900"
+                            onClick={() => removeRelatedFile(index)}
+                            type="button"
+                          >
+                            删除
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {relatedFilesError ? (
+                    <p className="mt-2 flex items-center gap-2 text-sm text-rose-700">
+                      <AlertTriangle aria-hidden="true" className="h-4 w-4" />
+                      {relatedFilesError}
+                    </p>
+                  ) : null}
+                </section>
+              </div>
             ) : null}
 
             <div className="flex flex-col gap-3 border-t border-zinc-200 pt-5 sm:flex-row sm:items-center sm:justify-end">
@@ -558,6 +594,10 @@ function EmptyState() {
 }
 
 function ResultState({ result }: { result: LegalAnalysisResponse }) {
+  if (isContractReviewReportResponse(result)) {
+    return <ContractReviewReportResult result={result} />;
+  }
+
   if (isContractBackgroundResponse(result)) {
     return <ContractBackgroundResult result={result} />;
   }
