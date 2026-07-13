@@ -75,7 +75,7 @@ RELATED_PARSE_CONCURRENCY = 3
 
 
 class UnsupportedRelatedFileTypeError(ValueError):
-    """关联文件类型不在 Phase 0 允许的 PDF/DOCX 白名单中。"""
+    """关联文件类型不在合同背景审查允许的 PDF/DOCX 白名单中。"""
 
 
 class RelatedFileLimitError(ValueError):

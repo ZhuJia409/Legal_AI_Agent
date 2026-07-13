@@ -272,6 +272,15 @@ def latex_escape(value: object) -> str:
     return "".join(escaped)
 
 
+def latex_escape_breakable_filename(value: object) -> str:
+    """安全转义文件名，并允许连续无空格字符在固定宽度列内换行。"""
+
+    normalized = str(value).replace("\r", " ").replace("\n", " ").replace("\t", " ")
+    # 逐字符转义后再插入断行点，避免在 LaTeX 控制序列内部插入命令。
+    escaped_characters = [latex_escape(character) for character in normalized]
+    return r"\allowbreak{}".join(filter(None, escaped_characters))
+
+
 def create_latex_environment(*, loader: BaseLoader | None = None) -> Environment:
     """创建与 LaTeX 定界符隔离、缺字段即失败的 Jinja2 环境。"""
 
@@ -292,6 +301,9 @@ def create_latex_environment(*, loader: BaseLoader | None = None) -> Environment
         lstrip_blocks=True,
     )
     environment.filters["latex_escape"] = latex_escape
+    environment.filters["latex_escape_breakable_filename"] = (
+        latex_escape_breakable_filename
+    )
     return environment
 
 
@@ -405,7 +417,6 @@ def build_report_context(
         ],
         "preconditions": [_known_text(item) for item in response.report.preconditions],
         "limitations": [_known_text(item) for item in response.report.limitations],
-        "disclaimer": _known_text(response.disclaimer),
     }
 
 

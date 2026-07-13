@@ -5,7 +5,7 @@
 当前对外业务入口有两条：
 
 - `POST /api/v1/case-analyses`：案件材料分析。
-- `POST /api/v1/contract-reviews`：合同 Phase 0 背景审查。
+- `POST /api/v1/contract-reviews`：合同背景审查。
 
 合同审查当前只处理背景卡、合同大类、关联文件状态、缺失问题和三个初步陷阱，不是完整法律风险审查。所有模型输出均只能作为参考，必须由法律专业人士复核。
 
@@ -33,7 +33,7 @@ flowchart LR
 
     Case --> DirectLLM["OpenAICompatibleLLMClient"]
     Contract --> Evidence["contract_evidence 结构化证据层"]
-    Contract --> Agent["LangChain Phase 0 Agent"]
+    Contract --> Agent["LangChain 合同背景审查 Agent"]
 
     API --> Persist["ContractReviewPersistenceService"]
     Persist --> MinIO["MinIO 文件与解析产物"]
@@ -175,7 +175,7 @@ API 层负责 HTTP 边界工作，不应放置核心法律分析逻辑。
 | MongoDB | `mongodb_url` | Agent 事件、原始模型输出和 MinerU 批次审计。 |
 | MinIO | `minio_*` | 原始文件、关联文件和 MinerU 产物。 |
 | Redis、Neo4j、Milvus | `redis_url`、`neo4j_*`、`milvus_*` | 当前仅配置预留，业务代码尚未调用。 |
-| Embedding、Reranker | `embedding_model`、`reranker_model` | 当前仅配置预留，Phase 0 未使用 RAG。 |
+| Embedding、Reranker | `embedding_model`、`reranker_model` | 当前仅配置预留，合同背景审查未使用 RAG。 |
 
 配置从根目录或 `backend/` 相对位置的 `.env` 加载。密码、密钥字段设置了 `repr=False`，减少对象被打印时泄露秘密的风险。
 
@@ -194,7 +194,7 @@ API 层负责 HTTP 边界工作，不应放置核心法律分析逻辑。
 
 ### `schemas/contract_background.py`
 
-定义合同 Phase 0 的结构化模型：
+定义合同背景审查的结构化模型：
 
 | 模型 | 作用 |
 |---|---|
@@ -300,7 +300,7 @@ MinerU 文档解析适配器。
 
 ### `services/contract_background.py`
 
-合同 Phase 0 核心编排服务。
+合同背景审查核心编排服务。
 
 主要组成：
 
@@ -314,7 +314,7 @@ MinerU 文档解析适配器。
 Agent 只能使用两个只读工具：
 
 - `find_contract_excerpt(keyword)`：只在本次内存中的证据文本查找摘录。
-- `list_phase0_related_document_types()`：返回固定 11 类关联文件名称。
+- `list_background_review_related_document_types()`：返回固定 11 类关联文件名称。
 
 这些工具不访问文件系统、数据库、网络或外部法律资料。
 
@@ -377,7 +377,7 @@ MinIO Python SDK 是同步客户端，因此通过 `anyio.to_thread.run_sync()` 
 | `ReviewTask` / `review_task` | 合同审查任务 ID、标题、状态和时间。 |
 | `ReviewDocument` / `review_document` | 主文件、关联文件和 MinerU 产物的元数据、哈希与 MinIO object key。 |
 | `ContractParagraph` / `contract_paragraph` | 不可变证据段及其位置、类型和条款路径。 |
-| `ContextSnapshot` / `context_snapshot` | Phase 0 背景卡、类别、关联文件、陷阱和完整快照 JSON。 |
+| `ContextSnapshot` / `context_snapshot` | 合同背景卡、类别、关联文件、陷阱和完整快照 JSON。 |
 
 数据库结构的实际创建与升级由 `backend/alembic/` 中的迁移负责，不应通过应用启动时自动建表。
 
@@ -401,7 +401,7 @@ MinIO Python SDK 是同步客户端，因此通过 `anyio.to_thread.run_sync()` 
 - `create_task()`：创建或合并审查任务。
 - `save_document()`：新增文件元数据。
 - `save_paragraphs()`：先删除任务旧段落，再批量保存新段落。
-- `save_context_snapshot()`：合并 Phase 0 快照并把任务状态更新为 `succeeded`。
+- `save_context_snapshot()`：合并背景审查快照并把任务状态更新为 `succeeded`。
 
 #### `PymongoContractReviewAuditRepository`
 
@@ -427,7 +427,7 @@ POST /api/v1/case-analyses
   -> AnalysisResponse
 ```
 
-### 合同 Phase 0 背景审查
+### 合同背景审查
 
 ```text
 POST /api/v1/contract-reviews
@@ -476,12 +476,12 @@ POST /api/v1/contract-reviews
 
 | 系统 | 当前实际保存内容 |
 |---|---|
-| MySQL | 合同审查任务、文件元数据、证据段、Phase 0 上下文快照。 |
+| MySQL | 合同审查任务、文件元数据、证据段、合同背景上下文快照。 |
 | MongoDB | Agent/持久化事件、原始模型结构化输出、MinerU 批次记录。 |
 | MinIO | 主合同原件、关联文件原件、MinerU `result.zip` 和 `full.md`。 |
 | Redis | 本目录当前未使用。 |
-| Milvus | 本目录当前未使用；Phase 0 无向量检索。 |
-| Neo4j | 本目录当前未使用；Phase 0 无知识图谱查询。 |
+| Milvus | 本目录当前未使用；合同背景审查无向量检索。 |
+| Neo4j | 本目录当前未使用；合同背景审查无知识图谱查询。 |
 
 MinIO object key 采用以下结构：
 
@@ -504,7 +504,7 @@ contract-reviews/{task_id}/mineru/{batch_id}/full.md
 6. 数据库结构变化同步添加 `backend/alembic/versions/` 迁移。
 7. 在 `backend/tests/` 使用 fake/mock 外部依赖覆盖正常与失败路径。
 
-法律输出必须继续保留专业法律人士复核提示。合同 Phase 0 若要扩展为完整审查、RAG 或知识图谱流程，应新增清晰的业务模块，不能把相关逻辑堆入现有路由函数。
+法律输出必须继续保留专业法律人士复核提示。合同背景审查若要扩展为完整审查、RAG 或知识图谱流程，应新增清晰的业务模块，不能把相关逻辑堆入现有路由函数。
 
 ## 15. 本地运行与验证
 

@@ -8,4 +8,4 @@
 
 子目录：
 
-- `contract-review/`：合同审查模块的方案设计文档与 Phase 0 合同背景审查参考材料，详见该目录的 `README.md`。
+- `contract-review/`：合同审查模块的方案设计文档与合同背景审查参考材料，详见该目录的 `README.md`。

@@ -94,7 +94,7 @@ def client() -> TestClient:
 def _response() -> ContractBackgroundResponse:
     return ContractBackgroundResponse(
         module="contract_background",
-        summary="Phase 0 background summary.",
+        summary="Contract background review summary.",
         contract_category="service_entrustment",
         background_card=BackgroundCard(
             commercial_purpose="Obtain legal consulting services.",

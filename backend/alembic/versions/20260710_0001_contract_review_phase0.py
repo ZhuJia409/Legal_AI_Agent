@@ -1,4 +1,4 @@
-"""add contract review phase0 persistence tables
+"""add contract background review persistence tables
 
 Revision ID: 20260710_0001
 Revises:

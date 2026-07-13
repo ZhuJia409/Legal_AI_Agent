@@ -34,7 +34,7 @@ class FakeBackgroundService:
         content: str,
         provided_related_documents: Sequence[str] = (),
     ) -> ContractBackgroundAnalysis:
-        self.events.extend(["phase0:start", "phase0:end"])
+        self.events.extend(["background_review:start", "background_review:end"])
         response = ContractBackgroundResponse(
             module="contract_background",
             disclaimer="需由法律专业人士复核。",
@@ -52,7 +52,10 @@ class FakeBackgroundService:
             missing_questions=[],
             pitfalls=[],
         )
-        return ContractBackgroundAnalysis(response=response, raw_output={"phase": "phase0"})
+        return ContractBackgroundAnalysis(
+            response=response,
+            raw_output={"stage": "background_review"},
+        )
 
 
 class FakeReviewAgentRunner:
@@ -143,7 +146,7 @@ async def test_contract_review_graph_respects_type_and_report_barriers() -> None
         review_perspective="party_a",
     )
 
-    assert events.index("phase0:end") < events.index("party_qualification:start")
+    assert events.index("background_review:end") < events.index("party_qualification:start")
     assert events.index("form_structure:end") < events.index("contract_type_special:start")
     assert all(
         events.index(f"{module}:end") < events.index("report:start")

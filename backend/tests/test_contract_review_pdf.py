@@ -35,6 +35,7 @@ from app.services.contract_review_pdf import (
     build_report_filename,
     create_latex_environment,
     latex_escape,
+    latex_escape_breakable_filename,
 )
 
 
@@ -195,6 +196,19 @@ def test_latex_escape_handles_commands_special_characters_chinese_and_newlines()
     assert escaped.count(r"\par{}") == 2
     assert "\x00" not in escaped
     assert "\\input{evil}" not in escaped
+
+
+def test_latex_escape_breakable_filename_handles_unbroken_text_and_injection() -> None:
+    filename = "a" * 80 + r"_合同\input{secret}.docx"
+
+    escaped = latex_escape_breakable_filename(filename)
+
+    assert escaped.count(r"\allowbreak{}") == len(filename) - 1
+    assert r"\_" in escaped
+    assert r"\textbackslash{}" in escaped
+    assert r"\{" in escaped
+    assert r"\}" in escaped
+    assert r"\input{secret}" not in escaped
 
 
 def test_latex_environment_uses_strict_undefined() -> None:
@@ -360,7 +374,7 @@ async def test_renderer_sorts_risks_and_renders_counts_and_unknown_labels() -> N
 
 
 @pytest.mark.asyncio
-async def test_template_contains_required_sections_evidence_phase0_and_module_failures() -> None:
+async def test_template_contains_required_sections_cover_alignment_and_module_failures() -> None:
     compiler = CapturingCompiler()
     renderer = ContractReviewPdfRenderer(compiler=compiler)
 
@@ -375,19 +389,26 @@ async def test_template_contains_required_sections_evidence_phase0_and_module_fa
     source = compiler.latex_source
     for section in (
         "一、合同基本信息",
-        "二、Phase 0 背景审查",
+        "二、合同背景审查",
         "三、审查范围与依据",
         "四、总体结论",
         "五、详细风险事项",
         "六、模块状态、缺失材料与错误",
         "七、签署前提",
         "八、审查限制",
-        "九、免责声明",
     ):
         assert section in source
 
     assert r"\addcontentsline{toc}{section}{#1}" in source
-    assert source.count(r"\reportsection{") == 9
+    assert source.count(r"\reportsection{") == 8
+    # 封面标签靠左、字段值靠右，长文件名仍由固定宽度列负责换行。
+    assert r">{\raggedright\arraybackslash\bfseries\color{LegalGreen}}p{3.6cm}" in source
+    assert r">{\raggedleft\arraybackslash}p{9.2cm}" in source
+    assert r"采\allowbreak{}购\allowbreak{}合\allowbreak{}同" in source
+    assert "背景审查提示：" in source
+    assert "九、免责声明" not in source
+    assert "本报告由人工智能基于当前材料辅助生成" not in source
+    assert "所有结论、建议及引用均须由法律专业人士结合完整材料复核" in source
     assert r"\fieldlabel{问题：}签约主体无法确认" in source
     assert r"\fieldlabel{依据：}统一社会信用代码缺失。" in source
     assert r"\fieldlabel{影响：}可能无法确认合同相对方。" in source
@@ -841,7 +862,7 @@ async def test_real_tectonic_compiles_current_chinese_report_template_when_insta
         _report_response(status="partial"),
         task_id="real-tectonic-12345678",
         title="办公 IT 设备采购合同",
-        source_filename="采购合同_办公IT设备采购.docx",
+        source_filename=f"{'a' * 100}_采购合同_办公IT设备采购.docx",
         generated_at=datetime(2026, 7, 13, 12, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
     )
 

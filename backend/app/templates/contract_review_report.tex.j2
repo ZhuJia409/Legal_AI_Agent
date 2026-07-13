@@ -63,11 +63,12 @@
 <% endif %>
 
   \renewcommand{\arraystretch}{1.55}
-  \begin{tabular}{>{\bfseries\color{LegalGreen}}p{3.6cm}p{9.2cm}}
+  % 固定两列对齐方向，避免不同长度的任务信息在封面上形成参差的视觉边界。
+  \begin{tabular}{@{}>{\raggedright\arraybackslash\bfseries\color{LegalGreen}}p{3.6cm}>{\raggedleft\arraybackslash}p{9.2cm}@{}}
     任务编号 & << task_id|latex_escape >> \\
     报告状态 & << status_label|latex_escape >> \\
     审查立场 & << review_perspective_label|latex_escape >> \\
-    原始文件 & << source_filename|latex_escape >> \\
+    原始文件 & << source_filename|latex_escape_breakable_filename >> \\
     生成时间 & << generated_at|latex_escape >> \\
   \end{tabular}
 
@@ -85,7 +86,7 @@
 \reportsection{一、合同基本信息}
 \begin{longtable}{>{\bfseries\color{LegalGreen}}p{3.8cm}p{10.2cm}}
   合同名称 & << title|latex_escape >> \\
-  来源文件 & << source_filename|latex_escape >> \\
+  来源文件 & << source_filename|latex_escape_breakable_filename >> \\
   合同大类 & << contract_category_label|latex_escape >> \\
   审查立场 & << review_perspective_label|latex_escape >> \\
   报告状态 & << status_label|latex_escape >> \\
@@ -111,7 +112,7 @@
 未从材料确认。
 <% endif %>
 
-\reportsection{二、Phase 0 背景审查}
+\reportsection{二、合同背景审查}
 \fieldlabel{背景摘要：}<< background_summary|latex_escape >>
 
 \begin{longtable}{>{\bfseries\color{LegalGreen}}p{4cm}p{10cm}}
@@ -153,7 +154,7 @@
 未从材料确认。
 <% endif %>
 
-{\small\color{LegalGreen}\fieldlabel{Phase 0 提示：}<< background_disclaimer|latex_escape >>}
+{\small\color{LegalGreen}\fieldlabel{背景审查提示：}<< background_disclaimer|latex_escape >>}
 
 \reportsection{三、审查范围与依据}
 本次报告仅覆盖下列模块及已提供材料。模块失败、跳过或证据缺失均会限制结论可靠性；
@@ -259,12 +260,5 @@
   \parbox{0.9\textwidth}{\bfseries\color{WarningRed}<< partial_warning|latex_escape >>}%
 }
 <% endif %>
-
-\reportsection{九、免责声明}
-<< disclaimer|latex_escape >>
-
-本报告由人工智能基于当前材料辅助生成，不构成律师正式法律意见、诉讼结果预测或确定法律结论。
-合同签署、修改、履行或争议处置前，必须由具备相应资质的法律专业人士结合原始合同、关联文件、
-交易背景及最新有效法律规则进行复核。
 
 \end{document}

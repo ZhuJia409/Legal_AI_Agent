@@ -30,7 +30,7 @@ class ContractReviewSnapshotRepositoryProtocol(Protocol):
         """Save immutable contract paragraphs."""
 
     async def save_context_snapshot(self, *, task_id: str, snapshot: dict[str, object]) -> None:
-        """Save Phase 0 context snapshot."""
+        """保存合同背景审查上下文快照。"""
 
 
 class ContractReviewAuditRepositoryProtocol(Protocol):

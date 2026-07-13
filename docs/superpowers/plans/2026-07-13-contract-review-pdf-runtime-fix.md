@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- 不新增数据库迁移，不改变 `/api/v1/contract-reviews` Phase 0 行为。
+- 不新增数据库迁移，不改变 `/api/v1/contract-reviews` 合同背景审查行为。
 - `pdf_renderer_unavailable` 仍返回 503，`report_pdf_generation_error` 仍返回 500。
 - Tectonic 必须继续使用 `--only-cached`，不得启用 shell 或联网下载宏包。
 - 不记录合同正文、LaTeX、Tectonic stdout/stderr、URL 查询参数、密钥或 token。

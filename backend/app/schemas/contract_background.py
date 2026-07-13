@@ -22,7 +22,7 @@ ContractCategory = Literal[
 
 RelatedDocumentStatus = Literal["provided", "missing"]
 
-# 固定目录只定义每次 Phase 0 都要回答的内容，不参与具体合同的语义判断。
+# 固定目录只定义每次合同背景审查都要回答的内容，不参与具体合同的语义判断。
 BACKGROUND_QUESTION_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("commercial_purpose", "合同文本能够支持的交易目的或商业目的是什么？"),
     ("party_position", "合同双方分别处于什么合同角色或交易立场？"),
@@ -32,7 +32,7 @@ BACKGROUND_QUESTION_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("urgency_deadline", "是否存在紧迫性、履行期限或明确截止日期？"),
 )
 
-PHASE0_PITFALL_DEFINITIONS: tuple[tuple[str, str], ...] = (
+BACKGROUND_REVIEW_PITFALL_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("name_substance_mismatch", "名实不符"),
     ("letter_of_intent_effect", "意向书效力"),
     ("precontractual_liability", "隐形缔约过失责任触发点"),
@@ -142,7 +142,7 @@ class AgentBackgroundCard(BaseModel):
 
 
 class AgentPitfallAssessment(BaseModel):
-    """模型对一项固定 Phase 0 陷阱的判断。"""
+    """模型对一项固定背景审查陷阱的判断。"""
 
     risk: str = Field(min_length=1)
     review_action: str = Field(min_length=1)
@@ -174,14 +174,14 @@ class AgentRelatedDocumentStatuses(BaseModel):
 
 
 class RelatedDocument(BaseModel):
-    """Phase 0 需要收集或核对的一类关联文件。"""
+    """合同背景审查需要收集或核对的一类关联文件。"""
 
     name: str
     status: RelatedDocumentStatus
 
 
 class ReviewPitfall(BaseModel):
-    """Phase 0 初步陷阱及其后续复核动作。"""
+    """合同背景审查的初步陷阱及其后续复核动作。"""
 
     name: str
     risk: str
@@ -190,7 +190,7 @@ class ReviewPitfall(BaseModel):
 
 
 class ContractBackgroundAgentDraft(BaseModel):
-    """LangChain Agent 必须一次性生成的完整 Phase 0 结构。"""
+    """LangChain Agent 必须一次性生成的完整背景审查结构。"""
 
     summary: str = Field(min_length=1)
     contract_category: ContractCategory

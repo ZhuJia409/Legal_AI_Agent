@@ -117,7 +117,7 @@ class ContractBackgroundServiceProtocol(Protocol):
         content: str,
         provided_related_documents: Sequence[str] = (),
     ) -> ContractBackgroundAnalysis:
-        """执行已有 Phase 0 背景审查。"""
+        """执行已有合同背景审查。"""
 
 
 class ReviewAgentRunnerProtocol(Protocol):
@@ -194,22 +194,25 @@ class ContractReviewGraphService:
 
     def _build_graph(self):
         builder = StateGraph(ContractReviewGraphState)
-        builder.add_node("phase0", self._phase0_node)
+        builder.add_node("background_review", self._background_review_node)
         builder.add_node("party", self._party_node)
         builder.add_node("form", self._form_node)
         builder.add_node("general", self._general_node)
         builder.add_node("related", self._related_node)
         builder.add_node("special", self._special_node)
         builder.add_node("report", self._report_node)
-        builder.add_edge(START, "phase0")
+        builder.add_edge(START, "background_review")
         for node in ("party", "form", "general", "related"):
-            builder.add_edge("phase0", node)
+            builder.add_edge("background_review", node)
         builder.add_edge("form", "special")
         builder.add_edge(["party", "general", "related", "special"], "report")
         builder.add_edge("report", END)
         return builder.compile()
 
-    async def _phase0_node(self, state: ContractReviewGraphState) -> dict[str, Any]:
+    async def _background_review_node(
+        self,
+        state: ContractReviewGraphState,
+    ) -> dict[str, Any]:
         analysis = await self.background_service.analyze_with_raw_output(
             title=state.get("title"),
             content=state["content"],
@@ -671,7 +674,7 @@ def _branch_prompt(
     lines = [
         f"审查模块：{module}",
         f"审查立场：{_PERSPECTIVE_LABELS[state['review_perspective']]}",
-        f"Phase 0 背景：{state['background'].model_dump_json()}",
+        f"合同背景审查：{state['background'].model_dump_json()}",
     ]
     if include_type_catalog:
         catalog = [

@@ -131,7 +131,7 @@ class SqlAlchemyContractReviewSnapshotRepository:
                 )
                 task = await session.get(ReviewTask, task_id)
                 if task is not None:
-                    # 完整审查允许保存 partial，Phase 0 未提供状态时仍视为成功。
+                    # 完整审查允许保存 partial；背景审查未提供状态时仍视为成功。
                     task.status = str(snapshot.get("status") or "succeeded")
 
 

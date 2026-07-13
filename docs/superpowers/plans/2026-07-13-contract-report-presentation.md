@@ -229,7 +229,7 @@ Expected: 均通过，源文件扫描不再命中详细正文标题。
 
 - [ ] **Step 1: 扫描旧阶段标签残留**
 
-Run a PowerShell scan over `git ls-files` with regex `phase\s*0|phase0`, excluding the single historical migration path and internal compatibility exceptions explicitly listed in the spec.
+Run a PowerShell scan over `git ls-files` for the retired stage label, excluding the single historical migration path and internal compatibility exceptions explicitly listed in the spec.
 
 Expected: 用户、模型、追踪、前端和文档可见内容 0 命中。
 

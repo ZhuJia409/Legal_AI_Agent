@@ -87,14 +87,14 @@ uv run pytest
 当前主分支提供：
 
 - `POST /api/v1/case-analyses`：案件分析。
-- `POST /api/v1/contract-reviews`：合同 Phase 0 背景审查。
+- `POST /api/v1/contract-reviews`：合同背景审查。
 
 相关开发规则：
 
 - 路径使用版本化资源命名，例如 `/api/v1/case-analyses`、`/api/v1/contract-reviews`。
 - 路由只做请求/文件解析、错误转换和调用服务；核心逻辑放在 service。
 - 合同背景审查当前使用 LangChain agent 和只读文本工具，不引入 RAG、向量检索、知识图谱、LangGraph 或 DeepAgents 流程。
-- 合同背景审查只做 Phase 0：背景卡、合同大类、关联文件提示、缺失问题和初步陷阱，不做完整法律风险审查。
+- 合同背景审查只做背景卡、合同大类、关联文件提示、缺失问题和初步陷阱，不做完整法律风险审查。
 - 模型输出必须经过 Pydantic 结构校验；结构不合法时返回受控错误。
 - 对外错误格式保持 `{ "error": { "code": "...", "message": "..." } }`。
 - 测试应覆盖正常路径、空内容、解析失败、模型配置缺失、模型失败、结构化输出失败。
