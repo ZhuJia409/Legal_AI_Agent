@@ -3,6 +3,7 @@ import logging
 import re
 import time
 from collections.abc import Callable
+from dataclasses import dataclass
 from io import BytesIO
 from typing import Protocol
 from zipfile import BadZipFile, ZipFile
@@ -19,6 +20,13 @@ MINERU_FILE_URLS_PATH = "/api/v4/file-urls/batch"
 MINERU_EXTRACT_RESULTS_PATH = "/api/v4/extract-results/batch"
 
 AsyncClientFactory = Callable[[], httpx.AsyncClient]
+
+
+@dataclass(frozen=True)
+class MineruParseResult:
+    batch_id: str
+    zip_bytes: bytes
+    markdown: str
 
 
 class DocumentParserProtocol(Protocol):
@@ -45,6 +53,10 @@ class MineruDocumentParser:
         self.client_factory = client_factory or self._default_client_factory
 
     async def parse(self, file: UploadFile) -> str:
+        result = await self.parse_result(file)
+        return result.markdown
+
+    async def parse_result(self, file: UploadFile) -> MineruParseResult:
         if not self.api_key:
             raise DocumentParseError("MINERU_API_KEY is not configured.")
 
@@ -64,6 +76,22 @@ class MineruDocumentParser:
             len(file_bytes),
             self.model_version,
         )
+        result = await self.parse_bytes(filename=filename, file_bytes=file_bytes)
+        logger.info(
+            "mineru_parse_completed filename=%s batch_id=%s content_length=%d elapsed=%.2fs",
+            filename,
+            result.batch_id,
+            len(result.markdown),
+            time.monotonic() - started,
+        )
+        return result
+
+    async def parse_bytes(self, *, filename: str, file_bytes: bytes) -> MineruParseResult:
+        if not self.api_key:
+            raise DocumentParseError("MINERU_API_KEY is not configured.")
+        if not file_bytes:
+            raise DocumentParseError("上传文件为空。")
+
         async with self.client_factory() as client:
             batch_id, upload_url = await self._create_upload_url(client, filename)
             logger.info("mineru_upload_url_created filename=%s batch_id=%s", filename, batch_id)
@@ -72,15 +100,8 @@ class MineruDocumentParser:
             zip_url = await self._poll_result(client, batch_id)
             zip_bytes = await self._download_zip(client, zip_url)
 
-        text = _extract_full_markdown(zip_bytes)
-        logger.info(
-            "mineru_parse_completed filename=%s batch_id=%s content_length=%d elapsed=%.2fs",
-            filename,
-            batch_id,
-            len(text),
-            time.monotonic() - started,
-        )
-        return text
+        markdown = _extract_full_markdown(zip_bytes)
+        return MineruParseResult(batch_id=batch_id, zip_bytes=zip_bytes, markdown=markdown)
 
     def _default_client_factory(self) -> httpx.AsyncClient:
         return httpx.AsyncClient(

@@ -106,6 +106,56 @@ async def test_mineru_parser_uploads_file_and_returns_full_markdown() -> None:
 
 
 @pytest.mark.asyncio
+async def test_mineru_parser_returns_batch_zip_and_markdown_artifacts() -> None:
+    zip_bytes = _zip_with_full_markdown("# Parsed Contract\n\nOffice IT procurement terms.")
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST" and request.url.path == "/api/v4/file-urls/batch":
+            return httpx.Response(
+                200,
+                json={
+                    "code": 0,
+                    "data": {
+                        "batch_id": "batch-1",
+                        "file_urls": [{"upload_url": "https://upload.local/contract.docx"}],
+                    },
+                },
+            )
+        if request.method == "PUT" and str(request.url) == "https://upload.local/contract.docx":
+            return httpx.Response(200)
+        if request.method == "GET" and request.url.path == "/api/v4/extract-results/batch/batch-1":
+            return httpx.Response(
+                200,
+                json={
+                    "code": 0,
+                    "data": {
+                        "extract_result": {
+                            "state": "done",
+                            "full_zip_url": "https://download.local/result.zip",
+                        }
+                    },
+                },
+            )
+        if request.method == "GET" and str(request.url) == "https://download.local/result.zip":
+            return httpx.Response(200, content=zip_bytes)
+        return httpx.Response(404)
+
+    parser = MineruDocumentParser(
+        api_key="test-token",
+        base_url="https://mineru.net",
+        poll_interval_seconds=0,
+        poll_timeout_seconds=5,
+        client_factory=lambda: httpx.AsyncClient(transport=httpx.MockTransport(handler)),
+    )
+
+    result = await parser.parse_result(_docx_upload("Original uploaded content."))
+
+    assert result.batch_id == "batch-1"
+    assert result.zip_bytes == zip_bytes
+    assert result.markdown == "# Parsed Contract\n\nOffice IT procurement terms."
+
+
+@pytest.mark.asyncio
 async def test_mineru_parser_requires_api_key() -> None:
     parser = MineruDocumentParser(api_key="")
 

@@ -26,6 +26,7 @@ import type {
   LegalAnalysisResponse,
   RelatedDocumentStatus,
   RiskLevel,
+  SourceRef,
 } from "@/lib/legal-analysis-types";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ type ModuleId = "case" | "contract";
 type FormState = {
   title: string;
   file?: File;
+  relatedFiles: File[];
 };
 
 type ModuleConfig = {
@@ -68,6 +70,7 @@ const MODULES: ModuleConfig[] = [
 
 const EMPTY_FORM: FormState = {
   title: "",
+  relatedFiles: [],
 };
 
 const RISK_LABELS: Record<RiskLevel, string> = {
@@ -95,17 +98,13 @@ const CATEGORY_LABELS: Record<ContractCategory, string> = {
 };
 
 const RELATED_STATUS_LABELS: Record<RelatedDocumentStatus, string> = {
-  provided: "已提供",
+  provided: "有",
   missing: "缺失",
-  unknown: "待确认",
-  not_applicable: "不适用",
 };
 
 const RELATED_STATUS_STYLES: Record<RelatedDocumentStatus, string> = {
   provided: "border-emerald-200 bg-emerald-50 text-emerald-800",
   missing: "border-rose-200 bg-rose-50 text-rose-800",
-  unknown: "border-amber-200 bg-amber-50 text-amber-800",
-  not_applicable: "border-zinc-200 bg-zinc-50 text-zinc-600",
 };
 
 const RELATED_DOC_NAME_MAP: Record<string, string> = {
@@ -171,8 +170,10 @@ export function LegalAnalysisWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [contentError, setContentError] = useState<string | null>(null);
+  const [relatedFilesError, setRelatedFilesError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const relatedFilesInputRef = useRef<HTMLInputElement>(null);
 
   const activeModule = MODULES.find((item) => item.id === activeModuleId) ?? MODULES[0];
   const ActiveIcon = activeModule.icon;
@@ -183,6 +184,7 @@ export function LegalAnalysisWorkspace() {
     setResult(null);
     setError(null);
     setContentError(null);
+    setRelatedFilesError(null);
   }
 
   function handleFileSelect(selectedFile: File) {
@@ -200,6 +202,35 @@ export function LegalAnalysisWorkspace() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  }
+
+  function handleRelatedFilesSelect(selectedFiles: File[]) {
+    const invalidFile = selectedFiles.find((file) => !isAllowedFile(file));
+    if (invalidFile) {
+      setRelatedFilesError(`关联文件“${invalidFile.name}”不是 PDF 或 DOCX 格式。`);
+      return;
+    }
+
+    setForm((current) => {
+      const existing = new Set(
+        current.relatedFiles.map((file) => `${file.name}-${file.size}-${file.lastModified}`),
+      );
+      const additions = selectedFiles.filter(
+        (file) => !existing.has(`${file.name}-${file.size}-${file.lastModified}`),
+      );
+      return { ...current, relatedFiles: [...current.relatedFiles, ...additions] };
+    });
+    setRelatedFilesError(null);
+    if (relatedFilesInputRef.current) {
+      relatedFilesInputRef.current.value = "";
+    }
+  }
+
+  function removeRelatedFile(index: number) {
+    setForm((current) => ({
+      ...current,
+      relatedFiles: current.relatedFiles.filter((_, fileIndex) => fileIndex !== index),
+    }));
   }
 
   function handleDrop(event: React.DragEvent<HTMLDivElement>) {
@@ -238,6 +269,7 @@ export function LegalAnalysisWorkspace() {
       const response = await submitLegalAnalysis(activeModule.endpoint, {
         title: form.title.trim() || null,
         file: form.file,
+        relatedFiles: activeModule.id === "contract" ? form.relatedFiles : [],
       });
       setResult(response);
     } catch (submitError) {
@@ -376,6 +408,75 @@ export function LegalAnalysisWorkspace() {
               ) : null}
             </label>
 
+            {activeModule.id === "contract" ? (
+              <section aria-labelledby="related-files-label">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h2 className="text-sm font-medium text-zinc-800" id="related-files-label">
+                      关联文件（可选）
+                    </h2>
+                    <p className="mt-1 text-xs leading-5 text-zinc-500">
+                      可上传多个 PDF/DOCX；本阶段仅根据文件名判断关联文件类型。
+                    </p>
+                  </div>
+                  <button
+                    className="inline-flex h-9 items-center gap-2 rounded-md border border-zinc-300 bg-white px-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#214a4b]/30"
+                    onClick={() => relatedFilesInputRef.current?.click()}
+                    type="button"
+                  >
+                    <Upload aria-hidden="true" className="h-4 w-4" />
+                    选择关联文件
+                  </button>
+                  <input
+                    accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    className="hidden"
+                    multiple
+                    onChange={(event) =>
+                      handleRelatedFilesSelect(Array.from(event.target.files ?? []))
+                    }
+                    ref={relatedFilesInputRef}
+                    type="file"
+                  />
+                </div>
+
+                {form.relatedFiles.length ? (
+                  <div className="mt-3 space-y-2">
+                    {form.relatedFiles.map((file, index) => (
+                      <div
+                        className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2"
+                        key={`${file.name}-${file.size}-${file.lastModified}`}
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <FileText
+                            aria-hidden="true"
+                            className="h-4 w-4 shrink-0 text-[#214a4b]"
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate text-sm text-zinc-700">{file.name}</p>
+                            <p className="text-xs text-zinc-500">{formatFileSize(file.size)}</p>
+                          </div>
+                        </div>
+                        <button
+                          className="shrink-0 rounded-md px-2 py-1 text-xs text-zinc-500 transition-colors hover:bg-white hover:text-zinc-900"
+                          onClick={() => removeRelatedFile(index)}
+                          type="button"
+                        >
+                          删除
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
+                {relatedFilesError ? (
+                  <p className="mt-2 flex items-center gap-2 text-sm text-rose-700">
+                    <AlertTriangle aria-hidden="true" className="h-4 w-4" />
+                    {relatedFilesError}
+                  </p>
+                ) : null}
+              </section>
+            ) : null}
+
             <div className="flex flex-col gap-3 border-t border-zinc-200 pt-5 sm:flex-row sm:items-center sm:justify-end">
               <button
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#214a4b] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#183c3d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#214a4b] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-300"
@@ -498,11 +599,6 @@ function ContractBackgroundResult({ result }: { result: ContractBackgroundRespon
       </div>
 
       <section>
-        <h3 className="text-sm font-semibold text-zinc-900">背景摘要</h3>
-        <p className="mt-2 text-sm leading-6 text-zinc-600">{result.summary}</p>
-      </section>
-
-      <section>
         <h3 className="text-sm font-semibold text-zinc-900">6个基础问题</h3>
         <div className="mt-3 grid gap-3">
           {BACKGROUND_FIELDS.map((field) => {
@@ -511,19 +607,14 @@ function ContractBackgroundResult({ result }: { result: ContractBackgroundRespon
               <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3" key={field.key}>
                 <p className="text-xs font-semibold text-zinc-500">{field.label}</p>
                 <p className="mt-1 text-sm leading-6 text-zinc-700">
-                  {value || "暂未从合同文本确认"}
+                  {value.text || "暂未从合同文本确认"}
                 </p>
+                <SourceRefs refs={value.source_refs} />
               </div>
             );
           })}
         </div>
       </section>
-
-      <ResultList
-        fallback="暂未发现需要补充确认的问题。"
-        items={result.missing_questions}
-        title="缺口问题"
-      />
 
       <RelatedDocuments documents={result.related_documents} />
       <Pitfalls pitfalls={result.pitfalls} />
@@ -560,7 +651,6 @@ function RelatedDocuments({
                   {RELATED_STATUS_LABELS[document.status]}
                 </span>
               </div>
-              <p className="mt-2 text-sm leading-6 text-zinc-600">{document.reason}</p>
             </div>
           ))}
         </div>
@@ -587,6 +677,7 @@ function Pitfalls({ pitfalls }: { pitfalls: ContractBackgroundResponse["pitfalls
               </p>
               <p className="mt-2 text-sm leading-6 text-zinc-600">{pitfall.risk}</p>
               <p className="mt-2 text-sm leading-6 text-zinc-700">{pitfall.review_action}</p>
+              <SourceRefs refs={pitfall.source_refs} />
             </div>
           ))}
         </div>
@@ -595,6 +686,35 @@ function Pitfalls({ pitfalls }: { pitfalls: ContractBackgroundResponse["pitfalls
       )}
     </section>
   );
+}
+
+function SourceRefs({ refs }: { refs: SourceRef[] }) {
+  if (!refs.length) return null;
+
+  return (
+    <div className="mt-2 space-y-2">
+      {refs.map((ref) => (
+        <details
+          className="rounded-md border border-zinc-200 bg-white px-3 py-2"
+          key={ref.paragraph_id}
+        >
+          <summary className="cursor-pointer text-xs font-medium leading-5 text-zinc-600">
+            来源：{ref.clause_path ? `${ref.clause_path} · ` : ""}
+            {formatParagraphRef(ref.paragraph_id)}
+          </summary>
+          <p className="mt-2 whitespace-pre-wrap break-words border-t border-zinc-100 pt-2 text-xs leading-5 text-zinc-500">
+            {ref.quote}
+          </p>
+        </details>
+      ))}
+    </div>
+  );
+}
+
+function formatParagraphRef(paragraphId: string) {
+  const number = Number(paragraphId.replace(/^p0*/i, ""));
+  if (!Number.isFinite(number) || number <= 0) return paragraphId;
+  return `第${number}段`;
 }
 
 function Disclaimer({ text }: { text: string }) {

@@ -16,6 +16,9 @@ export async function submitLegalAnalysis(
       formData.append("title", payload.title);
     }
     formData.append("file", payload.file);
+    payload.relatedFiles?.forEach((relatedFile) => {
+      formData.append("related_files", relatedFile);
+    });
     requestInit = {
       method: "POST",
       body: formData,

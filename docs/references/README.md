@@ -8,4 +8,4 @@
 
 子目录：
 
-- `contract-review/`：合同审查模块的方案设计文档（HTML）。含 `01` 原方案与 `02` 并联 DAG 拆分版，详见该目录的 `README.md`。
+- `contract-review/`：合同审查模块的方案设计文档与 Phase 0 合同背景审查参考材料，详见该目录的 `README.md`。
