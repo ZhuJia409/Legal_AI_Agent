@@ -11,10 +11,14 @@ class Settings(BaseSettings):
 
     llm_base_url: str = "http://localhost:11434/v1"
     llm_api_key: str = ""
-    llm_model: str = "gpt-4.1-mini"
-    llm_fallback_model: str = "qwen-plus"
+    llm_model: str = "qwen3.7-plus"
+    llm_fallback_model: str = "deepseek-v4-flash"
     embedding_model: str = "BAAI/bge-m3"
     reranker_model: str = "Qwen/Qwen3-Reranker-4B"
+    langsmith_tracing: bool = False
+    langsmith_api_key: str = Field(default="", repr=False)
+    langsmith_project: str = "legal-ai-agent-local"
+    langsmith_endpoint: str = "https://api.smith.langchain.com"
 
     mysql_host: str = "127.0.0.1"
     mysql_port: int = 3306
@@ -24,12 +28,22 @@ class Settings(BaseSettings):
 
     redis_url: str = "redis://127.0.0.1:6379/0"
     mongodb_url: str = "mongodb://127.0.0.1:27017/legal_ai_agent"
+    neo4j_uri: str = "bolt://127.0.0.1:7687"
+    neo4j_user: str = "neo4j"
+    neo4j_password: str = Field(default="change-me-neo4j", repr=False)
+    neo4j_database: str = "neo4j"
     milvus_host: str = "127.0.0.1"
     milvus_port: int = 19530
     minio_endpoint: str = "127.0.0.1:9000"
     minio_access_key: str = "minioadmin"
     minio_secret_key: str = Field(default="minioadmin", repr=False)
     minio_bucket: str = "legal-ai-agent"
+
+    mineru_api_key: str = Field(default="", repr=False)
+    mineru_base_url: str = "https://mineru.net"
+    mineru_model_version: str = "vlm"
+    mineru_poll_interval_seconds: float = 2
+    mineru_poll_timeout_seconds: float = 180
 
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),

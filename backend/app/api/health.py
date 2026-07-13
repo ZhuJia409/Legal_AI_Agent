@@ -19,6 +19,7 @@ def dependency_health() -> dict[str, object]:
             "mysql": settings.mysql_host,
             "redis": settings.redis_url,
             "mongodb": settings.mongodb_url,
+            "neo4j": settings.neo4j_uri,
             "milvus": f"{settings.milvus_host}:{settings.milvus_port}",
             "minio": settings.minio_endpoint,
             "llm_model": settings.llm_model,

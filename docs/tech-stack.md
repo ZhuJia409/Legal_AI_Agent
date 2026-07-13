@@ -161,6 +161,27 @@ DeepAgents 作为复杂任务规划和子智能体能力层。
 
 参考：https://www.mongodb.com/docs/manual/introduction/
 
+### Neo4j
+
+用途：
+
+- 法律知识图谱
+- 法条、案件、主体、合同条款、证据材料之间的实体关系
+- 法律概念、案由、争议焦点、裁判规则之间的路径分析
+- GraphRAG 中的实体扩展、关系召回、路径解释和可视化
+
+选型理由：
+
+- 原生图数据库，适合表达多跳关系、实体网络和路径推理。
+- Cypher 查询语言成熟，便于描述法律实体之间的关系模式。
+- 适合与 Milvus 形成互补：Milvus 负责语义相似召回，Neo4j 负责结构化关系召回和图路径分析。
+- 本地开发采用 `neo4j:5.26-community`，优先选择 Neo4j 5 LTS 路线；生产环境可根据权限、备份、集群和图算法需求评估 Enterprise 版本。
+
+参考：
+
+- https://neo4j.com/docs/operations-manual/current/docker/
+- https://neo4j.com/docs/cypher-manual/current/introduction/
+
 ### MinIO
 
 用途：
@@ -187,6 +208,10 @@ DeepAgents 作为复杂任务规划和子智能体能力层。
 - `LLM_MODEL`
 - `EMBEDDING_MODEL`
 - `RERANKER_MODEL`
+- `NEO4J_URI`
+- `NEO4J_USER`
+- `NEO4J_PASSWORD`
+- `NEO4J_DATABASE`
 
 选型理由：
 
@@ -258,12 +283,13 @@ Fallback：`BAAI/bge-reranker-v2-m3`
 2. 原始文件存入 MinIO。
 3. 文档元数据存入 MySQL。
 4. 文档解析文本、分段结果、agent 中间事件存入 MongoDB。
-5. 使用 `BAAI/bge-m3` 生成 chunk 向量。
-6. 向量写入 Milvus。
-7. 问答时先从 Milvus 召回候选 chunk。
-8. 使用 `Qwen/Qwen3-Reranker-4B` 对候选结果重排。
-9. LangGraph 编排回答生成、引用来源整理、必要时触发 DeepAgents 复杂任务规划。
-10. FastAPI 通过 SSE 或同等流式机制返回回答、工具状态和引用来源。
+5. 从文档、法条、案例和合同条款中抽取实体与关系，写入 Neo4j 知识图谱。
+6. 使用 `BAAI/bge-m3` 生成 chunk 向量。
+7. 向量写入 Milvus。
+8. 问答时先从 Milvus 召回候选 chunk，并可按实体从 Neo4j 扩展相关法条、案例、主体和争议焦点。
+9. 使用 `Qwen/Qwen3-Reranker-4B` 对候选结果重排。
+10. LangGraph 编排回答生成、引用来源整理、图谱路径解释，必要时触发 DeepAgents 复杂任务规划。
+11. FastAPI 通过 SSE 或同等流式机制返回回答、工具状态、引用来源和图谱关系线索。
 
 ## 后续生产化方向
 
@@ -275,6 +301,7 @@ Fallback：`BAAI/bge-reranker-v2-m3`
 - 前端依赖清单
 - 数据库初始化脚本
 - Milvus collection schema
+- Neo4j 约束、索引和基础法律实体 schema
 - MinIO bucket 初始化
 - LangGraph 流程实现
 - DeepAgents 工具注册与权限边界
@@ -286,14 +313,13 @@ Fallback：`BAAI/bge-reranker-v2-m3`
 
 - 后端 FastAPI 最小应用、健康检查接口、配置模块、测试配置和 AI/数据库依赖清单。
 - 前端 Next.js App Router、React、TypeScript、Tailwind CSS、shadcn/ui 配置和 AI SDK 依赖。
-- 本地 Docker Compose 配置，包含 MySQL 8.4、Redis、MongoDB、MinIO、etcd、Milvus standalone。
+- 本地 Docker Compose 配置，包含 MySQL 8.4、Redis、MongoDB、Neo4j、MinIO、etcd、Milvus standalone。
 - 根目录 `.env.example`，保留真实密钥和密码为空。
 - Git 提交作者配置为 `Zhujia409 <657864108@qq.com>`。
 
 ## 当前阶段不做的内容
 
 - 不填写真实 API key、token 或生产密码。
-- 不下载 `Qwen/Qwen3-Reranker-4B` 权重。
 - 不启动 GPU 推理服务。
 - 不强制启动 Docker Desktop 或数据库容器。
 - 不编写业务代码
