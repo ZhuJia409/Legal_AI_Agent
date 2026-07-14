@@ -339,6 +339,7 @@ def build_report_context(
 ) -> dict[str, object]:
     """把 Pydantic 响应整理为只含展示字段的确定性模板上下文。"""
 
+    # 统计覆盖全部发现，但用户报告只展开最重要的十项，避免信息过载。
     sorted_findings = sorted(
         response.report.findings,
         key=lambda finding: (_RISK_ORDER[finding.risk_level], finding.finding_id),
@@ -347,16 +348,22 @@ def build_report_context(
     for finding in sorted_findings:
         risk_counts[finding.risk_level] += 1
 
-    background_fields = []
-    for field_name, label in _BACKGROUND_FIELDS:
-        evidence = getattr(response.background.background_card, field_name)
-        background_fields.append(
-            {
-                "label": label,
-                "text": _known_text(evidence.text),
-                "source_refs": [_source_ref_context(ref) for ref in evidence.source_refs],
-            }
-        )
+    displayed_findings = sorted_findings[:10]
+
+    # 依据从现有发现中确定性提取，去重且不允许模板层自行补写法律依据。
+    review_bases: list[str] = []
+    for finding in sorted_findings:
+        basis = finding.basis.strip()
+        if basis and basis not in review_bases:
+            review_bases.append(basis)
+        if len(review_bases) == 8:
+            break
+
+    primary_type = next(
+        (item for item in response.contract_types if item.is_primary),
+        response.contract_types[0] if response.contract_types else None,
+    )
+    background_card = response.background.background_card
 
     return {
         "task_id": _known_text(task_id),
@@ -367,56 +374,45 @@ def build_report_context(
         "status_label": "完整报告" if response.status == "complete" else "不完整报告",
         "partial_warning": "部分审查模块未成功完成，本报告不可作为签署依据。",
         "review_perspective_label": _PERSPECTIVE_LABELS[response.review_perspective],
-        "contract_category_label": _CATEGORY_LABELS[response.background.contract_category],
-        "contract_types": [
-            {
-                "label": _known_text(item.label),
-                "reason": _known_text(item.reason),
-                "is_primary": item.is_primary,
-                "source_refs": [_source_ref_context(ref) for ref in item.source_refs],
-            }
-            for item in response.contract_types
+        "contract_number": "未从材料确认",
+        "contract_type_label": _known_text(
+            primary_type.label
+            if primary_type
+            else _CATEGORY_LABELS[response.background.contract_category]
+        ),
+        "contract_parties": _known_text(background_card.counterparty_identity.text),
+        "amount_and_term": _known_text(background_card.amount_term_scope.text),
+        "reviewer": "AI 辅助生成，审查人待律师确认",
+        "completed_modules": [
+            _MODULE_LABELS[item.module]
+            for item in response.modules
+            if item.status == "succeeded"
         ],
-        "background_summary": _known_text(response.background.summary),
-        "background_disclaimer": _known_text(response.background.disclaimer),
-        "background_fields": background_fields,
-        "related_documents": [
-            {
-                "name": _known_text(item.name),
-                "status_label": "已提供" if item.status == "provided" else "缺失",
-            }
-            for item in response.background.related_documents
-        ],
-        "missing_questions": [_known_text(item) for item in response.background.missing_questions],
-        "pitfalls": [
-            {
-                "name": _known_text(item.name),
-                "risk": _known_text(item.risk),
-                "review_action": _known_text(item.review_action),
-                "source_refs": [_source_ref_context(ref) for ref in item.source_refs],
-            }
-            for item in response.background.pitfalls
-        ],
+        "review_bases": review_bases,
+        "scope_warning": (
+            "部分审查模块未完成，以下内容仅反映已完成范围。"
+            if response.status == "partial"
+            else None
+        ),
         "executive_summary": _known_text(response.report.executive_summary),
         "overall_risk_label": _RISK_LABELS[response.report.overall_risk_level],
         "signing_recommendation_label": _SIGNING_LABELS[
             response.report.signing_recommendation
         ],
         "risk_counts": risk_counts,
-        "findings": [_finding_context(item) for item in sorted_findings],
-        "modules": [
-            {
-                "label": _MODULE_LABELS[item.module],
-                "status_label": _MODULE_STATUS_LABELS[item.status],
-                "summary": _known_text(item.summary),
-                "missing_evidence": [_known_text(value) for value in item.missing_evidence],
-                "error_code": _known_text(item.error.code) if item.error else None,
-                "error_message": _known_text(item.error.message) if item.error else None,
-            }
-            for item in response.modules
+        "findings": [_finding_context(item) for item in displayed_findings],
+        "omitted_findings_count": len(sorted_findings) - len(displayed_findings),
+        "preconditions": [
+            _known_text(item) for item in response.report.preconditions[:5]
         ],
-        "preconditions": [_known_text(item) for item in response.report.preconditions],
-        "limitations": [_known_text(item) for item in response.report.limitations],
+        "attachments": [
+            {"name": "修改对比版合同", "status": "未生成"},
+            {
+                "name": "引用法规清单",
+                "status": "未单独生成，主要依据已在报告中列示",
+            },
+            {"name": "主体调查报告", "status": "未生成或未提供"},
+        ],
     }
 
 

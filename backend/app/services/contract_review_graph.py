@@ -697,7 +697,8 @@ def _report_system_prompt() -> str:
         "你负责汇总合同审查报告。只能合并输入中已经存在的 finding_id，不得新增事实、"
         "证据或法律风险。findings 中每项只填写 source_finding_ids 分组，不得重写风险字段；"
         "每个 ID 只能使用一次且必须来自输入。报告必须提示法律专业人士复核；存在失败模块"
-        "时不得建议直接签署。"
+        "时不得建议直接签署。结论摘要和签署前提必须使用简洁短句，签署前提最多五项，"
+        "不得补充输入中不存在的事实、法律依据或行业惯例。"
     )
 
 
@@ -719,7 +720,8 @@ def _report_prompt(
             "available_findings": [item.model_dump(mode="json") for item in findings],
             "instruction": (
                 "findings 仅输出 source_finding_ids 分组；不得输出或改写风险字段，"
-                "不得引用其他 ID，也不得重复使用同一 ID。"
+                "不得引用其他 ID，也不得重复使用同一 ID。executive_summary 使用简洁短句，"
+                "只概括关键风险与签署建议；preconditions 最多输出五项短句。"
             ),
         },
         ensure_ascii=False,

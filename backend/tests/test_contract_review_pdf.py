@@ -32,6 +32,7 @@ from app.services.contract_review_pdf import (
     PdfRendererUnavailableError,
     ReportPdfGenerationError,
     TectonicCompiler,
+    build_report_context,
     build_report_filename,
     create_latex_environment,
     latex_escape,
@@ -369,12 +370,12 @@ async def test_renderer_sorts_risks_and_renders_counts_and_unknown_labels() -> N
     assert "甲方立场" in source
     assert "建议暂不签署" in source
     assert "未从材料确认" in source
-    assert "法律专业人士复核" in source
-    assert "审查人" not in source
+    assert "专业法律人士复核" in source
+    assert "AI 辅助生成，审查人待律师确认" in source
 
 
 @pytest.mark.asyncio
-async def test_template_contains_required_sections_cover_alignment_and_module_failures() -> None:
+async def test_template_contains_only_five_concise_sections() -> None:
     compiler = CapturingCompiler()
     renderer = ContractReviewPdfRenderer(compiler=compiler)
 
@@ -389,38 +390,68 @@ async def test_template_contains_required_sections_cover_alignment_and_module_fa
     source = compiler.latex_source
     for section in (
         "一、合同基本信息",
-        "二、合同背景审查",
-        "三、审查范围与依据",
-        "四、总体结论",
-        "五、详细风险事项",
-        "六、模块状态、缺失材料与错误",
-        "七、签署前提",
-        "八、审查限制",
+        "二、审查范围与依据",
+        "三、重点风险及修改建议",
+        "四、综合审查结论",
+        "五、附件状态",
     ):
         assert section in source
 
-    assert r"\addcontentsline{toc}{section}{#1}" in source
-    assert source.count(r"\reportsection{") == 8
-    # 封面标签靠左、字段值靠右，长文件名仍由固定宽度列负责换行。
-    assert r">{\raggedright\arraybackslash\bfseries\color{LegalGreen}}p{3.6cm}" in source
-    assert r">{\raggedleft\arraybackslash}p{9.2cm}" in source
-    assert r"采\allowbreak{}购\allowbreak{}合\allowbreak{}同" in source
-    assert "背景审查提示：" in source
-    assert "九、免责声明" not in source
-    assert "本报告由人工智能基于当前材料辅助生成" not in source
-    assert "所有结论、建议及引用均须由法律专业人士结合完整材料复核" in source
-    assert r"\fieldlabel{问题：}签约主体无法确认" in source
-    assert r"\fieldlabel{依据：}统一社会信用代码缺失。" in source
-    assert r"\fieldlabel{影响：}可能无法确认合同相对方。" in source
+    assert source.count(r"\reportsection{") == 5
+    assert r"\begin{titlepage}" not in source
+    assert r"\tableofcontents" not in source
+    assert "合同背景审查" not in source
+    assert "模块状态、缺失材料与错误" not in source
+    assert "审查限制" not in source
+    assert "证据引用" not in source
+    assert r"\fieldlabel{风险描述：}签约主体无法确认" in source
+    assert r"\fieldlabel{法律后果：}可能无法确认合同相对方。" in source
     assert r"\fieldlabel{修改建议：}核验营业执照并补全主体信息。" in source
     assert r"\fieldlabel{谈判策略：}将主体核验作为签署前置条件。" in source
-    assert "乙方：某某公司" in source
-    assert "本合同用于采购生产设备。" in source
-    assert "乙方完整工商登记信息是什么？" in source
-    assert "名实不符" in source
-    assert "盖章版技术附件" in source
-    assert r"related\_parse\_error" in source
-    assert "关联文件解析失败" in source
+    assert "AI 辅助生成，审查人待律师确认" in source
+    assert "related_parse_error" not in source
+    assert r"related\_parse\_error" not in source
+    assert "关联文件解析失败" not in source
+    assert "未接入权威法条及行业惯例核验" in source
+    assert "专业法律人士复核" in source
+    assert "修改对比版合同 & 未生成" in source
+    assert "引用法规清单 & 未单独生成，主要依据已在报告中列示" in source
+    assert "主体调查报告 & 未生成或未提供" in source
+
+
+def test_report_context_limits_findings_bases_and_preconditions() -> None:
+    response = _report_response().model_copy(deep=True)
+    base_finding = response.report.findings[0]
+    response.report.findings = [
+        base_finding.model_copy(
+            update={
+                "finding_id": f"finding-{index:02d}",
+                "risk_level": ("low", "medium", "high", "fatal")[index % 4],
+                "issue": f"风险事项 {index}",
+                "basis": f"主要依据 {index}",
+            }
+        )
+        for index in range(12)
+    ]
+    response.report.preconditions = [f"签署前提 {index}" for index in range(7)]
+
+    context = build_report_context(
+        response,
+        task_id="task-context",
+        title="采购合同",
+        source_filename="采购合同.pdf",
+        generated_at=datetime(2026, 7, 13, tzinfo=UTC),
+    )
+
+    assert len(context["findings"]) == 10
+    assert sum(context["risk_counts"].values()) == 12
+    assert context["omitted_findings_count"] == 2
+    assert len(context["review_bases"]) == 8
+    assert len(context["preconditions"]) == 5
+    assert context["contract_number"] == "未从材料确认"
+    assert context["contract_parties"] == "未从材料确认"
+    assert context["amount_and_term"] == "总价 100 万元"
+    assert context["reviewer"] == "AI 辅助生成，审查人待律师确认"
 
 
 @pytest.mark.asyncio
