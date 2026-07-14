@@ -13,6 +13,16 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_model: str = "qwen3.7-plus"
     llm_fallback_model: str = "deepseek-v4-flash"
+    case_analysis_max_concurrency: int = Field(default=4, ge=1, le=32)
+    case_analysis_max_issues: int = Field(default=5, ge=1, le=5)
+    case_analysis_model_timeout_seconds: float = Field(default=120, gt=0, le=600)
+    case_analysis_max_content_chars: int = Field(default=60_000, ge=1, le=200_000)
+    case_analysis_max_upload_bytes: int = Field(
+        default=20 * 1024 * 1024,
+        ge=1,
+        le=100 * 1024 * 1024,
+    )
+    case_analysis_graph_recursion_limit: int = Field(default=40, ge=1, le=200)
     embedding_model: str = "BAAI/bge-m3"
     reranker_model: str = "Qwen/Qwen3-Reranker-4B"
     langsmith_tracing: bool = False

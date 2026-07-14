@@ -24,6 +24,15 @@ class ReviewDocumentRecord:
     created_at: datetime
 
 
+@dataclass(frozen=True, slots=True)
+class ContractReviewHistoryRecord:
+    task_id: str
+    title: str | None
+    status: str
+    overall_risk_level: str
+    created_at: datetime
+
+
 class SqlAlchemyContractReviewSnapshotRepository:
     def __init__(self, session_factory: async_sessionmaker) -> None:
         self.session_factory = session_factory
@@ -89,6 +98,51 @@ class SqlAlchemyContractReviewSnapshotRepository:
                 object_key=document.object_key,
                 created_at=document.created_at,
             )
+
+    async def list_report_history(
+        self, *, limit: int = 50
+    ) -> list[ContractReviewHistoryRecord]:
+        safe_limit = max(1, min(limit, 50))
+        async with self.session_factory() as session:
+            result = await session.execute(
+                select(ReviewTask, ContextSnapshot)
+                .join(ContextSnapshot, ContextSnapshot.task_id == ReviewTask.task_id)
+                .join(ReviewDocument, ReviewDocument.task_id == ReviewTask.task_id)
+                .where(ReviewDocument.document_type == "contract_review_report_pdf")
+                .order_by(ReviewTask.created_at.desc())
+                .limit(safe_limit)
+            )
+            records: list[ContractReviewHistoryRecord] = []
+            seen: set[str] = set()
+            for task, snapshot in result.all():
+                if task.task_id in seen:
+                    continue
+                full_report = snapshot.snapshot_payload.get("full_report")
+                if not isinstance(full_report, dict):
+                    continue
+                report = full_report.get("report")
+                risk = report.get("overall_risk_level") if isinstance(report, dict) else "unknown"
+                records.append(
+                    ContractReviewHistoryRecord(
+                        task_id=task.task_id,
+                        title=task.title,
+                        status=str(full_report.get("status") or task.status),
+                        overall_risk_level=str(risk or "unknown"),
+                        created_at=task.created_at,
+                    )
+                )
+                seen.add(task.task_id)
+            return records[:safe_limit]
+
+    async def get_report_snapshot(self, task_id: str) -> object | None:
+        async with self.session_factory() as session:
+            result = await session.execute(
+                select(ContextSnapshot.snapshot_payload).where(ContextSnapshot.task_id == task_id)
+            )
+            snapshot = result.scalar_one_or_none()
+            if not isinstance(snapshot, dict):
+                return None
+            return snapshot.get("full_report")
 
     async def save_paragraphs(self, *, task_id: str, paragraphs: list[dict[str, object]]) -> None:
         async with self.session_factory() as session:

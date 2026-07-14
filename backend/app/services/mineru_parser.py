@@ -11,7 +11,11 @@ from zipfile import BadZipFile, ZipFile
 import httpx
 from fastapi import UploadFile
 
-from app.services.document_parser import DocumentParseError
+from app.services.document_parser import (
+    DocumentParseError,
+    DocumentParserConfigurationError,
+    DocumentParserUpstreamError,
+)
 
 logger = logging.getLogger("legal_ai.services.mineru")
 
@@ -58,28 +62,32 @@ class MineruDocumentParser:
 
     async def parse_result(self, file: UploadFile) -> MineruParseResult:
         if not self.api_key:
-            raise DocumentParseError("MINERU_API_KEY is not configured.")
+            raise DocumentParserConfigurationError(
+                "MINERU_API_KEY is not configured."
+            )
 
         filename = file.filename or "uploaded-contract"
+        extension = _file_extension(filename)
         started = time.monotonic()
         try:
             file_bytes = await file.read()
-        except Exception as exc:
+        except OSError as exc:
+            # 仅收敛真实文件 I/O 失败，调用约定或类型错误必须继续暴露。
             raise DocumentParseError("读取上传文件失败。") from exc
 
         if not file_bytes:
             raise DocumentParseError("上传文件为空。")
 
         logger.info(
-            "mineru_parse_started filename=%s bytes=%d model_version=%s",
-            filename,
+            "mineru_parse_started extension=%s bytes=%d model_version=%s",
+            extension,
             len(file_bytes),
             self.model_version,
         )
         result = await self.parse_bytes(filename=filename, file_bytes=file_bytes)
         logger.info(
-            "mineru_parse_completed filename=%s batch_id=%s content_length=%d elapsed=%.2fs",
-            filename,
+            "mineru_parse_completed extension=%s batch_id=%s content_length=%d elapsed=%.2fs",
+            extension,
             result.batch_id,
             len(result.markdown),
             time.monotonic() - started,
@@ -88,15 +96,26 @@ class MineruDocumentParser:
 
     async def parse_bytes(self, *, filename: str, file_bytes: bytes) -> MineruParseResult:
         if not self.api_key:
-            raise DocumentParseError("MINERU_API_KEY is not configured.")
+            raise DocumentParserConfigurationError(
+                "MINERU_API_KEY is not configured."
+            )
         if not file_bytes:
             raise DocumentParseError("上传文件为空。")
 
         async with self.client_factory() as client:
             batch_id, upload_url = await self._create_upload_url(client, filename)
-            logger.info("mineru_upload_url_created filename=%s batch_id=%s", filename, batch_id)
+            extension = _file_extension(filename)
+            logger.info(
+                "mineru_upload_url_created extension=%s batch_id=%s",
+                extension,
+                batch_id,
+            )
             await self._upload_file(client, upload_url, file_bytes)
-            logger.info("mineru_upload_completed filename=%s batch_id=%s", filename, batch_id)
+            logger.info(
+                "mineru_upload_completed extension=%s batch_id=%s",
+                extension,
+                batch_id,
+            )
             zip_url = await self._poll_result(client, batch_id)
             zip_bytes = await self._download_zip(client, zip_url)
 
@@ -134,9 +153,9 @@ class MineruDocumentParser:
         batch_id = data.get("batch_id")
         upload_url = _first_upload_url(data)
         if not isinstance(batch_id, str) or not batch_id:
-            raise DocumentParseError("MinerU 未返回 batch_id。")
+            raise DocumentParserUpstreamError("MinerU 未返回 batch_id。")
         if not upload_url:
-            raise DocumentParseError("MinerU 未返回文件上传地址。")
+            raise DocumentParserUpstreamError("MinerU 未返回文件上传地址。")
         return batch_id, upload_url
 
     async def _upload_file(
@@ -149,7 +168,9 @@ class MineruDocumentParser:
             response = await client.put(upload_url, content=file_bytes)
             response.raise_for_status()
         except httpx.HTTPError as exc:
-            raise DocumentParseError("上传文件到 MinerU 预签名地址失败。") from exc
+            raise DocumentParserUpstreamError(
+                "上传文件到 MinerU 预签名地址失败。"
+            ) from exc
 
     async def _poll_result(self, client: httpx.AsyncClient, batch_id: str) -> str:
         deadline = time.monotonic() + self.poll_timeout_seconds
@@ -169,22 +190,24 @@ class MineruDocumentParser:
                 )
                 if zip_url:
                     return zip_url
-                raise DocumentParseError("MinerU 解析完成但未返回 full_zip_url。")
+                raise DocumentParserUpstreamError(
+                    "MinerU 解析完成但未返回 full_zip_url。"
+                )
 
             if state in {"failed", "fail", "error"}:
                 message = result.get("err_msg") or result.get("message") or "unknown error"
-                raise DocumentParseError(f"MinerU 文档解析失败：{message}")
+                raise DocumentParserUpstreamError(f"MinerU 文档解析失败：{message}")
 
             await asyncio.sleep(self.poll_interval_seconds)
 
-        raise DocumentParseError("MinerU 文档解析超时。")
+        raise DocumentParserUpstreamError("MinerU 文档解析超时。")
 
     async def _download_zip(self, client: httpx.AsyncClient, zip_url: str) -> bytes:
         try:
             response = await client.get(zip_url)
             response.raise_for_status()
         except httpx.HTTPError as exc:
-            raise DocumentParseError("下载 MinerU 解析结果失败。") from exc
+            raise DocumentParserUpstreamError("下载 MinerU 解析结果失败。") from exc
         return response.content
 
     async def _request_mineru_json(
@@ -203,34 +226,38 @@ class MineruDocumentParser:
                 **kwargs,
             )
         except httpx.HTTPError as exc:
-            raise DocumentParseError("调用 MinerU API 失败。") from exc
+            raise DocumentParserUpstreamError("调用 MinerU API 失败。") from exc
 
         try:
             payload = response.json()
         except ValueError as exc:
             if response.is_error:
-                raise DocumentParseError(
+                raise DocumentParserUpstreamError(
                     f"调用 MinerU API 失败（HTTP {response.status_code}）。"
                 ) from exc
-            raise DocumentParseError("MinerU API 返回内容不是有效 JSON。") from exc
+            raise DocumentParserUpstreamError(
+                "MinerU API 返回内容不是有效 JSON。"
+            ) from exc
 
         if response.is_error:
-            raise DocumentParseError(
+            raise DocumentParserUpstreamError(
                 f"调用 MinerU API 失败（HTTP {response.status_code}）："
                 f"{_mineru_error_message(payload)}"
             )
 
         if not isinstance(payload, dict):
-            raise DocumentParseError("MinerU API 返回结构无效。")
+            raise DocumentParserUpstreamError("MinerU API 返回结构无效。")
 
         code = payload.get("code")
         success = payload.get("success")
         if success is False or code not in (0, "0", None):
-            raise DocumentParseError(f"MinerU API 返回错误：{_mineru_error_message(payload)}")
+            raise DocumentParserUpstreamError(
+                f"MinerU API 返回错误：{_mineru_error_message(payload)}"
+            )
 
         data = payload.get("data")
         if not isinstance(data, dict):
-            raise DocumentParseError("MinerU API 未返回 data 对象。")
+            raise DocumentParserUpstreamError("MinerU API 未返回 data 对象。")
         return data
 
 
@@ -252,6 +279,13 @@ def _first_upload_url(data: dict[str, object]) -> str | None:
 def _safe_data_id(filename: str) -> str:
     data_id = re.sub(r"[^0-9A-Za-z_.-]+", "_", filename).strip("._-")
     return (data_id or "uploaded_contract")[:128]
+
+
+def _file_extension(filename: str) -> str:
+    basename = filename.replace("\\", "/").rsplit("/", 1)[-1]
+    if "." not in basename:
+        return "unknown"
+    return f".{basename.rsplit('.', 1)[-1].lower()}"
 
 
 def _mineru_error_message(payload: object) -> str:
@@ -279,7 +313,7 @@ def _first_extract_result(data: dict[str, object]) -> dict[str, object]:
         return result
     if isinstance(result, list) and result and isinstance(result[0], dict):
         return result[0]
-    raise DocumentParseError("MinerU API 未返回解析结果。")
+    raise DocumentParserUpstreamError("MinerU API 未返回解析结果。")
 
 
 def _first_non_empty(*values: object) -> str | None:

@@ -209,4 +209,16 @@ class ContractReviewReportResponse(BaseModel):
     report_document: ReportDocumentInfo | None = None
 
 
+class ContractReviewHistoryItem(BaseModel):
+    task_id: str
+    title: str | None
+    status: ReviewStatus
+    risk_level: RiskLevel
+    created_at: datetime
+
+
+class ContractReviewHistoryResponse(BaseModel):
+    items: list[ContractReviewHistoryItem]
+
+
 ContractTypeSelectionDraft.model_rebuild()

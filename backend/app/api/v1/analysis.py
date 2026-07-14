@@ -3,7 +3,7 @@ import logging
 import re
 import time
 import uuid
-from collections.abc import Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from io import BytesIO
 from typing import Annotated, cast
@@ -11,24 +11,32 @@ from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse, Response
-from starlette.datastructures import Headers, UploadFile
+from starlette.datastructures import FormData, Headers, UploadFile
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.types import Message
 
 from app.core.config import Settings, get_settings
 from app.db.session import build_mysql_session_factory
 from app.integrations.llm.client import (
     LLMClientError,
-    LLMClientProtocol,
     LLMConfigurationError,
-    OpenAICompatibleLLMClient,
 )
 from app.repositories.contract_review import (
     PymongoContractReviewAuditRepository,
     SqlAlchemyContractReviewSnapshotRepository,
 )
-from app.schemas.analysis import AnalysisRequest, AnalysisResponse
+from app.schemas.analysis import AnalysisRequest
 from app.schemas.contract_background import ContractBackgroundResponse
-from app.schemas.contract_review import ContractReviewReportResponse, ReviewPerspective
-from app.services.case_analysis import CaseAnalysisService
+from app.schemas.contract_review import (
+    ContractReviewHistoryResponse,
+    ContractReviewReportResponse,
+    ReviewPerspective,
+)
+from app.services.analysis_history import (
+    ContractReviewHistoryService,
+    HistoryNotFoundError,
+    HistorySnapshotError,
+)
 from app.services.contract_background import ContractBackgroundService
 from app.services.contract_review_documents import (
     ContractReviewDocumentService,
@@ -50,7 +58,11 @@ from app.services.contract_review_persistence import (
     ContractReviewPersistenceService,
     ContractReviewSourceFile,
 )
-from app.services.document_parser import DocumentParseError
+from app.services.document_parser import (
+    DocumentParseError,
+    DocumentParserConfigurationError,
+    DocumentParserUpstreamError,
+)
 from app.services.mineru_parser import (
     DocumentParserProtocol,
     MineruDocumentParser,
@@ -69,9 +81,17 @@ RELATED_FILE_CONTENT_TYPES = {
     "application/octet-stream",
 }
 MAX_RELATED_FILES = 8
+MAX_CONTRACT_FILE_BYTES = 20 * 1024 * 1024
 MAX_RELATED_FILE_BYTES = 20 * 1024 * 1024
 MAX_RELATED_TOTAL_BYTES = 64 * 1024 * 1024
 RELATED_PARSE_CONCURRENCY = 3
+_CONTRACT_MULTIPART_BODY_OVERHEAD_BYTES = 1024 * 1024
+
+ReceiveCallable = Callable[[], Awaitable[Message]]
+
+
+class ContractUploadBodyTooLargeError(OSError):
+    """合同 multipart 请求体在表单落盘过程中超过硬边界。"""
 
 
 class UnsupportedRelatedFileTypeError(ValueError):
@@ -96,15 +116,6 @@ class ResolvedContractReviewContent:
     related_files: tuple[ContractReviewSourceFile, ...] = ()
     provided_related_documents: tuple[str, ...] = ()
     mineru_result: MineruParseResult | None = None
-
-
-def get_llm_client(settings: Annotated[Settings, Depends(get_settings)]) -> LLMClientProtocol:
-    return OpenAICompatibleLLMClient(
-        base_url=settings.llm_base_url,
-        api_key=settings.llm_api_key,
-        model=settings.llm_model,
-        fallback_model=settings.llm_fallback_model,
-    )
 
 
 def get_contract_background_service(
@@ -196,6 +207,14 @@ def get_contract_review_document_service(
     )
 
 
+def get_contract_review_history_service(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> ContractReviewHistoryService:
+    return ContractReviewHistoryService(
+        SqlAlchemyContractReviewSnapshotRepository(build_mysql_session_factory(settings))
+    )
+
+
 async def _resolve_content(
     request: Request,
     document_parser: DocumentParserProtocol,
@@ -213,32 +232,29 @@ async def _resolve_content(
                 message="请上传 PDF 或 DOCX 文件。",
             )
         filename = file.filename or "uploaded-document"
+        extension = _file_extension(filename)
         logger.info(
-            "document_upload_received filename=%s content_type=%s",
-            filename,
+            "document_upload_received extension=%s content_type=%s",
+            extension,
             file.content_type,
         )
         try:
             started = time.monotonic()
-            logger.info("document_parse_started filename=%s", filename)
+            logger.info("document_parse_started extension=%s", extension)
             content = await document_parser.parse(file)
             logger.info(
-                "document_parse_completed filename=%s content_length=%d elapsed=%.2fs",
-                filename,
+                "document_parse_completed extension=%s content_length=%d elapsed=%.2fs",
+                extension,
                 len(content),
                 time.monotonic() - started,
             )
         except DocumentParseError as exc:
             logger.warning(
-                "document_parse_failed filename=%s error_type=%s",
-                filename,
+                "document_parse_failed extension=%s error_type=%s",
+                extension,
                 exc.__class__.__name__,
             )
-            return _error_response(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                code="document_parse_error",
-                message=str(exc),
-            )
+            return _document_parser_error_response(exc)
         return (title if isinstance(title, str) else None), content
 
     if "application/json" in content_type:
@@ -290,7 +306,9 @@ async def _resolve_contract_review_content(
         title, content = resolved
         return ResolvedContractReviewContent(title=title, content=content)
 
-    form = await request.form()
+    form = await _parse_contract_multipart_form(request)
+    if isinstance(form, JSONResponse):
+        return form
     title = form.get("title")
     file = form.get("file")
     if not isinstance(file, UploadFile):
@@ -301,14 +319,24 @@ async def _resolve_contract_review_content(
         )
 
     filename = file.filename or "uploaded-document"
+    extension = _file_extension(filename)
     content_type = file.content_type or "application/octet-stream"
+    # 主合同与关联文件共用 PDF/DOCX 白名单，避免绕过前端限制提交其他格式。
+    if not _is_supported_related_file(filename, content_type):
+        return _error_response(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            code="unsupported_file_type",
+            message="合同文件仅支持 PDF 或 DOCX 格式。",
+        )
     logger.info(
-        "contract_document_upload_received filename=%s content_type=%s",
-        filename,
+        "contract_document_upload_received extension=%s content_type=%s",
+        extension,
         content_type,
     )
     try:
-        source_bytes = await file.read()
+        source_bytes = await file.read(MAX_CONTRACT_FILE_BYTES + 1)
+        if len(source_bytes) > MAX_CONTRACT_FILE_BYTES:
+            return _contract_file_too_large_response()
         await file.seek(0)
         related_files = await _read_related_files(form)
     except UnsupportedRelatedFileTypeError:
@@ -323,8 +351,8 @@ async def _resolve_contract_review_content(
             code=exc.code,
             message=exc.message,
         )
-    except Exception:
-        logger.warning("contract_document_read_failed filename=%s", filename)
+    except OSError:
+        logger.warning("contract_document_read_failed extension=%s", extension)
         return _error_response(
             status_code=status.HTTP_400_BAD_REQUEST,
             code="document_read_error",
@@ -333,7 +361,7 @@ async def _resolve_contract_review_content(
 
     try:
         started = time.monotonic()
-        logger.info("contract_document_parse_started filename=%s", filename)
+        logger.info("contract_document_parse_started extension=%s", extension)
         parse_result = getattr(document_parser, "parse_result", None)
         if callable(parse_result):
             mineru_result = await parse_result(file)
@@ -342,22 +370,18 @@ async def _resolve_contract_review_content(
             mineru_result = None
             content = await document_parser.parse(file)
         logger.info(
-            "contract_document_parse_completed filename=%s content_length=%d elapsed=%.2fs",
-            filename,
+            "contract_document_parse_completed extension=%s content_length=%d elapsed=%.2fs",
+            extension,
             len(content),
             time.monotonic() - started,
         )
     except DocumentParseError as exc:
         logger.warning(
-            "contract_document_parse_failed filename=%s error_type=%s",
-            filename,
+            "contract_document_parse_failed extension=%s error_type=%s",
+            extension,
             exc.__class__.__name__,
         )
-        return _error_response(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            code="document_parse_error",
-            message=str(exc),
-        )
+        return _document_parser_error_response(exc)
 
     return ResolvedContractReviewContent(
         title=title if isinstance(title, str) else None,
@@ -472,11 +496,11 @@ async def _parse_related_documents(
                     ParsedRelatedDocument(filename=source_file.filename, content=content),
                     None,
                 )
-            except Exception as exc:
-                # 附件是非关键输入，解析器或网络的单点异常不得中断其余审查分支。
+            except DocumentParseError as exc:
+                # 仅降级解析器声明的业务异常；编程错误必须继续暴露，避免静默生成残缺报告。
                 logger.warning(
-                    "related_document_parse_failed filename=%s error_type=%s",
-                    source_file.filename,
+                    "related_document_parse_failed extension=%s error_type=%s",
+                    _file_extension(source_file.filename),
                     exc.__class__.__name__,
                 )
                 return (
@@ -498,7 +522,10 @@ async def _resolve_review_perspective(
 ) -> ReviewPerspective | JSONResponse:
     content_type = request.headers.get("content-type", "").lower()
     if "multipart/form-data" in content_type:
-        raw_value = (await request.form()).get("review_perspective", "neutral")
+        form = await _parse_contract_multipart_form(request)
+        if isinstance(form, JSONResponse):
+            return form
+        raw_value = form.get("review_perspective", "neutral")
     elif "application/json" in content_type:
         try:
             payload = await request.json()
@@ -542,52 +569,84 @@ def _sanitize_uploaded_filename(filename: str) -> str:
 
 def _is_supported_related_file(filename: str, content_type: str) -> bool:
     return filename.lower().endswith(RELATED_FILE_EXTENSIONS) and (
-        content_type.lower() in RELATED_FILE_CONTENT_TYPES
+        _normalize_media_type(content_type) in RELATED_FILE_CONTENT_TYPES
     )
 
 
-@router.post("/case-analyses", response_model=AnalysisResponse)
-async def create_case_analysis(
-    request: Request,
-    llm_client: Annotated[LLMClientProtocol, Depends(get_llm_client)],
-    document_parser: Annotated[DocumentParserProtocol, Depends(get_document_parser)],
-) -> AnalysisResponse | JSONResponse:
-    resolved = await _resolve_content(request, document_parser)
-    if isinstance(resolved, JSONResponse):
-        return resolved
-    title, content = resolved
+def _normalize_media_type(value: str) -> str:
+    return value.partition(";")[0].strip().lower()
 
+
+def _file_extension(filename: str) -> str:
+    basename = filename.replace("\\", "/").rsplit("/", 1)[-1]
+    if "." not in basename:
+        return "unknown"
+    return f".{basename.rsplit('.', 1)[-1].lower()}"
+
+
+async def _parse_contract_multipart_form(
+    request: Request,
+) -> FormData | JSONResponse:
+    if getattr(request, "_form", None) is not None:
+        return await request.form()
+
+    max_body_bytes = (
+        MAX_CONTRACT_FILE_BYTES
+        + MAX_RELATED_TOTAL_BYTES
+        + _CONTRACT_MULTIPART_BODY_OVERHEAD_BYTES
+    )
+    declared_length = request.headers.get("content-length")
+    if declared_length is not None:
+        try:
+            if int(declared_length) > max_body_bytes:
+                return _contract_file_too_large_response()
+        except ValueError:
+            pass
+
+    # 同一 Request 会被报告视角解析复用，直接替换 receive 可确保首次 form 落盘就受限。
+    request._receive = _build_contract_limited_receive(  # noqa: SLF001
+        request.receive,
+        max_body_bytes=max_body_bytes,
+    )
     try:
-        started = time.monotonic()
-        logger.info(
-            "case_analysis_started content_length=%d has_title=%s",
-            len(content),
-            bool(title),
-        )
-        result = await CaseAnalysisService(llm_client).analyze(
-            title=title,
-            content=content,
-        )
-        logger.info(
-            "case_analysis_completed risk_level=%s elapsed=%.2fs",
-            result.risk_level,
-            time.monotonic() - started,
-        )
-        return result
-    except LLMConfigurationError:
-        logger.warning("case_analysis_failed error_type=LLMConfigurationError")
+        return await request.form(max_files=100, max_fields=16)
+    except ContractUploadBodyTooLargeError:
+        return _contract_file_too_large_response()
+    except StarletteHTTPException:
         return _error_response(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            code="llm_configuration_error",
-            message="模型服务未配置，请检查服务端环境变量。",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            code="invalid_multipart",
+            message="multipart 请求格式无效。",
         )
-    except LLMClientError:
-        logger.warning("case_analysis_failed error_type=LLMClientError")
-        return _error_response(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            code="llm_upstream_error",
-            message="模型服务暂时不可用，请稍后重试。",
-        )
+
+
+def _build_contract_limited_receive(
+    receive: ReceiveCallable,
+    *,
+    max_body_bytes: int,
+) -> ReceiveCallable:
+    received = 0
+
+    async def limited_receive() -> Message:
+        nonlocal received
+        message = await receive()
+        if message["type"] == "http.request":
+            received += len(message.get("body", b""))
+            if received > max_body_bytes:
+                raise ContractUploadBodyTooLargeError(
+                    "contract multipart body exceeds limit"
+                )
+        return message
+
+    return limited_receive
+
+
+def _contract_file_too_large_response() -> JSONResponse:
+    return _error_response(
+        status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+        code="file_too_large",
+        message="上传文件超过服务端大小限制。",
+    )
 
 
 @router.post("/contract-reviews", response_model=ContractBackgroundResponse)
@@ -808,6 +867,72 @@ async def create_contract_review_report(
         )
 
 
+@router.get("/contract-review-reports", response_model=ContractReviewHistoryResponse)
+async def list_contract_review_reports(
+    history_service: Annotated[
+        ContractReviewHistoryService,
+        Depends(get_contract_review_history_service),
+    ],
+) -> ContractReviewHistoryResponse | JSONResponse:
+    try:
+        return await history_service.list_history()
+    except Exception as exc:
+        logger.warning(
+            "contract_review_history_list_failed error_type=%s",
+            exc.__class__.__name__,
+        )
+        return _error_response(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            code="history_storage_error",
+            message="合同审查历史暂时无法读取，请稍后重试。",
+        )
+
+
+@router.get(
+    "/contract-review-reports/{task_id}",
+    response_model=ContractReviewReportResponse,
+)
+async def get_contract_review_report(
+    task_id: str,
+    history_service: Annotated[
+        ContractReviewHistoryService,
+        Depends(get_contract_review_history_service),
+    ],
+) -> ContractReviewReportResponse | JSONResponse:
+    try:
+        normalized_task_id = str(uuid.UUID(task_id))
+    except ValueError:
+        return _error_response(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            code="validation_error",
+            message="任务 ID 格式无效。",
+        )
+    try:
+        return await history_service.get_report(normalized_task_id)
+    except HistoryNotFoundError:
+        return _error_response(
+            status_code=status.HTTP_404_NOT_FOUND,
+            code="history_not_found",
+            message="未找到该合同审查历史。",
+        )
+    except HistorySnapshotError:
+        return _error_response(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            code="history_snapshot_error",
+            message="合同审查历史数据无法恢复。",
+        )
+    except Exception as exc:
+        logger.warning(
+            "contract_review_history_read_failed error_type=%s",
+            exc.__class__.__name__,
+        )
+        return _error_response(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            code="history_storage_error",
+            message="合同审查历史暂时无法读取，请稍后重试。",
+        )
+
+
 @router.get("/contract-review-reports/{task_id}/document")
 async def download_contract_review_report_document(
     task_id: str,
@@ -862,6 +987,26 @@ async def download_contract_review_report_document(
         content=document.content,
         media_type="application/pdf",
         headers=headers,
+    )
+
+
+def _document_parser_error_response(exc: DocumentParseError) -> JSONResponse:
+    if isinstance(exc, DocumentParserConfigurationError):
+        return _error_response(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            code="document_parser_configuration_error",
+            message="文档解析服务配置不可用，请联系管理员。",
+        )
+    if isinstance(exc, DocumentParserUpstreamError):
+        return _error_response(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            code="document_parser_upstream_error",
+            message="文档解析服务暂时不可用，请稍后重试。",
+        )
+    return _error_response(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        code="document_parse_error",
+        message="文档解析失败，请检查文件后重试。",
     )
 
 
