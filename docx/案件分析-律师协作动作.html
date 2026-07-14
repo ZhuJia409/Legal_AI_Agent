@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>律师协作动作·在线分享版（卡片式）</title>
+<style>
+  :root{
+    --primary:#2563eb;
+    --primary-dark:#1d4ed8;
+    --primary-light:#dbeafe;
+    --text:#1e293b;
+    --text-soft:#475569;
+    --border:#e5e7eb;
+    --bg:#f8fafc;
+    --card-bg:#ffffff;
+    --shadow:0 1px 3px rgba(0,0,0,0.04);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.7;
+    font-size:14px;
+  }
+  .container{
+    max-width:1080px;
+    margin:0 auto;
+    padding:32px 24px 80px;
+  }
+  .page-header{
+    text-align:left;
+    margin-bottom:32px;
+    padding:8px 0 14px 0;
+    border-bottom:3px solid var(--primary);
+  }
+  .page-header h1{
+    font-size:26px;
+    color:#0f172a;
+    font-weight:700;
+    margin-bottom:6px;
+    letter-spacing:0.5px;
+  }
+  .page-header p{
+    color:var(--text-soft);
+    font-size:13px;
+  }
+  /* TOC */
+  .toc{
+    background:var(--card-bg);
+    border-radius:8px;
+    padding:20px 24px;
+    margin-bottom:32px;
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+  }
+  .toc h2{
+    font-size:16px;
+    color:var(--primary-dark);
+    margin-bottom:12px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--border);
+  }
+  .toc-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px 16px;
+  }
+  .toc-grid a{
+    color:var(--text);
+    text-decoration:none;
+    padding:6px 10px;
+    border-radius:4px;
+    font-size:13px;
+    transition:all .15s;
+  }
+  .toc-grid a:hover{
+    background:var(--primary-light);
+    color:var(--primary-dark);
+  }
+  /* Stage */
+  .stage{
+    margin-bottom:40px;
+    scroll-margin-top:24px;
+  }
+  .stage-title{
+    font-size:26px;
+    color:#0f172a;
+    padding:8px 0 14px 0;
+    margin:40px 0 8px 0;
+    border-bottom:3px solid var(--primary);
+    font-weight:700;
+    letter-spacing:0.5px;
+  }
+  .legal-basis{
+    color:var(--text-soft);
+    font-size:12.5px;
+    padding:0 16px 12px;
+    border-bottom:1px dashed var(--border);
+    margin-bottom:20px;
+  }
+  /* Action card */
+  .action-card{
+    background:var(--card-bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:0 22px 18px 22px;
+    margin-bottom:14px;
+    box-shadow:var(--shadow);
+    scroll-margin-top:24px;
+  }
+  .action-title{
+    font-size:16px;
+    color:#0f172a;
+    margin:0;
+    padding:14px 18px 12px 18px;
+    border-bottom:1px solid #e2e8f0;
+    font-weight:600;
+    background:#f8fafc;
+    border-radius:8px 8px 0 0;
+  }
+  .action-title .num{
+    display:inline-block;
+    background:var(--primary);
+    color:#fff;
+    font-size:12px;
+    padding:2px 8px;
+    border-radius:4px;
+    margin-right:10px;
+    font-weight:600;
+  }
+  .sub-item{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:6px 0;
+    margin:4px 0;
+    border-bottom:1px dashed #f1f5f9;
+  }
+  .sub-item:last-child{border-bottom:0}
+  .sub-num{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    font-size:12px;
+    font-weight:600;
+    margin-top:1px;
+  }
+  .sub-content{
+    flex:1;
+    color:var(--text);
+    font-size:13.5px;
+    line-height:1.75;
+  }
+  /* 响应式 */
+  @media (max-width:720px){
+    .container{padding:20px 14px 60px}
+    .page-header h1{font-size:22px}
+    .toc-grid{grid-template-columns:repeat(2,1fr)}
+    .stage-title{font-size:18px}
+    .action-title{font-size:15px}
+  }
+
+  /* Floating side nav */
+  .float-nav{
+    position:fixed;
+    top:80px;
+    right:18px;
+    width:240px;
+    max-height:calc(100vh - 110px);
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.06);
+    z-index:99;
+    overflow:hidden;
+  }
+  .float-nav.collapsed{width:42px;height:42px}
+  .float-nav.collapsed .nav-body{display:none}
+  .nav-toggle{
+    position:absolute;
+    top:6px;
+    right:6px;
+    width:30px;
+    height:30px;
+    background:transparent;
+    border:0;
+    color:var(--primary);
+    font-size:18px;
+    cursor:pointer;
+    z-index:2;
+  }
+  .float-nav.collapsed .nav-toggle{position:static;width:42px;height:42px}
+  .nav-body{padding:14px 14px 14px 16px;overflow-y:auto;max-height:calc(100vh - 130px)}
+  .float-nav h3{font-size:13px;color:var(--primary-dark);font-weight:700;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border)}
+  .nav-stage{margin-bottom:10px}
+  .nav-stage-title{display:block;font-size:12px;color:#0f172a;text-decoration:none;font-weight:600;padding:3px 0}
+  .nav-stage-title:hover{color:var(--primary-dark)}
+  .nav-actions{list-style:none;padding:0 0 0 8px;margin:2px 0 0 0;border-left:1px dashed var(--border)}
+  .nav-actions li a{display:block;font-size:11px;color:var(--text-soft);text-decoration:none;padding:2px 6px;border-radius:3px;line-height:1.4}
+  .nav-actions li a:hover{background:var(--primary-light);color:var(--primary-dark)}
+  .nav-actions li a.active{background:var(--primary);color:#fff}
+
+  @media print{
+    .action-card{page-break-inside:avoid}
+    .stage{page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div style="background:#dbeafe;border-bottom:1px solid #93c5fd;padding:10px 20px;font-size:13px;color:#1e40af;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+  <span><strong>本地副本</strong>：本文件由线上分享版离线保存，可直接用浏览器双击打开（无需联网）。</span>
+  <span style="opacity:0.85;">需要保存为 PDF？按 <kbd style="background:#fff;padding:2px 6px;border-radius:3px;border:1px solid #d1d5db;font-family:monospace;">Ctrl/Cmd + P</kbd> &rarr; 另存为 PDF</span>
+</div>
+<div class="container">
+  <header class="page-header">
+    <h1>律师协作动作·精简版</h1>
+  </header>
+  <main>
+  <section class="stage" id="stage-1">
+    <h1 class="stage-title">一、接案初筛 & 诉求锁定</h1>
+    <p class="legal-basis">（依据：《律师法》§28 律师执业纪律；《律师执业行为规范》§7-9 收案规范）</p>
+  <section class="action-card" id="stage-1-action-1">
+    <h2 class="action-title"><span class="num">01</span>与客户首次会谈（30-60 分钟），让客户&quot;讲故事&quot;</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">预约会谈（确认时间、地点、参会人员）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">开场说明律师执业保密+本次会谈目的</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">开放式提问让客户自由陈述（不打断）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">对关键事实节点做 5W2H 追问</span></div>
+      <div class="sub-item"><span class="sub-num">5</span><span class="sub-content">结束时归纳确认</span></div>
+  </section>
+  <section class="action-card" id="stage-1-action-2">
+    <h2 class="action-title"><span class="num">02</span>倾听中识别&quot;真正的诉求&quot;——客户嘴上说的和心里想的可能不同</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">对比客户口头诉求 vs 情绪诉求 vs 行为诉求</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">识别隐藏诉求（如&quot;讨个说法&quot;实质是要道歉/赔偿）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">确认客户没说出口的隐含期待</span></div>
+  </section>
+  <section class="action-card" id="stage-1-action-3">
+    <h2 class="action-title"><span class="num">03</span>评估诉求的合理性：法律上有没有依据？事实支不支持？</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">法律依据检索（实体法条款、相关司法解释）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">评估事实要件匹配度（客户掌握的事实能否证成法律要件）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">初步胜诉概率评估（30%? 50%? 70%+?）</span></div>
+  </section>
+  <section class="action-card" id="stage-1-action-4">
+    <h2 class="action-title"><span class="num">04</span>区分理想诉求 / 目标诉求 / 底线诉求三层</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">引导客户说出&quot;最想要的结果&quot;</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">向客户提问：'如果拿不到最想要的，最低接受什么'</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">向客户提问：'如果最低也拿不到，是否还要诉讼'</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">分层标注</span></div>
+  </section>
+  <section class="action-card" id="stage-1-action-5">
+    <h2 class="action-title"><span class="num">05</span>询问客户的预算、时间、对结果的期待</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">直接询问律师费预算（按阶段还是按结果）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">了解客户时间期待（多久要有结果）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">了解客户结果期待（赔偿金额、和解、道歉、停止侵害）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">识别客户决策权人是谁</span></div>
+  </section>
+  <section class="action-card" id="stage-1-action-6">
+    <h2 class="action-title"><span class="num">06</span>初判案件类型（7 类路由）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">识别核心法律关系（合同/侵权/劳动/婚姻/行政/刑事）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">在 7 类路由（民商/劳动/知产/行政/刑事/执行/国赔）中归类案件</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">识别可能交叉（如劳动+商事）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">给出案件类型识别置信度</span></div>
+  </section>
+  <section class="action-card" id="stage-1-action-7">
+    <h2 class="action-title"><span class="num">07</span>紧急筛查 4 个致命红线（详见 1.4）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">核查诉讼时效（知道/应当知道权利受侵害之日+3 年）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">核查仲裁前置（合同是否约定仲裁、劳动争议强制仲裁）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">核查管辖（被告住所地/合同履行地/专属管辖）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">核查一事不再理/既判力</span></div>
+  </section>
+  <section class="action-card" id="stage-1-action-8">
+    <h2 class="action-title"><span class="num">08</span>启动律所内部利益冲突检索</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">录入客户+对方当事人姓名</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">由系统自动比对现有/历史案件库</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">识别同时冲突（代理对方）+ 继受冲突（曾代理对方）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">评定冲突等级（绝对冲突/可豁免冲突/无冲突）</span></div>
+  </section>
+  <section class="action-card" id="stage-1-action-9">
+    <h2 class="action-title"><span class="num">09</span>完成收案审批/保密承诺</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">准备收案审批表（客户信息+案件简介+利益冲突状态+律师费方案）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">由主办律师在利益冲突审查表上签字</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">由审批人/合伙人在利益冲突审查表上签字</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">与客户签订委托代理合同</span></div>
+      <div class="sub-item"><span class="sub-num">5</span><span class="sub-content">与团队成员签订保密承诺函</span></div>
+  </section>
+  <section class="action-card" id="stage-1-action-10">
+    <h2 class="action-title"><span class="num">10</span>评估团队承接能力（专业匹配度、案件量）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">识别案件所属专业领域</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">匹配律师团队擅长领域</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">评估团队当前工作负荷</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">评估是否需要外部专家（如专利代理人、税务师）</span></div>
+  </section>
+  </section>
+
+  <section class="stage" id="stage-2">
+    <h1 class="stage-title">二、收取全盘材料 & 事实重构</h1>
+    <p class="legal-basis">（依据：《律师法》§30 调查取证权；《民事诉讼法》§64-74 举证规则）</p>
+  <section class="action-card" id="stage-2-action-1">
+    <h2 class="action-title"><span class="num">01</span>出具材料清单给客户（含具体格式要求）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">按案件类型清单化所需材料</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">标注每份材料的格式（原件/复印件/电子档/扫描件）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">标注提交时点</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">给客户出具书面/电子材料清单</span></div>
+  </section>
+  <section class="action-card" id="stage-2-action-2">
+    <h2 class="action-title"><span class="num">02</span>与客户对接材料补充</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">分批收取材料（每周/每两周）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">由律师预审材料</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">标注缺失/不清晰处</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">向客户反馈补充材料要求</span></div>
+      <div class="sub-item"><span class="sub-num">5</span><span class="sub-content">待补充材料后再行审查</span></div>
+  </section>
+  <section class="action-card" id="stage-2-action-3">
+    <h2 class="action-title"><span class="num">03</span>搭建事实时间线（按时间倒序/正序）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">按时间顺序整理所有关键事件</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">标注事件类型（合同签订/履行/违约/催告/诉讼）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">列出每条事实的证据支撑</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">将时间线图示化</span></div>
+  </section>
+  <section class="action-card" id="stage-2-action-4">
+    <h2 class="action-title"><span class="num">04</span>识别关键事实节点（合同签订、违约发生、催告等）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">对照案件类型的关键节点清单核验</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">从时间线中筛选 Top 5-10 关键节点</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">每个节点标注：发生时间、持续时长、证据状态、对法律要件的意义</span></div>
+  </section>
+  <section class="action-card" id="stage-2-action-5">
+    <h2 class="action-title"><span class="num">05</span>标注事实疑点（冲突/缺失/孤证）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">识别材料间的矛盾点（A说X、B说Y）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">识别缺漏材料（无合同/无催告记录）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">识别孤证（仅一份言词证据）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">分级标注（红/黄/绿）</span></div>
+  </section>
+  <section class="action-card" id="stage-2-action-6">
+    <h2 class="action-title"><span class="num">06</span>区分三色事实</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">识别白事实（双方无争议+有证据）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">识别灰事实（有证据但有争议/有疑点）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">识别黑事实（无证据/有相反证据）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">处置三色事实：白事实直接采用、灰事实需补强、黑事实需放弃/转换思路</span></div>
+  </section>
+  </section>
+
+  <section class="stage" id="stage-3">
+    <h1 class="stage-title">三、筛查证据三性 & 预判短板</h1>
+    <p class="legal-basis">（依据：《民事诉讼法》§65 证据三性；《最高人民法院关于民事诉讼证据的若干规定》§85-92）</p>
+  <section class="action-card" id="stage-3-action-1">
+    <h2 class="action-title"><span class="num">01</span>按案件类型确认举证规则</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">检索该案件类型举证规则（《民诉法》/《最高院关于民事诉讼证据的若干规定》/单行法）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">区分一般举证 vs 举证倒置 vs 特殊举证</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">列出本案的举证责任分配</span></div>
+  </section>
+  <section class="action-card" id="stage-3-action-2">
+    <h2 class="action-title"><span class="num">02</span>逐份证据做三性审查</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">审查证据真实性（形式真实+内容真实）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">合法性（取证手段+证据形式）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">审查证据关联性（与待证事实的关联度）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">出具每份证据的三性结论</span></div>
+  </section>
+  <section class="action-card" id="stage-3-action-3">
+    <h2 class="action-title"><span class="num">03</span>评估每份证据的证明力强度</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">标注证据类型（书证/物证/证人证言/鉴定意见/视听资料/电子数据）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">标注证据来源（原始/传来）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">审查证据完整性</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">给出综合证明力评分（1-5 分）</span></div>
+  </section>
+  <section class="action-card" id="stage-3-action-4">
+    <h2 class="action-title"><span class="num">04</span>标注瑕疵证据（可补正的）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">识别瑕疵类型（签字瑕疵/形式瑕疵/超过举证期限）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">评估是否可补正</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">制定补正方案</span></div>
+  </section>
+  <section class="action-card" id="stage-3-action-5">
+    <h2 class="action-title"><span class="num">05</span>标注孤证/弱证</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">识别仅有一份证据支撑的关键事实</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">评估孤证被推翻的风险</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">制定证据补强计划</span></div>
+  </section>
+  <section class="action-card" id="stage-3-action-6">
+    <h2 class="action-title"><span class="num">06</span>制定补强计划（补证方向+方式+成本）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">按证据短板严重程度排序</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">确定补证方式（调档/鉴定/公证/律师调查令/证人）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">评估补证成本（时间+费用）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">确定补证时点（举证期限前）</span></div>
+  </section>
+  </section>
+
+  <section class="stage" id="stage-4">
+    <h1 class="stage-title">四、锁定法律关系 & 精确案由匹配</h1>
+    <p class="legal-basis">（依据：《民事案件案由规定》2025 修正版；《民法典》§133-142 民事法律行为）</p>
+  <section class="action-card" id="stage-4-action-1">
+    <h2 class="action-title"><span class="num">01</span>从事实中提炼核心法律关系</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">从事实时间线中提炼主要法律关系（合同/侵权/合伙/劳动关系/股东关系）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">识别次要法律关系</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">排除无关法律关系</span></div>
+  </section>
+  <section class="action-card" id="stage-4-action-2">
+    <h2 class="action-title"><span class="num">02</span>在案由体系中逐级匹配到可立案级别</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">参照 2025 版民事案由体系（12 一级→59 二级→514 三级→470 四级）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">从一级案由逐级匹配到四级</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">确定可立案级别（通常三级以上即可立案）</span></div>
+  </section>
+  <section class="action-card" id="stage-4-action-3">
+    <h2 class="action-title"><span class="num">03</span>核查案由是否准确（避免&quot;挂错案由&quot;）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">对照案由官方释义核查匹配结果</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">查阅类案裁判（裁判文书网）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">参考本地法院立案习惯</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">必要时与立案庭预沟通</span></div>
+  </section>
+  <section class="action-card" id="stage-4-action-4">
+    <h2 class="action-title"><span class="num">04</span>列出对应的实体法+程序法</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">按案由检索对应实体法（《民法典》/《公司法》/《劳动法》等）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">梳理程序法依据（《民诉法》/《仲裁法》）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">梳理最新司法解释</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">梳理本地裁判规范</span></div>
+  </section>
+  <section class="action-card" id="stage-4-action-5">
+    <h2 class="action-title"><span class="num">05</span>识别举证责任特殊规则</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">按案由匹配举证责任倒置情形（医疗/环境/产品/劳动）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">特殊举证规则（如公司决议无效之诉的举证）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">本地法院举证指引</span></div>
+  </section>
+  </section>
+
+  <section class="stage" id="stage-5">
+    <h1 class="stage-title">五、依托案由完成深度分析</h1>
+    <p class="legal-basis">（依据：《民法典》分则各编具体条款；《最高人民法院关于审理相关案件若干问题的解释》系列）</p>
+  <section class="action-card" id="stage-5-action-1">
+    <h2 class="action-title"><span class="num">01</span>复审工具输出的争议焦点（覆盖度）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">工具输出争议焦点清单</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">由律师逐条复审</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">识别遗漏焦点（用三段论推演）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">重新排序焦点优先级</span></div>
+  </section>
+  <section class="action-card" id="stage-5-action-2">
+    <h2 class="action-title"><span class="num">02</span>选择核心法条（结合律师实务经验）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">按案由检索核心法条</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">选择对本案最有利的法条（请求权基础/抗辩权基础）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">为焦点匹配司法解释</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">参考高院/本地典型案例</span></div>
+  </section>
+  <section class="action-card" id="stage-5-action-3">
+    <h2 class="action-title"><span class="num">03</span>审查要件-事实匹配表（事实采信）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">将法律要件拆解为子要件</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">对照事实清单（白/灰/黑三色）逐项核验</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">识别要件已证/待证/无证</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">评估待证事实的补强方案</span></div>
+  </section>
+  <section class="action-card" id="stage-5-action-4">
+    <h2 class="action-title"><span class="num">04</span>评估法律解释（选哪种解释）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">采用文义解释方法</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">采用体系解释方法</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">采用历史解释方法</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">采用目的解释方法</span></div>
+      <div class="sub-item"><span class="sub-num">5</span><span class="sub-content">采用限缩/扩张解释方法</span></div>
+      <div class="sub-item"><span class="sub-num">6</span><span class="sub-content">按本案选择最优解释方法</span></div>
+  </section>
+  <section class="action-card" id="stage-5-action-5">
+    <h2 class="action-title"><span class="num">05</span>评估裁量空间（基于本地裁判经验）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">检索本地法院近 2 年同类案件裁判</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">识别裁判规则</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">评估本案在裁量区间中的位置</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">识别同案不同判风险</span></div>
+  </section>
+  <section class="action-card" id="stage-5-action-6">
+    <h2 class="action-title"><span class="num">06</span>整合三段论输出为完整法律意见</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">提炼大前提（法条+解释）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">提炼小前提（事实+证据）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">推导结论（胜诉/部分胜诉/败诉）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">整合为结构化法律意见</span></div>
+  </section>
+  <section class="action-card" id="stage-5-action-7">
+    <h2 class="action-title"><span class="num">07</span>类案参照的实务相关性判断</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">按案由/事实/争议焦点筛选类案</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">比对类案裁判理由</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">判断类案对本案的指导价值（强/中/弱/无）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">选择性引用类案裁判理由</span></div>
+  </section>
+  <section class="action-card" id="stage-5-action-8">
+    <h2 class="action-title"><span class="num">08</span>律师独立过一遍三段论推理（防工具跳步）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">按三段论结构手写一遍推理</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">标注每步的法律依据与事实依据</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">检查逻辑漏洞</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">与法律意见书交叉对照</span></div>
+  </section>
+  </section>
+
+  <section class="stage" id="stage-6">
+    <h1 class="stage-title">六、风险研判 & 分级评估</h1>
+    <p class="legal-basis">（依据：《律师执业管理办法》§29 利益冲突审查；《律师执业行为规范》§25-28 风险告知）</p>
+  <section class="action-card" id="stage-6-action-1">
+    <h2 class="action-title"><span class="num">01</span>对内风险评估：己方证据短板、程序漏洞</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">梳理己方证据短板清单（缺证/弱证/孤证）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">梳理己方程序合规性（是否超期/管辖/形式）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">梳理己方主体资格瑕疵</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">给出综合对内风险评分</span></div>
+  </section>
+  <section class="action-card" id="stage-6-action-2">
+    <h2 class="action-title"><span class="num">02</span>对外风险预判：对方可能的全部抗辩点</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">站在对方立场识别抗辩点（诉讼时效/管辖/主体不适格/事实抗辩/法律抗辩）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">评估每抗辩点的杀伤力</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">准备反驳方案</span></div>
+  </section>
+  <section class="action-card" id="stage-6-action-3">
+    <h2 class="action-title"><span class="num">03</span>模拟攻防：站在对方角度质疑己方</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">组建模拟法庭（主办律师扮演对方律师）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">按庭审流程向己方发问</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">记录己方薄弱环节</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">制定补强策略</span></div>
+  </section>
+  <section class="action-card" id="stage-6-action-4">
+    <h2 class="action-title"><span class="num">04</span>执行可行性：对方财产线索、可执行性</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">调查对方财产线索（不动产/动产/银行存款/股权/应收账款）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">评估可执行性（财产是否充足/是否易隐匿）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">设计保全方案（诉前/诉中）</span></div>
+  </section>
+  <section class="action-card" id="stage-6-action-5">
+    <h2 class="action-title"><span class="num">05</span>成本评估：诉讼费+律师费+时间成本</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">诉讼费（按标的额计算）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">测算律师费（按阶段/按风险代理）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">鉴定费/公证费/差旅费</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">测算时间成本（预期审理周期）</span></div>
+  </section>
+  <section class="action-card" id="stage-6-action-6">
+    <h2 class="action-title"><span class="num">06</span>风险等级定档（高/中/低）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">按风险维度评分（对内/对外/执行/成本）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">对评分进行加权综合</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">将风险定档（高/中/低）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">提出风险控制措施</span></div>
+  </section>
+  </section>
+
+  <section class="stage" id="stage-7">
+    <h1 class="stage-title">七、三套分层方案输出</h1>
+    <p class="legal-basis">（依据：《律师执业行为规范》§14-18 方案设计义务；《律师服务收费管理办法》）</p>
+  <section class="action-card" id="stage-7-action-1">
+    <h2 class="action-title"><span class="num">01</span>基于风险研判，设计三套方案</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">拟定激进方案（高诉求+高风险+高成本）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">拟定稳健方案（中诉求+中风险+中成本）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">拟定保守方案（低诉求+低风险+低成本）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">每方案均含：策略路径+预期结果+前提条件</span></div>
+  </section>
+  <section class="action-card" id="stage-7-action-2">
+    <h2 class="action-title"><span class="num">02</span>每套方案标注：前提条件 + 风险点 + 律师审查要求</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">列明每方案的前提条件（如&quot;需先调取XX证据&quot;）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">列明每方案的风险点（如&quot;对方可能提XX抗辩&quot;）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">律师审查要求（如&quot;需主办律师二次审核&quot;）</span></div>
+  </section>
+  <section class="action-card" id="stage-7-action-3">
+    <h2 class="action-title"><span class="num">03</span>与客户面对面讲解三套方案</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">预约客户会议</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">用对比表/PPT 讲解</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">逐方案利弊分析</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">记录客户提问与反应</span></div>
+      <div class="sub-item"><span class="sub-num">5</span><span class="sub-content">向客户提供书面方案</span></div>
+  </section>
+  <section class="action-card" id="stage-7-action-4">
+    <h2 class="action-title"><span class="num">04</span>评估客户偏好（投入意愿/风险承受/时间）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">评估客户投入意愿（费用+精力）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">评估客户风险承受能力（输了能否承受）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">了解客户时间期待（多久要有结果）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">综合评估</span></div>
+  </section>
+  <section class="action-card" id="stage-7-action-5">
+    <h2 class="action-title"><span class="num">05</span>协助客户做出选择</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">复述客户所选方案以确认</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">确认理解无误</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">客户书面签字确认</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">按客户所选方案进入执行阶段</span></div>
+  </section>
+  </section>
+
+  <section class="stage" id="stage-8">
+    <h1 class="stage-title">八、文书草稿生成</h1>
+    <p class="legal-basis">（依据：《民事诉讼法》§121-127 起诉条件；§130 答辩状规定；《律师办理民事案件规范》）</p>
+  <section class="action-card" id="stage-8-action-1">
+    <h2 class="action-title"><span class="num">01</span>评估文书风险等级</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">明确文书类型（起诉状/答辩状/上诉状/再审申请/合同/律师函）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">评估文书影响（影响立案/实体权利/程序）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">评定文书风险等级（高/中/低）</span></div>
+  </section>
+  <section class="action-card" id="stage-8-action-2">
+    <h2 class="action-title"><span class="num">02</span>审查工具草稿（法条/事实/格式）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">核查法条准确性（是否现行有效）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">核查事实准确性（与卷宗一致）</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">核查格式合规（符合法院要求）</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">通读校核错别字/语法</span></div>
+  </section>
+  <section class="action-card" id="stage-8-action-3">
+    <h2 class="action-title"><span class="num">03</span>修改并定稿</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">按审查意见修改</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">逐句通读全文</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">法律论证闭环检查</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">完成文书定稿</span></div>
+  </section>
+  <section class="action-card" id="stage-8-action-4">
+    <h2 class="action-title"><span class="num">04</span>律师签字（必须）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">由律师本人签字（非助理/非工具）</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">律所盖章</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">在文书末尾填具日期</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">归档</span></div>
+  </section>
+  </section>
+
+  <section class="stage" id="stage-9">
+    <h1 class="stage-title">九、期限持续追踪与管理</h1>
+    <p class="legal-basis">（依据：贯穿《律师法》《律师执业行为规范》全流程合规要求）</p>
+  <section class="action-card" id="stage-9-action-1">
+    <h2 class="action-title"><span class="num">01</span>建立期限日历 （所有期限录入）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">把所有程序/实体期限一次性录入日历</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">将所有期限按紧急程度分组</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">设置循环提醒</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">每周检查未完成项</span></div>
+      <div class="sub-item"><span class="sub-num">5</span><span class="sub-content">归档已过期项</span></div>
+  </section>
+  <section class="action-card" id="stage-9-action-2">
+    <h2 class="action-title"><span class="num">02</span>关键期限强提醒 （手机+日历+邮件）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">开庭/举证/上诉期满 7 天前强提醒</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">通过手机+日历+邮件三通道送达</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">重要期限提前与客户/法官确认</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">做好书面交接记录</span></div>
+      <div class="sub-item"><span class="sub-num">5</span><span class="sub-content">采取防遗忘误期的多重提醒机制</span></div>
+  </section>
+  <section class="action-card" id="stage-9-action-3">
+    <h2 class="action-title"><span class="num">03</span>到期前倒推计划 （如举证期前完成证据收集）</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">从截止日反推各工作节点</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">如举证期前 15 天完成证据收集</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">分解到周/日</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">将节点分解到具体卡点卡人</span></div>
+      <div class="sub-item"><span class="sub-num">5</span><span class="sub-content">为每个节点预留缓冲期</span></div>
+  </section>
+  <section class="action-card" id="stage-9-action-4">
+    <h2 class="action-title"><span class="num">04</span>案件进展后更新期限</h2>
+      <div class="sub-item"><span class="sub-num">1</span><span class="sub-content">判决/裁定/调解生效后立即更新</span></div>
+      <div class="sub-item"><span class="sub-num">2</span><span class="sub-content">履行期/上诉期/再审期联动调整</span></div>
+      <div class="sub-item"><span class="sub-num">3</span><span class="sub-content">客户新事实新证据触发新期限时联动调整</span></div>
+      <div class="sub-item"><span class="sub-num">4</span><span class="sub-content">归档与律师工时挂钩</span></div>
+      <div class="sub-item"><span class="sub-num">5</span><span class="sub-content">季度复盘</span></div>
+  </section>
+  </section>
+  </main>
+</div>
+  <aside class="float-nav" id="floatNav">
+    <button class="nav-toggle" id="navToggle" title="展开/收起导航">☰</button>
+    <div class="nav-body">
+      <h3>页面导航</h3>
+      <div class="nav-stage" data-stage="stage-1">
+        <a class="nav-stage-title" href="#stage-1">一、接案初筛 &amp; 诉求锁定</a>
+        <ul class="nav-actions">
+          <li><a href="#stage-1-action-1" data-target="stage-1-action-1">01 与客户首次会谈（30-60 …</a></li>
+          <li><a href="#stage-1-action-2" data-target="stage-1-action-2">02 倾听中识别&amp;quot;真正的…</a></li>
+          <li><a href="#stage-1-action-3" data-target="stage-1-action-3">03 评估诉求的合理性：法律上有没…</a></li>
+          <li><a href="#stage-1-action-4" data-target="stage-1-action-4">04 区分理想诉求 / 目标诉求 …</a></li>
+          <li><a href="#stage-1-action-5" data-target="stage-1-action-5">05 询问客户的预算、时间、对结果…</a></li>
+          <li><a href="#stage-1-action-6" data-target="stage-1-action-6">06 初判案件类型（7 类路由）</a></li>
+          <li><a href="#stage-1-action-7" data-target="stage-1-action-7">07 紧急筛查 4 个致命红线（详…</a></li>
+          <li><a href="#stage-1-action-8" data-target="stage-1-action-8">08 启动律所内部利益冲突检索</a></li>
+          <li><a href="#stage-1-action-9" data-target="stage-1-action-9">09 完成收案审批/保密承诺</a></li>
+          <li><a href="#stage-1-action-10" data-target="stage-1-action-10">10 评估团队承接能力（专业匹配度…</a></li>
+        </ul>
+      </div>
+      <div class="nav-stage" data-stage="stage-2">
+        <a class="nav-stage-title" href="#stage-2">二、收取全盘材料 &amp; 事实重构</a>
+        <ul class="nav-actions">
+          <li><a href="#stage-2-action-1" data-target="stage-2-action-1">01 出具材料清单给客户（含具体格…</a></li>
+          <li><a href="#stage-2-action-2" data-target="stage-2-action-2">02 与客户对接材料补充</a></li>
+          <li><a href="#stage-2-action-3" data-target="stage-2-action-3">03 搭建事实时间线（按时间倒序/…</a></li>
+          <li><a href="#stage-2-action-4" data-target="stage-2-action-4">04 识别关键事实节点（合同签订、…</a></li>
+          <li><a href="#stage-2-action-5" data-target="stage-2-action-5">05 标注事实疑点（冲突/缺失/孤…</a></li>
+          <li><a href="#stage-2-action-6" data-target="stage-2-action-6">06 区分三色事实</a></li>
+        </ul>
+      </div>
+      <div class="nav-stage" data-stage="stage-3">
+        <a class="nav-stage-title" href="#stage-3">三、筛查证据三性 &amp; 预判短板</a>
+        <ul class="nav-actions">
+          <li><a href="#stage-3-action-1" data-target="stage-3-action-1">01 按案件类型确认举证规则</a></li>
+          <li><a href="#stage-3-action-2" data-target="stage-3-action-2">02 逐份证据做三性审查</a></li>
+          <li><a href="#stage-3-action-3" data-target="stage-3-action-3">03 评估每份证据的证明力强度</a></li>
+          <li><a href="#stage-3-action-4" data-target="stage-3-action-4">04 标注瑕疵证据（可补正的）</a></li>
+          <li><a href="#stage-3-action-5" data-target="stage-3-action-5">05 标注孤证/弱证</a></li>
+          <li><a href="#stage-3-action-6" data-target="stage-3-action-6">06 制定补强计划（补证方向+方式…</a></li>
+        </ul>
+      </div>
+      <div class="nav-stage" data-stage="stage-4">
+        <a class="nav-stage-title" href="#stage-4">四、锁定法律关系 &amp; 精确案由匹配</a>
+        <ul class="nav-actions">
+          <li><a href="#stage-4-action-1" data-target="stage-4-action-1">01 从事实中提炼核心法律关系</a></li>
+          <li><a href="#stage-4-action-2" data-target="stage-4-action-2">02 在案由体系中逐级匹配到可立案…</a></li>
+          <li><a href="#stage-4-action-3" data-target="stage-4-action-3">03 核查案由是否准确（避免&amp;qu…</a></li>
+          <li><a href="#stage-4-action-4" data-target="stage-4-action-4">04 列出对应的实体法+程序法</a></li>
+          <li><a href="#stage-4-action-5" data-target="stage-4-action-5">05 识别举证责任特殊规则</a></li>
+        </ul>
+      </div>
+      <div class="nav-stage" data-stage="stage-5">
+        <a class="nav-stage-title" href="#stage-5">五、依托案由完成深度分析</a>
+        <ul class="nav-actions">
+          <li><a href="#stage-5-action-1" data-target="stage-5-action-1">01 复审工具输出的争议焦点（覆盖…</a></li>
+          <li><a href="#stage-5-action-2" data-target="stage-5-action-2">02 选择核心法条（结合律师实务经…</a></li>
+          <li><a href="#stage-5-action-3" data-target="stage-5-action-3">03 审查要件-事实匹配表（事实采…</a></li>
+          <li><a href="#stage-5-action-4" data-target="stage-5-action-4">04 评估法律解释（选哪种解释）</a></li>
+          <li><a href="#stage-5-action-5" data-target="stage-5-action-5">05 评估裁量空间（基于本地裁判经…</a></li>
+          <li><a href="#stage-5-action-6" data-target="stage-5-action-6">06 整合三段论输出为完整法律意见</a></li>
+          <li><a href="#stage-5-action-7" data-target="stage-5-action-7">07 类案参照的实务相关性判断</a></li>
+          <li><a href="#stage-5-action-8" data-target="stage-5-action-8">08 律师独立过一遍三段论推理（防…</a></li>
+        </ul>
+      </div>
+      <div class="nav-stage" data-stage="stage-6">
+        <a class="nav-stage-title" href="#stage-6">六、风险研判 &amp; 分级评估</a>
+        <ul class="nav-actions">
+          <li><a href="#stage-6-action-1" data-target="stage-6-action-1">01 对内风险评估：己方证据短板、…</a></li>
+          <li><a href="#stage-6-action-2" data-target="stage-6-action-2">02 对外风险预判：对方可能的全部…</a></li>
+          <li><a href="#stage-6-action-3" data-target="stage-6-action-3">03 模拟攻防：站在对方角度质疑己…</a></li>
+          <li><a href="#stage-6-action-4" data-target="stage-6-action-4">04 执行可行性：对方财产线索、可…</a></li>
+          <li><a href="#stage-6-action-5" data-target="stage-6-action-5">05 成本评估：诉讼费+律师费+时…</a></li>
+          <li><a href="#stage-6-action-6" data-target="stage-6-action-6">06 风险等级定档（高/中/低）</a></li>
+        </ul>
+      </div>
+      <div class="nav-stage" data-stage="stage-7">
+        <a class="nav-stage-title" href="#stage-7">七、三套分层方案输出</a>
+        <ul class="nav-actions">
+          <li><a href="#stage-7-action-1" data-target="stage-7-action-1">01 基于风险研判，设计三套方案</a></li>
+          <li><a href="#stage-7-action-2" data-target="stage-7-action-2">02 每套方案标注：前提条件 + …</a></li>
+          <li><a href="#stage-7-action-3" data-target="stage-7-action-3">03 与客户面对面讲解三套方案</a></li>
+          <li><a href="#stage-7-action-4" data-target="stage-7-action-4">04 评估客户偏好（投入意愿/风险…</a></li>
+          <li><a href="#stage-7-action-5" data-target="stage-7-action-5">05 协助客户做出选择</a></li>
+        </ul>
+      </div>
+      <div class="nav-stage" data-stage="stage-8">
+        <a class="nav-stage-title" href="#stage-8">八、文书草稿生成</a>
+        <ul class="nav-actions">
+          <li><a href="#stage-8-action-1" data-target="stage-8-action-1">01 评估文书风险等级</a></li>
+          <li><a href="#stage-8-action-2" data-target="stage-8-action-2">02 审查工具草稿（法条/事实/格…</a></li>
+          <li><a href="#stage-8-action-3" data-target="stage-8-action-3">03 修改并定稿</a></li>
+          <li><a href="#stage-8-action-4" data-target="stage-8-action-4">04 律师签字（必须）</a></li>
+        </ul>
+      </div>
+      <div class="nav-stage" data-stage="stage-9">
+        <a class="nav-stage-title" href="#stage-9">九、期限持续追踪与管理</a>
+        <ul class="nav-actions">
+          <li><a href="#stage-9-action-1" data-target="stage-9-action-1">01 建立期限日历 （所有期限录入…</a></li>
+          <li><a href="#stage-9-action-2" data-target="stage-9-action-2">02 关键期限强提醒 （手机+日历…</a></li>
+          <li><a href="#stage-9-action-3" data-target="stage-9-action-3">03 到期前倒推计划 （如举证期前…</a></li>
+          <li><a href="#stage-9-action-4" data-target="stage-9-action-4">04 案件进展后更新期限</a></li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+<script>
+(function(){
+  const nav = document.getElementById('floatNav');
+  const btn = document.getElementById('navToggle');
+  if(!nav||!btn) return;
+  if(window.innerWidth < 1280){ nav.classList.add('collapsed'); btn.textContent='☰'; }
+  btn.addEventListener('click', function(){
+    if(nav.classList.contains('collapsed')){
+      nav.classList.remove('collapsed');
+      btn.textContent='×';
+    } else {
+      nav.classList.add('collapsed');
+      btn.textContent='☰';
+    }
+  });
+  const links = nav.querySelectorAll('.nav-actions a');
+  const targets = Array.from(links).map(a => document.getElementById(a.dataset.target)).filter(Boolean);
+  function update(){
+    const top = window.scrollY + 120;
+    let cur = null;
+    for(const el of targets){ if(el.offsetTop <= top) cur = el; }
+    links.forEach(a => a.classList.toggle('active', cur && a.dataset.target === cur.id));
+  }
+  window.addEventListener('scroll', update, {passive:true});
+  update();
+})();
+</script>
+</body>
+</html>
