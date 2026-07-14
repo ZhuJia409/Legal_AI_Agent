@@ -3,7 +3,27 @@ export type LegalAnalysisModule =
   | "contract_background"
   | "contract_review_report";
 
-export type RiskLevel = "low" | "medium" | "high";
+export type RiskLevel = "unknown" | "low" | "medium" | "high";
+
+export type AnalysisStatus = "complete" | "partial";
+export type StageStatus = "succeeded" | "needs_input" | "failed" | "skipped";
+
+// 顺序元组是九阶段契约的唯一来源，类型与展示层均从这里派生，避免各处漂移。
+export const CASE_STAGE_ORDER = [
+  "intake_screening",
+  "fact_reconstruction",
+  "evidence_review",
+  "legal_classification",
+  "deep_analysis",
+  "risk_assessment",
+  "strategy_options",
+  "document_draft",
+  "deadline_management",
+] as const;
+
+export type CaseStageCode = (typeof CASE_STAGE_ORDER)[number];
+export type RiskDimension = "internal" | "opponent" | "execution_cost";
+export type StrategyMode = "aggressive" | "balanced" | "conservative";
 
 export type LegalAnalysisRequest = {
   title?: string | null;
@@ -13,13 +33,193 @@ export type LegalAnalysisRequest = {
   reviewPerspective?: ReviewPerspective;
 };
 
+export type CaseStageError = {
+  code: string;
+  message: string;
+};
+
+export type CaseSourceRef = {
+  paragraph_id: string;
+  quote: string;
+};
+
+export type CaseFinding = {
+  title: string;
+  detail: string;
+  source_refs: CaseSourceRef[];
+};
+
+export type CaseParty = {
+  name: string;
+  role: string;
+  source_refs: CaseSourceRef[];
+};
+
+export type CaseClaim = {
+  claimant: string;
+  request: string;
+  source_refs: CaseSourceRef[];
+};
+
+export type CaseTimelineEvent = {
+  date: string;
+  event: string;
+  parties: string[];
+  source_refs: CaseSourceRef[];
+};
+
+export type CaseDeadline = {
+  name: string;
+  trigger_date: string | null;
+  deadline: string | null;
+  uncertainty: string;
+  source_refs: CaseSourceRef[];
+};
+
+export type CaseLegalRelation = {
+  name: string;
+  description: string;
+  source_refs: CaseSourceRef[];
+};
+
+export type CaseCandidateCause = {
+  name: string;
+  reason: string;
+  source_refs: CaseSourceRef[];
+};
+
+export type CaseIssueAnalysis = {
+  issue_id: string;
+  title: string;
+  analysis: string;
+  positions: string[];
+  uncertainties: string[];
+  missing_information: string[];
+  source_refs: CaseSourceRef[];
+};
+
+export type CaseRiskItem = {
+  dimension: RiskDimension;
+  title: string;
+  detail: string;
+  risk_level: RiskLevel;
+  mitigation: string;
+  source_refs: CaseSourceRef[];
+};
+
+export type CaseStrategy = {
+  mode: StrategyMode;
+  summary: string;
+  objective: string;
+  steps: string[];
+  prerequisites: string[];
+  risks: string[];
+  missing_information: string[];
+};
+
+export type CaseStageBase<TStage extends CaseStageCode> = {
+  stage: TStage;
+  status: StageStatus;
+  summary: string;
+  missing_information: string[];
+  requires_human_review: boolean;
+  error: CaseStageError | null;
+};
+
+export type IntakeStageResult = CaseStageBase<"intake_screening"> & {
+  parties: CaseParty[];
+  claims: CaseClaim[];
+  case_route: string | null;
+  red_flags: CaseFinding[];
+};
+
+export type FactStageResult = CaseStageBase<"fact_reconstruction"> & {
+  timeline: CaseTimelineEvent[];
+  key_facts: CaseFinding[];
+  conflicts: CaseFinding[];
+};
+
+export type EvidenceStageResult = CaseStageBase<"evidence_review"> & {
+  evidence_clues: CaseFinding[];
+  gaps: CaseFinding[];
+  reinforcement_plan: string[];
+};
+
+export type LegalStageResult = CaseStageBase<"legal_classification"> & {
+  legal_relations: CaseLegalRelation[];
+  candidate_causes: CaseCandidateCause[];
+  procedure_questions: string[];
+};
+
+export type DeepAnalysisStageResult = CaseStageBase<"deep_analysis"> & {
+  issues: CaseIssueAnalysis[];
+};
+
+export type RiskStageResult = CaseStageBase<"risk_assessment"> & {
+  overall_risk_level: RiskLevel;
+  risks: CaseRiskItem[];
+};
+
+export type StrategyStageResult = CaseStageBase<"strategy_options"> & {
+  strategies: CaseStrategy[];
+};
+
+export type DocumentDraftStageResult = CaseStageBase<"document_draft"> & {
+  draft_title: string;
+  draft_sections: string[];
+  quality_checks: string[];
+};
+
+export type DeadlineStageResult = CaseStageBase<"deadline_management"> & {
+  deadlines: CaseDeadline[];
+};
+
+// 固定元组同时保证阶段数量、顺序和每一位置的专属结构。
+export type CaseAnalysisStages = [
+  IntakeStageResult,
+  FactStageResult,
+  EvidenceStageResult,
+  LegalStageResult,
+  DeepAnalysisStageResult,
+  RiskStageResult,
+  StrategyStageResult,
+  DocumentDraftStageResult,
+  DeadlineStageResult,
+];
+
+export type CaseStageResult = CaseAnalysisStages[number];
+
+export type CaseAnalysisReport = {
+  executive_summary: string;
+  overall_risk_level: RiskLevel;
+  key_findings: string[];
+  recommended_actions: string[];
+  limitations: string[];
+  failed_stages: CaseStageCode[];
+};
+
 export type CaseAnalysisResponse = {
   module: "case_analysis";
+  analysis_id: string;
+  status: AnalysisStatus;
   summary: string;
   risk_level: RiskLevel;
   findings: string[];
   suggestions: string[];
+  stages: CaseAnalysisStages;
+  report: CaseAnalysisReport;
+  draft_document?: CaseDraftDocumentInfo | null;
   disclaimer: string;
+};
+
+export type CaseDraftDocumentInfo = {
+  format: "docx";
+  filename: string;
+  content_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  size_bytes: number;
+  sha256: string;
+  generated_at: string;
+  download_path: string;
 };
 
 export type ContractCategory =
@@ -196,6 +396,17 @@ export type LegalAnalysisResponse =
   | CaseAnalysisResponse
   | ContractBackgroundResponse
   | ContractReviewReportResponse;
+
+export type AnalysisHistoryItem = {
+  task_id?: string;
+  analysis_id?: string;
+  title: string | null;
+  status: "complete" | "partial";
+  risk_level: RiskLevel | ReviewRiskLevel;
+  created_at: string;
+};
+
+export type AnalysisHistoryResponse = { items: AnalysisHistoryItem[] };
 
 export type ApiErrorResponse = {
   error?: {

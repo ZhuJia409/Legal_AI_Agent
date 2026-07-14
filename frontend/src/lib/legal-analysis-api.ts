@@ -1,4 +1,9 @@
-import type { ApiErrorResponse, LegalAnalysisRequest, LegalAnalysisResponse } from "./legal-analysis-types";
+import type {
+  AnalysisHistoryResponse,
+  ApiErrorResponse,
+  LegalAnalysisRequest,
+  LegalAnalysisResponse,
+} from "./legal-analysis-types";
 
 export type LegalAnalysisEndpoint =
   | "case-analyses"
@@ -56,4 +61,27 @@ export async function submitLegalAnalysis(
   }
 
   return data as LegalAnalysisResponse;
+}
+
+export async function fetchAnalysisHistory(
+  endpoint: "case-analyses" | "contract-review-reports",
+): Promise<AnalysisHistoryResponse> {
+  return fetchJson<AnalysisHistoryResponse>(`/api/v1/${endpoint}`);
+}
+
+export async function fetchAnalysisHistoryDetail(
+  endpoint: "case-analyses" | "contract-review-reports",
+  id: string,
+): Promise<LegalAnalysisResponse> {
+  return fetchJson<LegalAnalysisResponse>(`/api/v1/${endpoint}/${encodeURIComponent(id)}`);
+}
+
+async function fetchJson<T>(path: string): Promise<T> {
+  const response = await fetch(path, { cache: "no-store" });
+  const data = (await response.json().catch(() => null)) as T | ApiErrorResponse | null;
+  if (!response.ok) {
+    const message = data && typeof data === "object" && "error" in data ? data.error?.message : null;
+    throw new Error(message || DEFAULT_ERROR_MESSAGE);
+  }
+  return data as T;
 }

@@ -96,6 +96,32 @@ export async function proxyBackendPost(request: Request, path: string): Promise<
   }
 }
 
+export async function proxyBackendGet(path: string): Promise<NextResponse> {
+  const backendBaseUrl =
+    process.env.BACKEND_API_BASE_URL?.replace(/\/$/, "") || DEFAULT_BACKEND_API_BASE_URL;
+  try {
+    const response = await fetch(`${backendBaseUrl}${path}`, { method: "GET", cache: "no-store" });
+    const data = (await response.json().catch(() => null)) as BackendErrorPayload | null;
+    if (!response.ok) {
+      return NextResponse.json(
+        {
+          error: {
+            code: data?.error?.code || "backend_error",
+            message: data?.error?.message || DEFAULT_PROXY_ERROR_MESSAGE,
+          },
+        },
+        { status: response.status },
+      );
+    }
+    return NextResponse.json(data, { status: response.status });
+  } catch {
+    return NextResponse.json(
+      { error: { code: "backend_unavailable", message: DEFAULT_PROXY_ERROR_MESSAGE } },
+      { status: 503 },
+    );
+  }
+}
+
 const DOWNLOAD_RESPONSE_HEADERS = [
   "Content-Disposition",
   "Content-Type",

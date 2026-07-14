@@ -19,18 +19,22 @@ import {
   LegalAnalysisEndpoint,
   submitLegalAnalysis,
 } from "@/lib/legal-analysis-api";
+import {
+  LEGAL_DOCUMENT_FILE_POLICIES,
+  validateLegalDocumentFile,
+} from "@/lib/legal-document-file-validation";
 import type {
-  CaseAnalysisResponse,
   ContractBackgroundResponse,
   ContractCategory,
   ContractReviewReportResponse,
   LegalAnalysisResponse,
   RelatedDocumentStatus,
-  RiskLevel,
   ReviewPerspective,
   SourceRef,
 } from "@/lib/legal-analysis-types";
 import { cn } from "@/lib/utils";
+import { CaseAnalysisReportResult } from "./case-analysis-report-result";
+import { AnalysisHistory } from "./analysis-history";
 import { ContractReviewReportResult } from "./contract-review-report-result";
 
 type ModuleId = "case" | "contract";
@@ -76,18 +80,6 @@ const EMPTY_FORM: FormState = {
   title: "",
   relatedFiles: [],
   reviewPerspective: "neutral",
-};
-
-const RISK_LABELS: Record<RiskLevel, string> = {
-  low: "低风险",
-  medium: "中风险",
-  high: "高风险",
-};
-
-const RISK_STYLES: Record<RiskLevel, string> = {
-  low: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  medium: "border-amber-200 bg-amber-50 text-amber-800",
-  high: "border-rose-200 bg-rose-50 text-rose-800",
 };
 
 const CATEGORY_LABELS: Record<ContractCategory, string> = {
@@ -141,19 +133,6 @@ const BACKGROUND_FIELDS: Array<{ key: BackgroundFieldKey; label: string }> = [
   { key: "urgency_deadline", label: "紧急程度/截止时间" },
 ];
 
-const ALLOWED_MIME_TYPES = [
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-];
-
-const ALLOWED_EXTENSIONS = [".pdf", ".docx"];
-
-function isAllowedFile(file: File): boolean {
-  if (ALLOWED_MIME_TYPES.includes(file.type)) return true;
-  const name = file.name.toLowerCase();
-  return ALLOWED_EXTENSIONS.some((ext) => name.endsWith(ext));
-}
-
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 B";
   const k = 1024;
@@ -183,10 +162,12 @@ export function LegalAnalysisWorkspace() {
   const [contentError, setContentError] = useState<string | null>(null);
   const [relatedFilesError, setRelatedFilesError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [workspaceView, setWorkspaceView] = useState<"new" | "history">("new");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const relatedFilesInputRef = useRef<HTMLInputElement>(null);
 
   const activeModule = MODULES.find((item) => item.id === activeModuleId) ?? MODULES[0];
+  const activeFilePolicy = LEGAL_DOCUMENT_FILE_POLICIES[activeModule.id];
   const ActiveIcon = activeModule.icon;
 
   function switchModule(moduleId: ModuleId) {
@@ -196,11 +177,17 @@ export function LegalAnalysisWorkspace() {
     setError(null);
     setContentError(null);
     setRelatedFilesError(null);
+    setIsDragging(false);
+    setWorkspaceView("new");
   }
 
   function handleFileSelect(selectedFile: File) {
-    if (!isAllowedFile(selectedFile)) {
-      setContentError("请上传 PDF 或 DOCX 格式的文件。");
+    const validationError = validateLegalDocumentFile(selectedFile, activeModule.id);
+    if (validationError) {
+      setContentError(validationError);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       return;
     }
 
@@ -216,10 +203,15 @@ export function LegalAnalysisWorkspace() {
   }
 
   function handleRelatedFilesSelect(selectedFiles: File[]) {
-    const invalidFile = selectedFiles.find((file) => !isAllowedFile(file));
-    if (invalidFile) {
-      setRelatedFilesError(`关联文件“${invalidFile.name}”不是 PDF 或 DOCX 格式。`);
-      return;
+    for (const file of selectedFiles) {
+      const validationError = validateLegalDocumentFile(file, "contract");
+      if (validationError) {
+        setRelatedFilesError(`关联文件“${file.name}”：${validationError}`);
+        if (relatedFilesInputRef.current) {
+          relatedFilesInputRef.current.value = "";
+        }
+        return;
+      }
     }
 
     setForm((current) => {
@@ -266,7 +258,15 @@ export function LegalAnalysisWorkspace() {
     event.preventDefault();
 
     if (!form.file) {
-      setContentError("请先上传需要分析的 PDF 或 DOCX 文件。");
+      setContentError(`请先上传需要分析的 ${activeFilePolicy.label} 文件。`);
+      setResult(null);
+      setError(null);
+      return;
+    }
+
+    const validationError = validateLegalDocumentFile(form.file, activeModule.id);
+    if (validationError) {
+      setContentError(validationError);
       setResult(null);
       setError(null);
       return;
@@ -297,8 +297,8 @@ export function LegalAnalysisWorkspace() {
 
   return (
     <main className="min-h-screen bg-[#f7f8f6] text-zinc-900">
-      <div className="mx-auto grid min-h-screen w-full max-w-7xl gap-4 px-4 py-4 lg:grid-cols-[260px_minmax(0,1fr)_420px] lg:px-6">
-        <aside className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm lg:min-h-[calc(100vh-2rem)]">
+      <div className="mx-auto grid min-h-screen w-full max-w-7xl gap-4 px-4 py-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:px-6 xl:grid-cols-[240px_minmax(0,1fr)_minmax(380px,460px)]">
+        <aside className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm lg:row-span-2 lg:min-h-[calc(100vh-2rem)] xl:row-span-1">
           <div className="flex items-center gap-3 border-b border-zinc-200 pb-5">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#214a4b] text-white">
               <BriefcaseBusiness aria-hidden="true" className="h-5 w-5" />
@@ -330,16 +330,46 @@ export function LegalAnalysisWorkspace() {
           </nav>
         </aside>
 
-        <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm lg:min-h-[calc(100vh-2rem)]">
-          <div className="flex items-center gap-3 border-b border-zinc-200 pb-5">
+        <section className={cn(
+          "rounded-lg border border-zinc-200 bg-white p-6 shadow-sm lg:col-start-2 lg:row-start-1 lg:min-h-[calc(100vh-2rem)]",
+          workspaceView === "history" && "xl:col-span-2",
+        )}>
+          <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#edf4ef] text-[#214a4b]">
               <ActiveIcon aria-hidden="true" className="h-5 w-5" />
             </div>
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
               {activeModule.label}
             </h1>
+            </div>
+            <div className="flex rounded-lg border border-zinc-200 bg-zinc-50 p-1">
+              {(["new", "history"] as const).map((view) => (
+                <button
+                  className={cn(
+                    "rounded-md px-3 py-2 text-sm font-semibold",
+                    workspaceView === view ? "bg-white text-[#214a4b] shadow-sm" : "text-zinc-500",
+                  )}
+                  key={view}
+                  onClick={() => setWorkspaceView(view)}
+                  type="button"
+                >
+                  {view === "new" ? "新建" : "历史记录"}
+                </button>
+              ))}
+            </div>
           </div>
 
+          {workspaceView === "history" ? (
+            <AnalysisHistory
+              endpoint={activeModule.id === "case" ? "case-analyses" : "contract-review-reports"}
+              onOpen={(historyResult) => {
+                setResult(historyResult);
+                setError(null);
+                setWorkspaceView("new");
+              }}
+            />
+          ) : (
           <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
             <label className="block">
               <span className="text-sm font-medium text-zinc-800">标题</span>
@@ -371,7 +401,7 @@ export function LegalAnalysisWorkspace() {
                 onDrop={handleDrop}
               >
                 <input
-                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  accept={activeFilePolicy.accept}
                   className="hidden"
                   onChange={(event) => {
                     const selectedFile = event.target.files?.[0];
@@ -408,8 +438,9 @@ export function LegalAnalysisWorkspace() {
                   <div>
                     <Upload aria-hidden="true" className="mx-auto h-8 w-8 text-zinc-400" />
                     <p className="mt-3 text-sm font-medium text-zinc-700">
-                      点击或拖拽上传 PDF / DOCX 文件
+                      点击或拖拽上传 {activeFilePolicy.label} 文件
                     </p>
+                    <p className="mt-2 text-xs text-zinc-500">单个文件不超过 20 MiB</p>
                   </div>
                 )}
               </div>
@@ -451,7 +482,7 @@ export function LegalAnalysisWorkspace() {
                         关联文件（可选）
                       </h2>
                       <p className="mt-1 text-xs leading-5 text-zinc-500">
-                        可上传多个 PDF/DOCX；系统将解析内容并与主合同进行深度比对。
+                        可上传多个 PDF/DOCX；单个文件不超过 20 MiB，系统将解析内容并与主合同深度比对。
                       </p>
                     </div>
                     <button
@@ -463,7 +494,7 @@ export function LegalAnalysisWorkspace() {
                       选择关联文件
                     </button>
                     <input
-                      accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      accept={LEGAL_DOCUMENT_FILE_POLICIES.contract.accept}
                       className="hidden"
                       multiple
                       onChange={(event) =>
@@ -528,9 +559,12 @@ export function LegalAnalysisWorkspace() {
               </button>
             </div>
           </form>
+          )}
         </section>
 
-        <AnalysisResultPanel error={error} isSubmitting={isSubmitting} result={result} />
+        {workspaceView === "new" ? (
+          <AnalysisResultPanel error={error} isSubmitting={isSubmitting} result={result} />
+        ) : null}
       </div>
     </main>
   );
@@ -546,7 +580,7 @@ function AnalysisResultPanel({
   result: LegalAnalysisResponse | null;
 }) {
   return (
-    <aside className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm lg:min-h-[calc(100vh-2rem)]">
+    <aside className="min-w-0 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm lg:col-start-2 lg:row-start-2 xl:col-start-3 xl:row-start-1 xl:min-h-[calc(100vh-2rem)]">
       <div className="flex items-center justify-between border-b border-zinc-200 pb-5">
         <h2 className="text-lg font-semibold tracking-tight text-zinc-900">分析结果</h2>
         <FileText aria-hidden="true" className="h-5 w-5 text-[#214a4b]" />
@@ -602,32 +636,7 @@ function ResultState({ result }: { result: LegalAnalysisResponse }) {
     return <ContractBackgroundResult result={result} />;
   }
 
-  return <ClassicAnalysisResult result={result} />;
-}
-
-function ClassicAnalysisResult({ result }: { result: CaseAnalysisResponse }) {
-  return (
-    <div className="mt-6 space-y-5">
-      <div
-        className={cn(
-          "inline-flex rounded-md border px-3 py-1.5 text-sm font-semibold",
-          RISK_STYLES[result.risk_level],
-        )}
-      >
-        {RISK_LABELS[result.risk_level]}
-      </div>
-
-      <section>
-        <h3 className="text-sm font-semibold text-zinc-900">摘要</h3>
-        <p className="mt-2 text-sm leading-6 text-zinc-600">{result.summary}</p>
-      </section>
-
-      <ResultList title="主要发现" items={result.findings} />
-      <ResultList title="处理建议" items={result.suggestions} />
-
-      <Disclaimer text={result.disclaimer} />
-    </div>
-  );
+  return <CaseAnalysisReportResult result={result} />;
 }
 
 function ContractBackgroundResult({ result }: { result: ContractBackgroundResponse }) {
@@ -765,33 +774,5 @@ function Disclaimer({ text }: { text: string }) {
         <p className="text-xs leading-5 text-zinc-500">{text}</p>
       </div>
     </div>
-  );
-}
-
-function ResultList({
-  fallback = "暂无内容。",
-  items,
-  title,
-}: {
-  fallback?: string;
-  items: string[];
-  title: string;
-}) {
-  return (
-    <section>
-      <h3 className="text-sm font-semibold text-zinc-900">{title}</h3>
-      {items.length ? (
-        <ul className="mt-3 space-y-3">
-          {items.map((item, index) => (
-            <li className="flex gap-3 text-sm leading-6 text-zinc-600" key={`${title}-${index}`}>
-              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#214a4b]" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-2 text-sm leading-6 text-zinc-500">{fallback}</p>
-      )}
-    </section>
   );
 }
