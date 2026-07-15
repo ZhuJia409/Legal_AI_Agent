@@ -8,15 +8,15 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from app.api.v1 import analysis as analysis_api
-from app.api.v1.analysis import (
+from app.api.v1.contract_reviews import request_parsing as analysis_api
+from app.api.v1.contract_reviews.dependencies import (
     get_contract_background_service,
     get_contract_review_persistence_service,
     get_document_parser,
 )
 from app.integrations.llm.client import LLMClientError, LLMConfigurationError
 from app.main import app
-from app.schemas.contract_background import (
+from app.schemas.contract_review.background import (
     BackgroundCard,
     ContractBackgroundResponse,
     RelatedDocument,

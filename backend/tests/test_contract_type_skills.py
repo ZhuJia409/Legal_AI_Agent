@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from app.services.contract_type_skills import (
+from app.services.contract_review.type_skills import (
     CONTRACT_TYPE_RULES,
     ContractTypeSkillError,
     load_contract_type_rules,

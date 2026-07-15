@@ -2,16 +2,16 @@ from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
 
-from app.api.v1.analysis import get_contract_review_history_service
-from app.api.v1.case_analyses import (
+from app.api.v1.case_analyses.dependencies import (
     get_case_analysis_history_service,
     get_case_stored_document_service,
 )
+from app.api.v1.contract_reviews.dependencies import get_contract_review_history_service
 from app.main import app
 from app.schemas.case_analysis import CaseAnalysisHistoryResponse
 from app.schemas.contract_review import ContractReviewHistoryResponse
-from app.services.analysis_history import HistoryNotFoundError
-from app.services.case_analysis_persistence import CaseAnalysisDocumentDownload
+from app.services.case_analysis.persistence import CaseAnalysisDocumentDownload
+from app.services.history import HistoryNotFoundError
 from tests.test_case_analysis_api import _case_response
 from tests.test_contract_review_report_api import _downloadable_document, _report_response
 

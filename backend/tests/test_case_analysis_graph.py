@@ -30,14 +30,14 @@ from app.schemas.case_analysis import (
     AgentTimelineEventDraft,
     CaseStageCode,
 )
-from app.services import case_analysis_agents as agent_module
-from app.services.case_analysis_agents import (
+from app.services.case_analysis import agents as agent_module
+from app.services.case_analysis.agents import (
     CaseAgentRunResult,
     CaseAnalysisModelInvocationError,
     CaseAnalysisStructuredOutputError,
     LangChainCaseAnalysisAgentRunner,
 )
-from app.services.case_analysis_graph import (
+from app.services.case_analysis.graph import (
     _SYSTEM_PROMPT,
     CaseAnalysisCriticalStageError,
     CaseAnalysisGraphService,

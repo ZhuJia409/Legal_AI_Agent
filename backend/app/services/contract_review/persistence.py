@@ -4,10 +4,10 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
-from app.schemas.contract_background import ContractBackgroundResponse
 from app.schemas.contract_review import ContractReviewReportResponse
-from app.services.contract_evidence import segment_contract_markdown
-from app.services.contract_review_pdf import GeneratedReportPdf
+from app.schemas.contract_review.background import ContractBackgroundResponse
+from app.services.contract_review.evidence import segment_contract_markdown
+from app.services.contract_review.pdf import GeneratedReportPdf
 from app.services.mineru_parser import MineruParseResult
 from app.services.object_storage import ObjectStorageProtocol
 

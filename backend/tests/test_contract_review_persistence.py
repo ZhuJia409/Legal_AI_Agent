@@ -5,19 +5,19 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from app.schemas.contract_background import (
-    BackgroundCard,
-    ContractBackgroundResponse,
-    RelatedDocument,
-    ReviewPitfall,
-)
 from app.schemas.contract_review import (
     ContractReviewReport,
     ContractReviewReportResponse,
     ReviewModuleResult,
 )
-from app.services.contract_review_pdf import GeneratedReportPdf
-from app.services.contract_review_persistence import (
+from app.schemas.contract_review.background import (
+    BackgroundCard,
+    ContractBackgroundResponse,
+    RelatedDocument,
+    ReviewPitfall,
+)
+from app.services.contract_review.pdf import GeneratedReportPdf
+from app.services.contract_review.persistence import (
     ContractReviewPersistenceService,
     ContractReviewSourceFile,
 )

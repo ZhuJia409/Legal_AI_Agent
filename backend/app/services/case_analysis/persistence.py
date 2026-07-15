@@ -6,7 +6,7 @@ from typing import Protocol
 
 from app.repositories.case_analysis import CaseAnalysisRecord
 from app.schemas.case_analysis import CaseAnalysisResponse
-from app.services.case_analysis_document import GeneratedCaseDocument
+from app.services.case_analysis.document import GeneratedCaseDocument
 from app.services.object_storage import ObjectStorageReadError
 
 

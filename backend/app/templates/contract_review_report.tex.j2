@@ -1,62 +1,81 @@
 \documentclass[UTF8,a4paper,11pt,fontset=fandol]{ctexart}
 
-\usepackage[a4paper,margin=2.3cm,headheight=16pt,footskip=1.2cm]{geometry}
+\usepackage[a4paper,margin=2.25cm,headheight=18pt,footskip=1.25cm]{geometry}
 \usepackage{array}
 \usepackage{enumitem}
 \usepackage{fancyhdr}
 \usepackage{longtable}
 \usepackage[table]{xcolor}
 
-\definecolor{LegalGreen}{HTML}{174C3C}
-\definecolor{LegalGreenLight}{HTML}{E8F1ED}
-\definecolor{WarningRed}{HTML}{A61B1B}
+\definecolor{LegalNavy}{HTML}{183D59}
+\definecolor{LegalNavyLight}{HTML}{EAF0F4}
+\definecolor{LegalGray}{HTML}{5F6B75}
+\definecolor{RuleGray}{HTML}{B9C6CF}
+\definecolor{WarningRed}{HTML}{A23B32}
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{0.45em}
-\setlist[itemize]{leftmargin=1.6em,itemsep=0.18em,topsep=0.2em}
-\renewcommand{\arraystretch}{1.3}
+\setlength{\parskip}{0.42em}
+\setlist[itemize]{leftmargin=1.55em,itemsep=0.16em,topsep=0.18em}
+\renewcommand{\arraystretch}{1.32}
 
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\color{LegalGreen}\small 合同审查报告}
-\fancyhead[R]{\color{LegalGreen}\small << status_label|latex_escape >>}
+\fancyhead[L]{\color{LegalNavy}\small 合同审查法律意见书}
+\fancyhead[R]{\color{LegalGray}\small << status_label|latex_escape >>}
 <% if status == "partial" %>
 \fancyfoot[C]{\color{WarningRed}\bfseries 不完整报告——不可作为签署依据\quad 第\thepage 页}
 <% else %>
-\fancyfoot[C]{\color{LegalGreen}\small 第\thepage 页}
+\fancyfoot[L]{\color{LegalGray}\small AI 辅助审查}
+\fancyfoot[R]{\color{LegalNavy}\small 第\thepage 页}
 <% endif %>
-\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrulewidth}{0.5pt}
 \renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{RuleGray}\leaders\hrule height \headrulewidth\hfill}}
 
 \newcommand{\reportsection}[1]{%
-  \vspace{0.5em}%
-  {\Large\bfseries\color{LegalGreen} #1}\par%
-  \vspace{0.15em}\color{LegalGreen}\hrule\color{black}\vspace{0.4em}%
+  \vspace{0.65em}%
+  {\Large\bfseries\color{LegalNavy} #1}\par%
+  \vspace{0.14em}\color{LegalNavy}\hrule height 1pt\color{black}\vspace{0.45em}%
 }
 \newcommand{\reportsubsection}[1]{%
-  \vspace{0.3em}{\large\bfseries\color{LegalGreen} #1}\par\vspace{0.1em}%
+  \vspace{0.35em}{\large\bfseries\color{LegalNavy} #1}\par\vspace{0.08em}%
 }
-\newcommand{\fieldlabel}[1]{\textbf{\color{LegalGreen}#1}}
+\newcommand{\fieldlabel}[1]{\textbf{\color{LegalNavy}#1}}
+\newcommand{\riskheading}[3]{%
+  \vspace{0.55em}%
+  \noindent\colorbox{LegalNavyLight}{%
+    \parbox{0.965\textwidth}{\textbf{\color{LegalNavy}#1. #3}\hfill\textbf{\color{WarningRed}#2}}%
+  }\par\vspace{0.25em}%
+}
 
 \begin{document}
 
-{\LARGE\bfseries\color{LegalGreen} 合同审查报告}\hfill
-{\small << status_label|latex_escape >>}\par
-{\large << title|latex_escape >>}\par
+{\small\bfseries\color{LegalGray}LEGAL REVIEW MEMORANDUM}\par
+\vspace{0.65em}
+{\LARGE\bfseries\color{LegalNavy} 合同审查报告}\hfill
+{\small\bfseries\color{LegalNavy} << status_label|latex_escape >>}\par
+{\large\color{LegalGray} << title|latex_escape >>}\par
+\vspace{0.45em}\color{LegalNavy}\hrule height 2pt\color{black}\vspace{0.65em}
+
+\begin{tabular}{>{\bfseries\color{LegalGray}}p{2.3cm}p{3.2cm} >{\bfseries\color{LegalGray}}p{2.3cm}p{5.6cm}}
+  总体风险 & \textbf{\color{WarningRed}<< overall_risk_label|latex_escape >>} & 签署建议 & << signing_recommendation_label|latex_escape >> \\
+  审查立场 & << review_perspective_label|latex_escape >> & 审查日期 & << generated_at|latex_escape >> \\
+\end{tabular}
+
 <% if status == "partial" %>
+\vspace{0.6em}
 \fcolorbox{WarningRed}{white}{%
   \parbox{0.94\textwidth}{\bfseries\color{WarningRed}<< partial_warning|latex_escape >>}%
 }
 <% endif %>
 
 \reportsection{一、合同基本信息}
-\begin{longtable}{>{\bfseries\color{LegalGreen}}p{3.8cm}p{10.2cm}}
+\begin{longtable}{>{\bfseries\color{LegalNavy}}p{3.7cm}p{10.3cm}}
   合同名称 & << title|latex_escape >> \\
   来源文件 & << source_filename|latex_escape_breakable_filename >> \\
   合同编号 & << contract_number|latex_escape >> \\
   合同类型 & << contract_type_label|latex_escape >> \\
   签约双方 & << contract_parties|latex_escape >> \\
   金额与期限 & << amount_and_term|latex_escape >> \\
-  审查日期 & << generated_at|latex_escape >> \\
   审查立场 & << review_perspective_label|latex_escape >> \\
   审查人 & << reviewer|latex_escape >> \\
 \end{longtable}
@@ -86,17 +105,16 @@
 <% endif %>
 
 \reportsection{三、重点风险及修改建议}
-\begin{tabular}{>{\bfseries\color{LegalGreen}}p{3.1cm}p{1.2cm} >{\bfseries\color{LegalGreen}}p{3.1cm}p{1.2cm}}
+\begin{tabular}{>{\bfseries\color{LegalNavy}}p{3.1cm}p{1.2cm} >{\bfseries\color{LegalNavy}}p{3.1cm}p{1.2cm}}
   致命风险 & << risk_counts.fatal >> & 高风险 & << risk_counts.high >> \\
   中风险 & << risk_counts.medium >> & 低风险 & << risk_counts.low >> \\
 \end{tabular}
 
 <% if findings %>
 <% for finding in findings %>
-\reportsubsection{<< loop.index >>. << finding.issue|latex_escape >>}
-\fieldlabel{风险等级：}<< finding.risk_label|latex_escape >>\quad
+\riskheading{<< loop.index >>}{<< finding.risk_label|latex_escape >>}{<< finding.issue|latex_escape >>}
 \fieldlabel{合同位置：}<< finding.contract_location|latex_escape >>\par
-\fieldlabel{风险描述：}<< finding.issue|latex_escape >>\par
+\fieldlabel{风险描述：}<< finding.risk_description|latex_escape >>\par
 \fieldlabel{法律后果：}<< finding.impact|latex_escape >>\par
 \fieldlabel{修改建议：}<< finding.suggestion|latex_escape >>\par
 \fieldlabel{谈判策略：}<< finding.negotiation_strategy|latex_escape >>
@@ -105,7 +123,7 @@
 未从材料确认具体风险事项。
 <% endif %>
 <% if omitted_findings_count %>
-\par{\small 另有 << omitted_findings_count >> 项风险未展开，已计入风险统计。}
+\par{\small\color{LegalGray}另有 << omitted_findings_count >> 项风险未展开，已计入整体风险统计和结构化审计数据。}
 <% endif %>
 
 \reportsection{四、综合审查结论}
@@ -124,17 +142,40 @@
 未从材料确认；签署前仍应由专业律师复核。
 <% endif %>
 
+\reportsubsection{待确认事项}
+<% if pending_confirmations %>
+\begin{itemize}
+<% for item in pending_confirmations %>
+  \item << item|latex_escape >>
+<% endfor %>
+\end{itemize}
+<% else %>
+无新增待确认事项。
+<% endif %>
+
+\reportsubsection{律师复核事项}
+<% if lawyer_review_items %>
+\begin{itemize}
+<% for item in lawyer_review_items %>
+  \item << item|latex_escape >>
+<% endfor %>
+\end{itemize}
+<% else %>
+由专业律师结合完整合同文本进行最终复核。
+<% endif %>
+
 \reportsection{五、附件状态}
-\begin{longtable}{>{\bfseries\color{LegalGreen}}p{4.5cm}p{9.5cm}}
+\begin{longtable}{>{\bfseries\color{LegalNavy}}p{4.5cm}p{9.5cm}}
 <% for attachment in attachments %>
   << attachment.name|latex_escape >> & << attachment.status|latex_escape >> \\
 <% endfor %>
 \end{longtable}
 
-\vspace{0.6em}
-{\small\color{LegalGreen}本报告由人工智能辅助生成，仅供审查参考，不构成确定法律结论；所有结论与建议必须由专业法律人士复核，并结合完整材料判断。}
+\vspace{0.7em}
+\color{RuleGray}\hrule\color{black}\vspace{0.45em}
+{\small\color{LegalGray}本报告由人工智能辅助生成，仅供合同审查参考，不构成确定法律结论；所有风险、修改建议与签署决策必须由专业法律人士复核，并结合完整材料及最新法律判断。}
 <% if status == "partial" %>
-\par\fcolorbox{WarningRed}{white}{%
+\par\vspace{0.45em}\fcolorbox{WarningRed}{white}{%
   \parbox{0.94\textwidth}{\bfseries\color{WarningRed}<< partial_warning|latex_escape >>}%
 }
 <% endif %>

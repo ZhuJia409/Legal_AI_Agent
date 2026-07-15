@@ -7,24 +7,26 @@ import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
-from app.api.v1.case_analyses import (
-    CaseUploadBodyTooLargeError,
-    _build_limited_receive,
+from app.api.v1.case_analyses.dependencies import (
     get_case_analysis_document_renderer,
     get_case_analysis_graph_service,
     get_case_analysis_persistence_service,
     get_case_document_parser,
 )
+from app.api.v1.case_analyses.request_parsing import (
+    CaseUploadBodyTooLargeError,
+    _build_limited_receive,
+)
 from app.core.config import Settings, get_settings
 from app.integrations.llm.client import LLMClientError, LLMConfigurationError
 from app.main import app
 from app.schemas.case_analysis import CaseAnalysisResponse
-from app.services.case_analysis_agents import CaseAnalysisStructuredOutputError
-from app.services.case_analysis_document import (
+from app.services.case_analysis.agents import CaseAnalysisStructuredOutputError
+from app.services.case_analysis.document import (
     CaseDocumentGenerationError,
     GeneratedCaseDocument,
 )
-from app.services.case_analysis_graph import CaseAnalysisCriticalStageError
+from app.services.case_analysis.graph import CaseAnalysisCriticalStageError
 from app.services.document_parser import (
     DocumentParseError,
     DocumentParserConfigurationError,

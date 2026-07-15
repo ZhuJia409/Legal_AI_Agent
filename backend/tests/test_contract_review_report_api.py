@@ -9,35 +9,38 @@ from zoneinfo import ZoneInfo
 import pytest
 from fastapi.testclient import TestClient
 
-import app.api.v1.analysis as analysis_api
-from app.api.v1.analysis import (
+from app.api.v1.contract_reviews import request_parsing as analysis_api
+from app.api.v1.contract_reviews.dependencies import (
     get_contract_review_document_service,
     get_contract_review_graph_service,
     get_contract_review_pdf_renderer,
     get_contract_review_persistence_service,
     get_document_parser,
 )
+from app.integrations.llm.client import LLMClientError
 from app.main import app
 from app.repositories.contract_review import ReviewDocumentRecord
-from app.schemas.contract_background import BackgroundCard, ContractBackgroundResponse
 from app.schemas.contract_review import (
+    ContractPdfDocument,
+    ContractPdfFinding,
     ContractReviewReport,
     ContractReviewReportResponse,
     ReviewModuleResult,
 )
-from app.services.contract_review_documents import (
+from app.schemas.contract_review.background import BackgroundCard, ContractBackgroundResponse
+from app.services.contract_review.documents import (
     ReportDocumentDownload,
     ReportDocumentNotFoundError,
     ReportDocumentReadError,
 )
-from app.services.contract_review_graph import (
-    ContractReviewGraphAnalysis,
-    ParsedRelatedDocument,
-)
-from app.services.contract_review_pdf import (
+from app.services.contract_review.pdf import (
     GeneratedReportPdf,
     PdfRendererUnavailableError,
     ReportPdfGenerationError,
+)
+from app.services.contract_review.types import (
+    ContractReviewGraphAnalysis,
+    ParsedRelatedDocument,
 )
 from app.services.document_parser import DocumentParseError
 from app.services.mineru_parser import MineruParseResult
@@ -57,7 +60,11 @@ class StubContractReviewGraphService:
                 task_id=str(kwargs["task_id"]),
                 perspective=str(kwargs["review_perspective"]),
             ),
-            raw_outputs=[{"module": "report", "payload": {"ok": True}}],
+            pdf_form=_pdf_form(),
+            raw_outputs=[
+                {"module": "report", "payload": {"ok": True}},
+                {"module": "pdf_document_form", "payload": {"ok": True}},
+            ],
         )
 
 
@@ -185,6 +192,27 @@ def _report_response(task_id: str, perspective: str) -> ContractReviewReportResp
     )
 
 
+def _pdf_form() -> ContractPdfDocument:
+    return ContractPdfDocument(
+        executive_conclusion="建议完成关键条款修改后签署。",
+        priority_findings=[
+            ContractPdfFinding(
+                finding_id="general-001",
+                display_title="责任限制需要完善",
+                risk_description="合同未明确普通违约责任上限。",
+                legal_consequence="可能扩大责任暴露。",
+                revision_advice="补充累计责任上限。",
+                negotiation_strategy="优先锁定普通违约责任边界。",
+                risk_level="medium",
+                contract_location="责任条款",
+            )
+        ],
+        signing_preconditions=["完成责任条款修改"],
+        pending_confirmations=[],
+        lawyer_review_items=["复核最终签署版本"],
+    )
+
+
 def _docx(filename: str, content: bytes) -> tuple[str, BytesIO, str]:
     return (
         filename,
@@ -235,9 +263,11 @@ def test_contract_review_report_endpoint_accepts_json_and_perspective(client: Te
     assert graph.calls[0]["review_perspective"] == "party_a"
     assert response.json()["report_document"]["filename"].endswith(".pdf")
     assert renderer.calls[0]["source_filename"] is None
+    assert renderer.calls[0]["pdf_form"] == _pdf_form()
     assert persistence.calls[0]["report_pdf"].content == b"%PDF-report"
     assert persistence.calls[0]["raw_model_outputs"] == [
-        {"module": "report", "payload": {"ok": True}}
+        {"module": "report", "payload": {"ok": True}},
+        {"module": "pdf_document_form", "payload": {"ok": True}},
     ]
 
 
@@ -309,6 +339,25 @@ def test_contract_review_report_persistence_error_is_controlled(client: TestClie
 
     assert response.status_code == 503
     assert response.json()["error"]["code"] == "persistence_error"
+
+
+def test_pdf_form_agent_failure_does_not_render_or_persist(client: TestClient) -> None:
+    graph = StubContractReviewGraphService(error=LLMClientError("form failed"))
+    renderer = StubPdfRenderer()
+    persistence = StubReportPersistenceService()
+    app.dependency_overrides[get_contract_review_graph_service] = lambda: graph
+    app.dependency_overrides[get_contract_review_pdf_renderer] = lambda: renderer
+    app.dependency_overrides[get_contract_review_persistence_service] = lambda: persistence
+
+    response = client.post(
+        "/api/v1/contract-review-reports",
+        json={"content": "合同正文"},
+    )
+
+    assert response.status_code == 502
+    assert response.json()["error"]["code"] == "llm_upstream_error"
+    assert renderer.calls == []
+    assert persistence.calls == []
 
 
 @pytest.mark.parametrize(

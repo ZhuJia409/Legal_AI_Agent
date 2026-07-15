@@ -9,7 +9,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.schemas.contract_background import ContractBackgroundResponse, SourceRef
+from app.schemas.contract_review.background import ContractBackgroundResponse, SourceRef
 
 
 class ContractTypeCode(StrEnum):
@@ -163,6 +163,60 @@ class ReportAgentDraft(BaseModel):
     preconditions: list[str] = Field(default_factory=list)
     findings: list[ConsolidatedFindingDraft] = Field(default_factory=list)
     limitations: list[str] = Field(default_factory=list)
+
+
+class ContractPdfFindingForm(BaseModel):
+    """PDF 表单中的精简风险项，只允许关联已经验证的审查发现。"""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    finding_id: str = Field(min_length=1, max_length=80)
+    display_title: str = Field(min_length=1, max_length=50)
+    risk_description: str = Field(min_length=1, max_length=180)
+    legal_consequence: str = Field(min_length=1, max_length=160)
+    revision_advice: str = Field(min_length=1, max_length=200)
+    negotiation_strategy: str = Field(min_length=1, max_length=160)
+
+
+class ContractPdfDocumentForm(BaseModel):
+    """由 ToolStrategy 填写的合同 PDF 表单，模型不得输出 LaTeX。"""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    executive_conclusion: str = Field(min_length=1, max_length=300)
+    priority_findings: list[ContractPdfFindingForm] = Field(
+        default_factory=list,
+        max_length=8,
+    )
+    signing_preconditions: list[str] = Field(default_factory=list, max_length=5)
+    pending_confirmations: list[str] = Field(default_factory=list, max_length=5)
+    lawyer_review_items: list[str] = Field(default_factory=list, max_length=5)
+
+    @model_validator(mode="after")
+    def _reject_duplicate_finding_ids(self) -> "ContractPdfDocumentForm":
+        finding_ids = [item.finding_id for item in self.priority_findings]
+        if len(set(finding_ids)) != len(finding_ids):
+            raise ValueError("priority_findings cannot contain duplicate finding_id")
+        return self
+
+
+class ContractPdfFinding(ContractPdfFindingForm):
+    """服务端核验 finding_id 后补充的权威风险等级和合同位置。"""
+
+    risk_level: RiskLevel
+    contract_location: str
+
+
+class ContractPdfDocument(BaseModel):
+    """供固定 LaTeX 模板消费的已验证合同 PDF 表单。"""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    executive_conclusion: str
+    priority_findings: list[ContractPdfFinding] = Field(default_factory=list, max_length=8)
+    signing_preconditions: list[str] = Field(default_factory=list, max_length=5)
+    pending_confirmations: list[str] = Field(default_factory=list, max_length=5)
+    lawyer_review_items: list[str] = Field(default_factory=list, max_length=5)
 
 
 class ContractReviewReport(BaseModel):

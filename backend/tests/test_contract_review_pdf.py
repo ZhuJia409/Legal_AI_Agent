@@ -10,15 +10,9 @@ from jinja2 import DictLoader, UndefinedError
 from pydantic import ValidationError
 
 from app.core.config import Settings
-from app.schemas.contract_background import (
-    BackgroundCard,
-    ContractBackgroundResponse,
-    EvidenceText,
-    RelatedDocument,
-    ReviewPitfall,
-    SourceRef,
-)
 from app.schemas.contract_review import (
+    ContractPdfDocument,
+    ContractPdfFinding,
     ContractReviewReport,
     ContractReviewReportResponse,
     ContractTypeSelection,
@@ -27,7 +21,15 @@ from app.schemas.contract_review import (
     ReviewModuleError,
     ReviewModuleResult,
 )
-from app.services.contract_review_pdf import (
+from app.schemas.contract_review.background import (
+    BackgroundCard,
+    ContractBackgroundResponse,
+    EvidenceText,
+    RelatedDocument,
+    ReviewPitfall,
+    SourceRef,
+)
+from app.services.contract_review.pdf import (
     ContractReviewPdfRenderer,
     PdfRendererUnavailableError,
     ReportPdfGenerationError,
@@ -168,6 +170,27 @@ def _report_response(*, status: str = "complete") -> ContractReviewReportRespons
     )
 
 
+def _pdf_form() -> ContractPdfDocument:
+    return ContractPdfDocument(
+        executive_conclusion="合同存在主体和签署风险，建议完成修改后签署。",
+        priority_findings=[
+            ContractPdfFinding(
+                finding_id="party-001",
+                display_title="签约主体信息不完整",
+                risk_description="合同未完整披露签约主体登记信息。",
+                legal_consequence="可能无法准确确认合同相对方及责任主体。",
+                revision_advice="核验营业执照并补全主体信息。",
+                negotiation_strategy="将主体核验作为签署前置条件。",
+                risk_level="fatal",
+                contract_location="合同首部",
+            )
+        ],
+        signing_preconditions=["完成主体资格核验", "补充验收附件"],
+        pending_confirmations=["确认乙方完整工商登记信息"],
+        lawyer_review_items=["复核责任限制及争议解决条款"],
+    )
+
+
 class CapturingCompiler:
     def __init__(self, content: bytes = b"%PDF-1.7\nfixture") -> None:
         self.content = content
@@ -295,6 +318,7 @@ async def test_renderer_generates_complete_filename_and_document_metadata() -> N
 
     generated = await renderer.render(
         _report_response(),
+        pdf_form=_pdf_form(),
         task_id="task-abcdef123456",
         title="../采购/合同\x00",
         source_filename="采购合同.pdf",
@@ -319,6 +343,7 @@ async def test_renderer_defaults_generated_at_to_asia_shanghai() -> None:
 
     generated = await renderer.render(
         _report_response(),
+        pdf_form=_pdf_form(),
         task_id="task-timezone",
         title="采购合同",
         source_filename="采购合同.pdf",
@@ -335,6 +360,7 @@ async def test_renderer_marks_partial_filename_cover_and_footer() -> None:
 
     generated = await renderer.render(
         _report_response(status="partial"),
+        pdf_form=_pdf_form(),
         task_id="partial-12345678",
         title="采购合同",
         source_filename="采购合同.pdf",
@@ -347,12 +373,13 @@ async def test_renderer_marks_partial_filename_cover_and_footer() -> None:
 
 
 @pytest.mark.asyncio
-async def test_renderer_sorts_risks_and_renders_counts_and_unknown_labels() -> None:
+async def test_renderer_uses_pdf_form_and_keeps_complete_risk_counts() -> None:
     compiler = CapturingCompiler()
     renderer = ContractReviewPdfRenderer(compiler=compiler)
 
     await renderer.render(
         _report_response(),
+        pdf_form=_pdf_form(),
         task_id="task-counts",
         title="采购合同",
         source_filename="采购合同.pdf",
@@ -360,9 +387,9 @@ async def test_renderer_sorts_risks_and_renders_counts_and_unknown_labels() -> N
     )
 
     source = compiler.latex_source
-    assert source.index("签约主体无法确认") < source.index("签署日期缺失")
-    assert source.index("签署日期缺失") < source.index("验收标准不清")
-    assert source.index("验收标准不清") < source.index("通知地址未确认")
+    assert "签约主体信息不完整" in source
+    assert "合同未完整披露签约主体登记信息" in source
+    assert "签署日期缺失" not in source
     assert "致命风险 & 1" in source
     assert "高风险 & 1" in source
     assert "中风险 & 1" in source
@@ -372,6 +399,8 @@ async def test_renderer_sorts_risks_and_renders_counts_and_unknown_labels() -> N
     assert "未从材料确认" in source
     assert "专业法律人士复核" in source
     assert "AI 辅助生成，审查人待律师确认" in source
+    assert "LEGAL REVIEW MEMORANDUM" in source
+    assert "LegalNavy" in source
 
 
 @pytest.mark.asyncio
@@ -381,6 +410,7 @@ async def test_template_contains_only_five_concise_sections() -> None:
 
     await renderer.render(
         _report_response(status="partial"),
+        pdf_form=_pdf_form(),
         task_id="task-template",
         title="采购合同",
         source_filename="采购合同.pdf",
@@ -404,10 +434,12 @@ async def test_template_contains_only_five_concise_sections() -> None:
     assert "模块状态、缺失材料与错误" not in source
     assert "审查限制" not in source
     assert "证据引用" not in source
-    assert r"\fieldlabel{风险描述：}签约主体无法确认" in source
-    assert r"\fieldlabel{法律后果：}可能无法确认合同相对方。" in source
+    assert r"\fieldlabel{风险描述：}合同未完整披露签约主体登记信息。" in source
+    assert r"\fieldlabel{法律后果：}可能无法准确确认合同相对方及责任主体。" in source
     assert r"\fieldlabel{修改建议：}核验营业执照并补全主体信息。" in source
     assert r"\fieldlabel{谈判策略：}将主体核验作为签署前置条件。" in source
+    assert "待确认事项" in source
+    assert "律师复核事项" in source
     assert "AI 辅助生成，审查人待律师确认" in source
     assert "related_parse_error" not in source
     assert r"related\_parse\_error" not in source
@@ -434,18 +466,38 @@ def test_report_context_limits_findings_bases_and_preconditions() -> None:
         for index in range(12)
     ]
     response.report.preconditions = [f"签署前提 {index}" for index in range(7)]
+    pdf_form = ContractPdfDocument(
+        executive_conclusion="精简综合结论。",
+        priority_findings=[
+            ContractPdfFinding(
+                finding_id=f"finding-{index:02d}",
+                display_title=f"精简风险 {index}",
+                risk_description=f"精简描述 {index}",
+                legal_consequence=f"法律后果 {index}",
+                revision_advice=f"修改建议 {index}",
+                negotiation_strategy=f"谈判策略 {index}",
+                risk_level=("low", "medium", "high", "fatal")[index % 4],
+                contract_location=f"第 {index} 条",
+            )
+            for index in range(8)
+        ],
+        signing_preconditions=[f"签署前提 {index}" for index in range(5)],
+        pending_confirmations=[],
+        lawyer_review_items=[],
+    )
 
     context = build_report_context(
         response,
+        pdf_form=pdf_form,
         task_id="task-context",
         title="采购合同",
         source_filename="采购合同.pdf",
         generated_at=datetime(2026, 7, 13, tzinfo=UTC),
     )
 
-    assert len(context["findings"]) == 10
+    assert len(context["findings"]) == 8
     assert sum(context["risk_counts"].values()) == 12
-    assert context["omitted_findings_count"] == 2
+    assert context["omitted_findings_count"] == 4
     assert len(context["review_bases"]) == 8
     assert len(context["preconditions"]) == 5
     assert context["contract_number"] == "未从材料确认"
@@ -454,15 +506,47 @@ def test_report_context_limits_findings_bases_and_preconditions() -> None:
     assert context["reviewer"] == "AI 辅助生成，审查人待律师确认"
 
 
+def test_report_context_uses_verified_pdf_form_for_display_content() -> None:
+    context = build_report_context(
+        _report_response(),
+        pdf_form=_pdf_form(),
+        task_id="task-form-context",
+        title="采购合同",
+        source_filename="采购合同.pdf",
+        generated_at=datetime(2026, 7, 13, tzinfo=UTC),
+    )
+
+    assert context["executive_summary"] == "合同存在主体和签署风险，建议完成修改后签署。"
+    assert context["preconditions"] == ["完成主体资格核验", "补充验收附件"]
+    assert context["pending_confirmations"] == ["确认乙方完整工商登记信息"]
+    assert context["lawyer_review_items"] == ["复核责任限制及争议解决条款"]
+    assert context["findings"] == [
+        {
+            "finding_id": "party-001",
+            "risk_level": "fatal",
+            "risk_label": "致命风险",
+            "contract_location": "合同首部",
+            "issue": "签约主体信息不完整",
+            "impact": "可能无法准确确认合同相对方及责任主体。",
+            "suggestion": "核验营业执照并补全主体信息。",
+            "negotiation_strategy": "将主体核验作为签署前置条件。",
+            "risk_description": "合同未完整披露签约主体登记信息。",
+        }
+    ]
+
+
 @pytest.mark.asyncio
 async def test_untrusted_report_field_is_escaped_by_real_template() -> None:
     compiler = CapturingCompiler()
     renderer = ContractReviewPdfRenderer(compiler=compiler)
-    response = _report_response().model_copy(deep=True)
-    response.report.findings[0].issue = r"恶意\input{secret} & % $ # _ ~ ^"
+    pdf_form = _pdf_form().model_copy(deep=True)
+    pdf_form.priority_findings[0].risk_description = (
+        r"恶意\input{secret} & % $ # _ ~ ^"
+    )
 
     await renderer.render(
-        response,
+        _report_response(),
+        pdf_form=pdf_form,
         task_id="task-malicious",
         title="采购合同",
         source_filename="采购合同.pdf",
@@ -488,6 +572,7 @@ async def test_renderer_wraps_template_errors_with_exception_chain() -> None:
     with pytest.raises(ReportPdfGenerationError, match="模板") as exc_info:
         await renderer.render(
             _report_response(),
+            pdf_form=_pdf_form(),
             task_id="task-template-error",
             title="采购合同",
             source_filename="采购合同.pdf",
@@ -504,6 +589,7 @@ async def test_renderer_wraps_ordinary_compiler_errors_with_exception_chain() ->
     with pytest.raises(ReportPdfGenerationError, match="编译") as exc_info:
         await renderer.render(
             _report_response(),
+            pdf_form=_pdf_form(),
             task_id="task-compiler-error",
             title="采购合同",
             source_filename="采购合同.pdf",
@@ -524,6 +610,7 @@ async def test_renderer_preserves_specialized_generation_errors() -> None:
     with pytest.raises(PdfRendererUnavailableError) as exc_info:
         await renderer.render(
             _report_response(),
+            pdf_form=_pdf_form(),
             task_id="task-special-error",
             title="采购合同",
             source_filename="采购合同.pdf",
@@ -540,6 +627,7 @@ async def test_renderer_rejects_compiler_output_without_pdf_header() -> None:
     with pytest.raises(ReportPdfGenerationError, match="PDF 文件头"):
         await renderer.render(
             _report_response(),
+            pdf_form=_pdf_form(),
             task_id="task-invalid",
             title="采购合同",
             source_filename="采购合同.pdf",
@@ -891,6 +979,7 @@ async def test_real_tectonic_compiles_current_chinese_report_template_when_insta
     )
     generated = await renderer.render(
         _report_response(status="partial"),
+        pdf_form=_pdf_form(),
         task_id="real-tectonic-12345678",
         title="办公 IT 设备采购合同",
         source_filename=f"{'a' * 100}_采购合同_办公IT设备采购.docx",

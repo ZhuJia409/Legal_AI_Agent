@@ -4,7 +4,7 @@ import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from app.schemas.contract_background import (
+from app.schemas.contract_review.background import (
     BACKGROUND_QUESTION_DEFINITIONS,
     BACKGROUND_REVIEW_PITFALL_DEFINITIONS,
     RELATED_DOCUMENT_DEFINITIONS,

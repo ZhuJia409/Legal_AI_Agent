@@ -1,33 +1,49 @@
-"""合同审查报告的 LaTeX 渲染核心。
-
-本模块只负责可信结构化数据到 LaTeX/PDF 的转换；具体编译器由调用方注入，
-便于运行时隔离 Tectonic 边界，也便于单元测试避免依赖本地二进制程序。
-"""
+"""合同审查报告的确定性 LaTeX 渲染与 PDF 文档组装。"""
 
 from __future__ import annotations
 
-import asyncio
 import hashlib
-import os
 import re
-import subprocess
-import tempfile
 import unicodedata
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Protocol
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
 
-from jinja2 import BaseLoader, Environment, FileSystemLoader, StrictUndefined, TemplateError
+from jinja2 import Environment, TemplateError
 
-from app.schemas.contract_background import SourceRef
 from app.schemas.contract_review import (
+    ContractPdfDocument,
+    ContractPdfFinding,
     ContractReviewReportResponse,
     ReportDocumentInfo,
     ReviewFinding,
 )
+from app.schemas.contract_review.background import SourceRef
+from app.services.pdf_runtime import (
+    PdfRendererUnavailableError,
+    ReportPdfCompiler,
+    ReportPdfGenerationError,
+    TectonicCompiler,
+    create_latex_environment,
+    latex_escape,
+    latex_escape_breakable_filename,
+)
+
+__all__ = [
+    "ContractReviewPdfRenderer",
+    "GeneratedReportPdf",
+    "PdfRendererUnavailableError",
+    "ReportPdfCompiler",
+    "ReportPdfGenerationError",
+    "TectonicCompiler",
+    "build_report_context",
+    "build_report_filename",
+    "create_latex_environment",
+    "latex_escape",
+    "latex_escape_breakable_filename",
+]
 
 _RISK_ORDER = {"fatal": 0, "high": 1, "medium": 2, "low": 3}
 _RISK_LABELS = {"fatal": "致命风险", "high": "高风险", "medium": "中风险", "low": "低风险"}
@@ -66,161 +82,6 @@ _BACKGROUND_FIELDS = (
 )
 
 
-class ReportPdfGenerationError(RuntimeError):
-    """报告模板渲染或 PDF 结果校验失败。"""
-
-    def __init__(
-        self,
-        message: str,
-        *,
-        failure_stage: str,
-        cause_type: str | None = None,
-        return_code: int | None = None,
-    ) -> None:
-        # 仅携带可安全进入日志的分类信息，不保存合同、LaTeX 或编译器输出。
-        super().__init__(message)
-        self.failure_stage = failure_stage
-        self.cause_type = cause_type
-        self.return_code = return_code
-
-
-class PdfRendererUnavailableError(ReportPdfGenerationError):
-    """Tectonic 不存在或无法启动，调用方可将其映射为 503。"""
-
-
-class ReportPdfCompiler(Protocol):
-    """外部 PDF 编译边界；实现方不得把合同正文写入不受控日志。"""
-
-    async def compile(self, latex_source: str) -> bytes: ...
-
-
-class TectonicCompiler:
-    """在隔离临时目录中调用本地 Tectonic，且不开放 shell 解释边界。"""
-
-    def __init__(
-        self,
-        *,
-        tectonic_path: str | Path = ".tools/tectonic/tectonic.exe",
-        timeout_seconds: float = 90,
-        repository_root: Path | None = None,
-        cache_directory: str | Path | None = None,
-    ) -> None:
-        if timeout_seconds <= 0:
-            raise ValueError("timeout_seconds must be greater than zero")
-        resolved_root = repository_root or Path(__file__).resolve().parents[3]
-        configured_path = Path(tectonic_path).expanduser()
-        self._executable_path = (
-            configured_path
-            if configured_path.is_absolute()
-            else resolved_root / configured_path
-        ).resolve()
-        configured_cache = Path(cache_directory or ".tools/tectonic/cache").expanduser()
-        self._cache_directory = (
-            configured_cache
-            if configured_cache.is_absolute()
-            else resolved_root / configured_cache
-        ).resolve()
-        self._timeout_seconds = timeout_seconds
-
-    @property
-    def executable_path(self) -> Path:
-        """暴露最终路径便于启动诊断；相对配置始终锚定仓库根目录。"""
-
-        return self._executable_path
-
-    @property
-    def cache_directory(self) -> Path:
-        """项目缓存固定在仓库工具目录，避免依赖具体服务账号的用户缓存。"""
-
-        return self._cache_directory
-
-    async def compile(self, latex_source: str) -> bytes:
-        # Windows reload/multi-worker 使用 SelectorEventLoop，需在线程中隔离同步子进程边界。
-        return await asyncio.to_thread(self._compile_sync, latex_source)
-
-    def _compile_sync(self, latex_source: str) -> bytes:
-        if not self._executable_path.is_file():
-            missing_error = FileNotFoundError(self._executable_path)
-            raise PdfRendererUnavailableError(
-                "Tectonic PDF 渲染器不可用",
-                failure_stage="renderer_unavailable",
-                cause_type=missing_error.__class__.__name__,
-            ) from missing_error
-
-        # 临时目录退出即清理 LaTeX、日志和辅助文件，避免合同正文残留在工作树。
-        with tempfile.TemporaryDirectory(prefix="contract-review-pdf-") as temp_dir:
-            working_directory = Path(temp_dir)
-            source_path = working_directory / "report.tex"
-            output_path = working_directory / "report.pdf"
-            source_path.write_text(latex_source, encoding="utf-8")
-            process_environment = os.environ.copy()
-            process_environment["TECTONIC_CACHE_DIR"] = str(self._cache_directory)
-
-            command = [
-                str(self._executable_path),
-                "--only-cached",
-                "--keep-logs",
-                "--outdir",
-                str(working_directory),
-                "report.tex",
-            ]
-            try:
-                completed = subprocess.run(
-                    command,
-                    cwd=str(working_directory),
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    env=process_environment,
-                    timeout=self._timeout_seconds,
-                    check=False,
-                    shell=False,
-                )
-            except subprocess.TimeoutExpired as exc:
-                raise ReportPdfGenerationError(
-                    "合同审查报告 PDF 编译超时",
-                    failure_stage="compile_timeout",
-                    cause_type=exc.__class__.__name__,
-                ) from exc
-            except OSError as exc:
-                raise PdfRendererUnavailableError(
-                    "Tectonic PDF 渲染器无法启动",
-                    failure_stage="process_start",
-                    cause_type=exc.__class__.__name__,
-                ) from exc
-            except Exception as exc:
-                # 未知 runner 异常只保留类型，避免异常原文携带合同或命令输出进入日志。
-                raise ReportPdfGenerationError(
-                    "Tectonic 编译通信失败",
-                    failure_stage="compile_exit",
-                    cause_type=exc.__class__.__name__,
-                ) from exc
-
-            if completed.returncode != 0:
-                raise ReportPdfGenerationError(
-                    f"Tectonic 编译失败（退出码 {completed.returncode}）",
-                    failure_stage="compile_exit",
-                    return_code=completed.returncode,
-                )
-            if not output_path.is_file():
-                raise ReportPdfGenerationError(
-                    "Tectonic 未生成报告 PDF 文件",
-                    failure_stage="output_validation",
-                )
-
-            content = output_path.read_bytes()
-            if not content:
-                raise ReportPdfGenerationError(
-                    "Tectonic 生成了空的报告 PDF 文件",
-                    failure_stage="output_validation",
-                )
-            if not content.startswith(b"%PDF-"):
-                raise ReportPdfGenerationError(
-                    "Tectonic 输出缺少有效的 PDF 文件头",
-                    failure_stage="output_validation",
-                )
-            return content
-
-
 @dataclass(frozen=True, slots=True)
 class GeneratedReportPdf:
     filename: str
@@ -240,71 +101,6 @@ class GeneratedReportPdf:
             generated_at=self.generated_at,
             download_path=f"/api/v1/contract-review-reports/{encoded_task_id}/document",
         )
-
-
-def latex_escape(value: object) -> str:
-    """把不可信文本转换为普通 LaTeX 文本，禁止注入命令或环境。"""
-
-    text = str(value).replace("\r\n", "\n").replace("\r", "\n")
-    replacements = {
-        "\\": r"\textbackslash{}",
-        "{": r"\{",
-        "}": r"\}",
-        "$": r"\$",
-        "&": r"\&",
-        "#": r"\#",
-        "%": r"\%",
-        "_": r"\_",
-        "~": r"\textasciitilde{}",
-        "^": r"\textasciicircum{}",
-        "\n": r"\par{}",
-        "\t": "    ",
-    }
-    escaped: list[str] = []
-    for character in text:
-        if character in replacements:
-            escaped.append(replacements[character])
-            continue
-        # Cc/Cf 等控制字符可能改变编译行为；换行与制表符已在上方受控处理。
-        if unicodedata.category(character).startswith("C"):
-            continue
-        escaped.append(character)
-    return "".join(escaped)
-
-
-def latex_escape_breakable_filename(value: object) -> str:
-    """安全转义文件名，并允许连续无空格字符在固定宽度列内换行。"""
-
-    normalized = str(value).replace("\r", " ").replace("\n", " ").replace("\t", " ")
-    # 逐字符转义后再插入断行点，避免在 LaTeX 控制序列内部插入命令。
-    escaped_characters = [latex_escape(character) for character in normalized]
-    return r"\allowbreak{}".join(filter(None, escaped_characters))
-
-
-def create_latex_environment(*, loader: BaseLoader | None = None) -> Environment:
-    """创建与 LaTeX 定界符隔离、缺字段即失败的 Jinja2 环境。"""
-
-    template_loader = loader or FileSystemLoader(
-        Path(__file__).resolve().parents[1] / "templates"
-    )
-    environment = Environment(
-        loader=template_loader,
-        undefined=StrictUndefined,
-        autoescape=False,
-        block_start_string="<%",
-        block_end_string="%>",
-        variable_start_string="<<",
-        variable_end_string=">>",
-        comment_start_string="<#",
-        comment_end_string="#>",
-        trim_blocks=True,
-        lstrip_blocks=True,
-    )
-    environment.filters["latex_escape"] = latex_escape
-    environment.filters["latex_escape_breakable_filename"] = (
-        latex_escape_breakable_filename
-    )
-    return environment
 
 
 def build_report_filename(
@@ -332,6 +128,7 @@ def build_report_filename(
 def build_report_context(
     response: ContractReviewReportResponse,
     *,
+    pdf_form: ContractPdfDocument,
     task_id: str,
     title: str | None,
     source_filename: str | None,
@@ -339,7 +136,7 @@ def build_report_context(
 ) -> dict[str, object]:
     """把 Pydantic 响应整理为只含展示字段的确定性模板上下文。"""
 
-    # 统计覆盖全部发现，但用户报告只展开最重要的十项，避免信息过载。
+    # 风险统计覆盖完整审查结果，展示内容只采用经服务端核验的 Agent 表单。
     sorted_findings = sorted(
         response.report.findings,
         key=lambda finding: (_RISK_ORDER[finding.risk_level], finding.finding_id),
@@ -347,8 +144,6 @@ def build_report_context(
     risk_counts = {level: 0 for level in _RISK_ORDER}
     for finding in sorted_findings:
         risk_counts[finding.risk_level] += 1
-
-    displayed_findings = sorted_findings[:10]
 
     # 依据从现有发现中确定性提取，去重且不允许模板层自行补写法律依据。
     review_bases: list[str] = []
@@ -394,16 +189,23 @@ def build_report_context(
             if response.status == "partial"
             else None
         ),
-        "executive_summary": _known_text(response.report.executive_summary),
+        "executive_summary": _known_text(pdf_form.executive_conclusion),
         "overall_risk_label": _RISK_LABELS[response.report.overall_risk_level],
         "signing_recommendation_label": _SIGNING_LABELS[
             response.report.signing_recommendation
         ],
         "risk_counts": risk_counts,
-        "findings": [_finding_context(item) for item in displayed_findings],
-        "omitted_findings_count": len(sorted_findings) - len(displayed_findings),
-        "preconditions": [
-            _known_text(item) for item in response.report.preconditions[:5]
+        "findings": [_pdf_finding_context(item) for item in pdf_form.priority_findings],
+        "omitted_findings_count": max(
+            0,
+            len(sorted_findings) - len(pdf_form.priority_findings),
+        ),
+        "preconditions": [_known_text(item) for item in pdf_form.signing_preconditions],
+        "pending_confirmations": [
+            _known_text(item) for item in pdf_form.pending_confirmations
+        ],
+        "lawyer_review_items": [
+            _known_text(item) for item in pdf_form.lawyer_review_items
         ],
         "attachments": [
             {"name": "修改对比版合同", "status": "未生成"},
@@ -434,6 +236,7 @@ class ContractReviewPdfRenderer:
         self,
         response: ContractReviewReportResponse,
         *,
+        pdf_form: ContractPdfDocument,
         task_id: str,
         title: str | None,
         source_filename: str | None,
@@ -446,6 +249,7 @@ class ContractReviewPdfRenderer:
 
         context = build_report_context(
             response,
+            pdf_form=pdf_form,
             task_id=task_id,
             title=title,
             source_filename=source_filename,
@@ -535,4 +339,18 @@ def _finding_context(finding: ReviewFinding) -> dict[str, object]:
         "negotiation_strategy": _known_text(finding.negotiation_strategy),
         "source_refs": [_source_ref_context(ref) for ref in finding.source_refs],
         "requires_human_review": finding.requires_human_review,
+    }
+
+
+def _pdf_finding_context(finding: ContractPdfFinding) -> dict[str, object]:
+    return {
+        "finding_id": _known_text(finding.finding_id),
+        "risk_level": finding.risk_level,
+        "risk_label": _RISK_LABELS[finding.risk_level],
+        "contract_location": _known_text(finding.contract_location),
+        "issue": _known_text(finding.display_title),
+        "impact": _known_text(finding.legal_consequence),
+        "suggestion": _known_text(finding.revision_advice),
+        "negotiation_strategy": _known_text(finding.negotiation_strategy),
+        "risk_description": _known_text(finding.risk_description),
     }

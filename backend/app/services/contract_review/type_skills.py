@@ -26,7 +26,8 @@ class LoadedContractTypeRule:
     content: str
 
 
-_PROJECT_ROOT = Path(__file__).resolve().parents[3]
+# 当前文件位于 services/contract_review 子包，向上四级才是仓库根目录。
+_PROJECT_ROOT = Path(__file__).resolve().parents[4]
 _REFERENCE_ROOT = (
     _PROJECT_ROOT / "skills" / "contract-type-special-review" / "references"
 ).resolve()

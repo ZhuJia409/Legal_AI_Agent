@@ -10,7 +10,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import ValidationError
 
 from app.integrations.llm.client import LLMClientError, LLMConfigurationError
-from app.schemas.contract_background import (
+from app.schemas.contract_review.background import (
     BACKGROUND_QUESTION_DEFINITIONS,
     BACKGROUND_REVIEW_PITFALL_DEFINITIONS,
     RELATED_DOCUMENT_DEFINITIONS,
@@ -21,7 +21,7 @@ from app.schemas.contract_background import (
     RelatedDocument,
     ReviewPitfall,
 )
-from app.services.contract_evidence import (
+from app.services.contract_review.evidence import (
     ContractSegment,
     build_contract_evidence_snapshot,
     build_evidence_prompt,

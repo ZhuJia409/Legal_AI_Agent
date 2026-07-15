@@ -2,8 +2,8 @@ from datetime import UTC, datetime
 
 import pytest
 
-from app.services.case_analysis_document import GeneratedCaseDocument
-from app.services.case_analysis_persistence import (
+from app.services.case_analysis.document import GeneratedCaseDocument
+from app.services.case_analysis.persistence import (
     CaseAnalysisDocumentReadError,
     CaseAnalysisPersistenceService,
     CaseAnalysisStoredDocumentService,

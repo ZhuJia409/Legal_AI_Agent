@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 import pytest
 
 from app.schemas.case_analysis import DocumentDraftStageResult
-from app.services import case_analysis_document as document_module
+from app.services.case_analysis import document as document_module
 
 CaseAnalysisDocumentRenderer = document_module.CaseAnalysisDocumentRenderer
 

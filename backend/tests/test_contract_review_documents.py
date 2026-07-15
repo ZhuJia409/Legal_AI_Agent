@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 import pytest
 
 from app.repositories.contract_review import ReviewDocumentRecord
-from app.services.contract_review_documents import (
+from app.services.contract_review.documents import (
     ContractReviewDocumentService,
     ReportDocumentNotFoundError,
     ReportDocumentReadError,

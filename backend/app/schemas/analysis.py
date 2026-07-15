@@ -1,9 +1,4 @@
-from typing import Literal
-
 from pydantic import BaseModel, Field, field_validator
-
-AnalysisModule = Literal["case_analysis"]
-RiskLevel = Literal["low", "medium", "high"]
 
 
 class AnalysisRequest(BaseModel):
@@ -27,12 +22,3 @@ class AnalysisRequest(BaseModel):
         if not normalized:
             raise ValueError("content must not be blank")
         return normalized
-
-
-class AnalysisResponse(BaseModel):
-    module: AnalysisModule
-    summary: str
-    risk_level: RiskLevel
-    findings: list[str]
-    suggestions: list[str]
-    disclaimer: str

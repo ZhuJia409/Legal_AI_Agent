@@ -5,13 +5,13 @@ from typing import Any
 import pytest
 
 from app.integrations.llm.client import LLMClientError
-from app.services.contract_background import (
+from app.services.contract_review.background import (
     CONTRACT_BACKGROUND_DISCLAIMER,
     CONTRACT_BACKGROUND_SYSTEM_PROMPT,
     ContractBackgroundService,
     build_contract_background_prompt,
 )
-from app.services.contract_evidence import (
+from app.services.contract_review.evidence import (
     build_contract_evidence_snapshot,
     build_evidence_prompt,
     segment_contract_markdown,

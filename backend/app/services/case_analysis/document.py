@@ -15,7 +15,7 @@ from app.schemas.case_analysis import (
     DocumentDraftStageResult,
     RiskLevel,
 )
-from app.services.latex_pdf import ReportPdfCompiler, create_latex_environment
+from app.services.pdf_runtime import ReportPdfCompiler, create_latex_environment
 
 PDF_CONTENT_TYPE = "application/pdf"
 _MODE_LABELS = {

@@ -1,19 +1,45 @@
-# 后端目录
+# 后端
 
-用于存放 FastAPI 后端服务相关文件，包括 API 路由、业务服务、数据模型、数据库访问、智能体编排、RAG 检索服务、配置管理和后端测试辅助代码。
+`backend/` 是 Legal AI Agent 的 FastAPI 服务，负责案件分析、合同审查、MinerU 文档解析、结构化 Agent 工作流、历史持久化和 PDF 生成。
 
-## 已配置内容
+## 目录
 
-- `pyproject.toml`：后端依赖和测试/格式工具配置。
-- `app/main.py`：FastAPI 应用入口。
-- `app/api/health.py`：健康检查接口。
-- `app/core/config.py`：环境变量配置。
-- `tests/test_health.py`：后端基础健康检查测试。
+| 路径 | 说明 |
+| --- | --- |
+| [`app/`](app/README.md) | 应用入口、API、schema、服务、Agent 图、仓储和外部集成。 |
+| `alembic/` | MySQL 结构迁移。 |
+| `tests/` | 后端单元、服务和 API 测试。 |
+| `pyproject.toml` | Python 3.12 依赖及 Ruff、pytest 配置。 |
+| `alembic.ini` | Alembic 配置。 |
 
-## 常用命令
+## 初始化与迁移
 
 ```powershell
+cd backend
 uv sync
-uv run pytest
-uv run uvicorn app.main:app --reload
+uv run alembic upgrade head
 ```
+
+数据库结构只通过 Alembic 管理，应用启动时不会自动建表。
+
+## 启动
+
+```powershell
+cd backend
+uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+- API 文档：<http://127.0.0.1:8000/docs>
+- 健康检查：<http://127.0.0.1:8000/health>
+
+模型、MinerU、MySQL、MongoDB、MinIO 和 Tectonic 配置从仓库根目录 `.env` 读取。缺少配置时，运行时返回受控错误，不使用 mock fallback。
+
+## 检查
+
+```powershell
+cd backend
+uv run ruff check .
+uv run pytest
+```
+
+详细分层和调用链见 [`app/README.md`](app/README.md)。

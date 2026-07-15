@@ -4,12 +4,9 @@ import pytest
 
 from app.repositories.case_analysis import CaseAnalysisRecord
 from app.repositories.contract_review import ContractReviewHistoryRecord
-from app.services.analysis_history import (
-    CaseAnalysisHistoryService,
-    ContractReviewHistoryService,
-    HistoryNotFoundError,
-    HistorySnapshotError,
-)
+from app.services.case_analysis.history import CaseAnalysisHistoryService
+from app.services.contract_review.history import ContractReviewHistoryService
+from app.services.history import HistoryNotFoundError, HistorySnapshotError
 
 
 class FakeContractRepository:

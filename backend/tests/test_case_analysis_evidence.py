@@ -4,7 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.schemas.case_analysis import AgentFindingDraft, CaseRiskItem
-from app.services.case_analysis_evidence import (
+from app.services.case_analysis.evidence import (
     UnknownCaseSourceError,
     resolve_source_refs,
     segment_case_material,

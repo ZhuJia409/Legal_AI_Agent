@@ -1,7 +1,6 @@
 import pytest
 from pydantic import ValidationError
 
-from app.schemas.contract_background import SourceRef
 from app.schemas.contract_review import (
     ContractTypeCode,
     ContractTypeSelection,
@@ -9,6 +8,7 @@ from app.schemas.contract_review import (
     ReviewFinding,
     ReviewModuleResult,
 )
+from app.schemas.contract_review.background import SourceRef
 
 
 def test_contract_type_selection_draft_rejects_more_than_three_types() -> None:
