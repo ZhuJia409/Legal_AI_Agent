@@ -1,0 +1,119 @@
+\documentclass[UTF8,a4paper,11pt,fontset=fandol]{ctexart}
+
+\usepackage[a4paper,margin=2.25cm,headheight=16pt,footskip=1.2cm]{geometry}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage[table]{xcolor}
+
+\definecolor{LegalGreen}{HTML}{174C3C}
+\definecolor{LegalGreenLight}{HTML}{EDF5F1}
+\definecolor{LegalGray}{HTML}{5F6B66}
+\definecolor{WarningRed}{HTML}{A61B1B}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\setlist[itemize]{leftmargin=1.6em,itemsep=0.18em,topsep=0.2em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\color{LegalGreen}\small 案件处理方案与文书草稿}
+\fancyhead[R]{\color{LegalGray}\small << status_label|latex_escape >>}
+<% if status == "partial" %>
+\fancyfoot[C]{\color{WarningRed}\bfseries 材料不完整，不可直接提交或作为诉讼决策依据\quad 第\thepage 页}
+<% else %>
+\fancyfoot[C]{\color{LegalGreen}\small 第\thepage 页}
+<% endif %>
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\newcommand{\reportsection}[1]{%
+  \vspace{0.55em}{\Large\bfseries\color{LegalGreen}#1}\par%
+  \vspace{0.15em}\color{LegalGreen}\hrule\color{black}\vspace{0.4em}%
+}
+\newcommand{\fieldlabel}[1]{\textbf{\color{LegalGreen}#1}}
+
+\begin{document}
+
+{\LARGE\bfseries\color{LegalGreen}<< form.report_title|latex_escape >>}\par
+{\large << title|latex_escape >>}\hfill
+{\small 生成日期：<< generated_at|latex_escape >>}\par
+<% if status == "partial" %>
+\fcolorbox{WarningRed}{white}{%
+  \parbox{0.94\textwidth}{\bfseries\color{WarningRed}<< partial_warning|latex_escape >>}%
+}
+<% endif %>
+
+\reportsection{一、案件概览}
+\begin{tabular}{>{\bfseries\color{LegalGreen}}p{3.1cm}p{10.8cm}}
+  分析状态 & << status_label|latex_escape >> \\
+  整体风险 & << risk_label|latex_escape >> \\
+\end{tabular}
+\fieldlabel{摘要：}<< form.case_summary|latex_escape >>
+
+\reportsection{二、条件化处理方案}
+<% if form.strategies %>
+<% for strategy in form.strategies %>
+\fcolorbox{LegalGreen}{LegalGreenLight}{%
+\parbox{0.92\textwidth}{%
+\textbf{\color{LegalGreen}<< strategy.mode_label|latex_escape >>}\par
+\fieldlabel{目标：}<< strategy.objective|latex_escape >>
+<% if strategy.actions %>
+\par\fieldlabel{核心动作：}
+\begin{itemize}
+<% for item in strategy.actions %>\item << item|latex_escape >>
+<% endfor %>\end{itemize}
+<% endif %>
+<% if strategy.prerequisites %>
+\fieldlabel{适用前提：}<< strategy.prerequisites|join('；')|latex_escape >>\par
+<% endif %>
+<% if strategy.risks %>
+\fieldlabel{主要风险：}<< strategy.risks|join('；')|latex_escape >>
+<% endif %>
+}%
+}
+\par
+<% endfor %>
+<% else %>
+现有材料不足，暂未形成可用的条件化方案。
+<% endif %>
+
+\reportsection{三、文书草稿}
+\fieldlabel{草稿名称：}<< form.draft_title|latex_escape >>\par
+\fieldlabel{用途：}<< form.draft_purpose|latex_escape >>
+
+\fieldlabel{关键事实：}
+<% if form.key_facts %>
+\begin{itemize}
+<% for fact in form.key_facts %>
+  \item << fact.text|latex_escape >>
+  <% if fact.references %>{\small\color{LegalGray}（<< fact.references|join('、')|latex_escape >>）}<% endif %>
+<% endfor %>
+\end{itemize}
+<% else %>未从材料确认。<% endif %>
+
+\fieldlabel{核心观点或请求：}
+<% if form.core_positions_or_requests %>
+\begin{itemize}<% for item in form.core_positions_or_requests %>\item << item|latex_escape >><% endfor %>\end{itemize}
+<% else %>未从材料确认。<% endif %>
+
+\fieldlabel{建议动作：}
+<% if form.recommended_actions %>
+\begin{itemize}<% for item in form.recommended_actions %>\item << item|latex_escape >><% endfor %>\end{itemize}
+<% else %>待专业律师确认。<% endif %>
+
+\reportsection{四、待补与复核}
+\fieldlabel{待补信息：}
+<% if form.missing_information %>
+\begin{itemize}<% for item in form.missing_information %>\item << item|latex_escape >><% endfor %>\end{itemize}
+<% else %>未记录额外待补信息。<% endif %>
+
+\fieldlabel{律师复核事项：}
+<% if form.lawyer_review_items %>
+\begin{itemize}<% for item in form.lawyer_review_items %>\item << item|latex_escape >><% endfor %>\end{itemize}
+<% else %>事实、证据、法律适用、管辖和请求范围均待专业律师复核。<% endif %>
+
+\fcolorbox{LegalGreen}{LegalGreenLight}{%
+\parbox{0.94\textwidth}{本文书由人工智能辅助生成，仅供内部案件分析参考。必须由专业律师复核事实、证据、法律适用、程序和请求范围后定稿，不可直接提交法院或对外使用。}%
+}
+
+\end{document}

@@ -10,6 +10,10 @@ const caseReportSource = readFileSync(
   new URL("./case-analysis-report-result.tsx", import.meta.url),
   "utf8",
 );
+const historySource = readFileSync(
+  new URL("./analysis-history.tsx", import.meta.url),
+  "utf8",
+);
 
 function sourceBetween(source: string, start: string, end: string): string {
   const startIndex = source.indexOf(start);
@@ -29,28 +33,18 @@ test("结果栏作为网格项可以在窄屏收缩", () => {
   assert.match(panelSource, /<aside className="[^"]*\bmin-w-0\b[^"]*">/);
 });
 
-test("案件报告根节点提供可继承的任意位置换行规则", () => {
-  const reportSource = sourceBetween(
-    caseReportSource,
-    "export function CaseAnalysisReportResult",
-    "function StageCard",
-  );
-
+test("案件下载卡片在窄屏可收缩并直接提供 PDF", () => {
   assert.match(
-    reportSource,
+    caseReportSource,
     /<div className="[^"]*\bmin-w-0\b[^"]*\[overflow-wrap:anywhere\][^"]*">/,
   );
+  assert.match(caseReportSource, /下载案件文书 PDF/);
+  assert.doesNotMatch(caseReportSource, /CASE_STAGE_ORDER|StageCard|案件卷宗索引/);
 });
 
-test("承载模型长文本的 flex 子项显式允许收缩", () => {
-  const requiredGuards = [
-    /<AlertTriangle[^>]*\/>\s*<div className="min-w-0">/,
-    /<Info[^>]*\/>\s*<div className="min-w-0">/,
-    /<Icon[^>]*\/>\s*<div className="min-w-0">/,
-    /<span className="min-w-0">\{item\}<\/span>/,
-  ];
-
-  for (const guard of requiredGuards) {
-    assert.match(caseReportSource, guard);
-  }
+test("案件历史直接下载而合同历史仍打开详情", () => {
+  assert.match(historySource, /endpoint === "case-analyses"/);
+  assert.match(historySource, /case-analyses\/\$\{encodeURIComponent\(id\)\}\/document/);
+  assert.match(historySource, /下载文书/);
+  assert.match(historySource, /onClick=\{\(\) => openItem\(item\)\}/);
 });

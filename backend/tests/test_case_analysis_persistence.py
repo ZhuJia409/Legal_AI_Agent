@@ -37,11 +37,11 @@ class FakeRepository:
 
 
 @pytest.mark.asyncio
-async def test_case_persistence_stores_docx_and_snapshot_with_public_metadata() -> None:
-    content = b"docx-content"
+async def test_case_persistence_stores_pdf_and_snapshot_with_public_metadata() -> None:
+    content = b"%PDF-case-content"
     generated = GeneratedCaseDocument(
-        filename="草稿.docx",
-        content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename="草稿.pdf",
+        content_type="application/pdf",
         content=content,
         sha256=__import__("hashlib").sha256(content).hexdigest(),
         generated_at=datetime(2026, 7, 14, tzinfo=UTC),
@@ -56,8 +56,8 @@ async def test_case_persistence_stores_docx_and_snapshot_with_public_metadata() 
 
     assert response.draft_document is not None
     assert response.draft_document.download_path.endswith("/analysis-123/document")
-    assert storage.puts[0]["key"] == "case-analyses/analysis-123/documents/草稿.docx"
-    assert repository.saved[0]["response_payload"]["draft_document"]["format"] == "docx"  # type: ignore[index]
+    assert storage.puts[0]["key"] == "case-analyses/analysis-123/documents/草稿.pdf"
+    assert repository.saved[0]["response_payload"]["draft_document"]["format"] == "pdf"  # type: ignore[index]
 
 
 @pytest.mark.asyncio
@@ -84,4 +84,3 @@ async def test_case_document_service_rejects_corrupt_bytes() -> None:
         await CaseAnalysisStoredDocumentService(
             repository=repository, object_storage=FakeStorage(b"bad!")
         ).get_document("id")
-

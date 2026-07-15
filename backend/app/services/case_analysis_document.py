@@ -3,29 +3,31 @@ from __future__ import annotations
 import hashlib
 import re
 from dataclasses import dataclass
-from datetime import UTC, datetime
-from io import BytesIO
+from datetime import datetime
+from pathlib import Path
+from zoneinfo import ZoneInfo
 
-from docx import Document
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt
+from jinja2 import Environment, TemplateError
 
 from app.schemas.case_analysis import (
+    AnalysisStatus,
     CaseDraftDocumentInfo,
     DocumentDraftStageResult,
     RiskLevel,
-    StrategyStageResult,
 )
+from app.services.latex_pdf import ReportPdfCompiler, create_latex_environment
 
-DOCX_CONTENT_TYPE = (
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-)
+PDF_CONTENT_TYPE = "application/pdf"
 _MODE_LABELS = {
     "aggressive": "激进方案",
     "balanced": "稳健方案",
     "conservative": "保守方案",
 }
 _RISK_LABELS = {"unknown": "待评估", "low": "低", "medium": "中", "high": "高"}
+
+
+class CaseDocumentGenerationError(RuntimeError):
+    """案件文书模板或 PDF 编译失败。"""
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,8 +39,11 @@ class GeneratedCaseDocument:
     generated_at: datetime
 
     def to_document_info(self, analysis_id: str) -> CaseDraftDocumentInfo:
+        document_format = "pdf" if self.content_type == PDF_CONTENT_TYPE else "docx"
         return CaseDraftDocumentInfo(
+            format=document_format,
             filename=self.filename,
+            content_type=self.content_type,
             size_bytes=len(self.content),
             sha256=self.sha256,
             generated_at=self.generated_at,
@@ -47,78 +52,120 @@ class GeneratedCaseDocument:
 
 
 class CaseAnalysisDocumentRenderer:
-    """将已校验的第 7、8 阶段组装为精简草稿，不二次改写模型事实。"""
+    """把文书 Agent 的严格表单填入固定 LaTeX 模板并编译为 PDF。"""
 
-    def render(
+    def __init__(
+        self,
+        *,
+        compiler: ReportPdfCompiler,
+        environment: Environment | None = None,
+        template_name: str = "case_analysis_document.tex.j2",
+    ) -> None:
+        self._compiler = compiler
+        self._environment = environment or create_latex_environment()
+        self._template_name = template_name
+
+    async def render(
         self,
         *,
         analysis_id: str,
         title: str | None,
+        status: AnalysisStatus,
         risk_level: RiskLevel,
-        strategy_stage: StrategyStageResult,
         draft_stage: DocumentDraftStageResult,
+        generated_at: datetime | None = None,
     ) -> GeneratedCaseDocument:
-        document = Document()
-        normal = document.styles["Normal"]
-        normal.font.name = "Microsoft YaHei"
-        normal.font.size = Pt(10.5)
+        form = draft_stage.document_form
+        if form is None:
+            raise CaseDocumentGenerationError("案件 PDF 缺少已验证的文书表单")
+        resolved_generated_at = generated_at or datetime.now(ZoneInfo("Asia/Shanghai"))
+        if (
+            resolved_generated_at.tzinfo is None
+            or resolved_generated_at.utcoffset() is None
+        ):
+            raise ValueError("generated_at must include timezone")
 
-        heading = document.add_heading("案件处理方案与文书草稿", level=0)
-        heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        document.add_paragraph(f"案件：{title or '未命名案件'}")
-        document.add_paragraph(f"整体风险：{_RISK_LABELS[risk_level]}")
-
-        document.add_heading("一、三套方案", level=1)
-        if strategy_stage.strategies:
-            for strategy in strategy_stage.strategies[:3]:
-                document.add_heading(_MODE_LABELS[strategy.mode], level=2)
-                document.add_paragraph(strategy.summary)
-                self._add_limited_list(document, "关键步骤", strategy.steps, 3)
-                self._add_limited_list(document, "前提条件", strategy.prerequisites, 2)
-                self._add_limited_list(document, "主要风险", strategy.risks, 2)
-        else:
-            document.add_paragraph("现有材料不足，三套方案待补充信息后完善。")
-
-        document.add_heading("二、文书草稿", level=1)
-        document.add_paragraph(draft_stage.draft_title or "文书类型待律师确认")
-        for section in draft_stage.draft_sections[:5]:
-            document.add_paragraph(section)
-        missing = list(dict.fromkeys([*draft_stage.missing_information]))[:3]
-        if missing:
-            self._add_limited_list(document, "待补信息", missing, 3)
-
-        document.add_heading("三、律师复核提示", level=1)
-        document.add_paragraph(
-            "本文书为基于已提供材料生成的草稿，不可直接提交法院或对外使用。"
-            "事实、证据、法律依据、管辖、请求范围及格式必须由专业律师复核并定稿。"
+        strategies = sorted(
+            form.strategies,
+            key=lambda item: ("aggressive", "balanced", "conservative").index(
+                item.mode
+            ),
         )
+        context = {
+            "title": title.strip() if title and title.strip() else "未命名案件",
+            "status": status,
+            "status_label": "完整" if status == "complete" else "材料不完整",
+            "partial_warning": "材料不完整，不可直接提交或作为诉讼决策依据。",
+            "risk_label": _RISK_LABELS[risk_level],
+            "generated_at": resolved_generated_at.strftime("%Y-%m-%d"),
+            "form": {
+                "report_title": form.report_title,
+                "case_summary": form.case_summary,
+                "strategies": [
+                    {
+                        "mode_label": _MODE_LABELS[item.mode],
+                        "objective": item.objective,
+                        "actions": item.actions,
+                        "prerequisites": item.prerequisites,
+                        "risks": item.risks,
+                    }
+                    for item in strategies
+                ],
+                "draft_title": form.draft_title,
+                "draft_purpose": form.draft_purpose,
+                "key_facts": [
+                    {
+                        "text": item.text,
+                        "references": [
+                            _paragraph_label(ref.paragraph_id)
+                            for ref in item.source_refs
+                        ],
+                    }
+                    for item in form.key_facts
+                ],
+                "core_positions_or_requests": form.core_positions_or_requests,
+                "recommended_actions": form.recommended_actions,
+                "missing_information": list(
+                    dict.fromkeys(
+                        [
+                            *form.missing_information,
+                            *draft_stage.missing_information,
+                        ]
+                    )
+                )[:5],
+                "lawyer_review_items": form.lawyer_review_items,
+            },
+        }
+        try:
+            latex_source = self._environment.get_template(self._template_name).render(
+                **context
+            )
+        except TemplateError as exc:
+            raise CaseDocumentGenerationError("案件 PDF 模板渲染失败") from exc
+        try:
+            content = await self._compiler.compile(latex_source)
+        except Exception as exc:
+            raise CaseDocumentGenerationError("案件 PDF 编译失败") from exc
+        if not content.startswith(b"%PDF-"):
+            raise CaseDocumentGenerationError("案件 PDF 编译结果无效")
 
-        buffer = BytesIO()
-        document.save(buffer)
-        content = buffer.getvalue()
-        generated_at = datetime.now(UTC)
         safe_title = self._safe_title(title)
         return GeneratedCaseDocument(
-            filename=f"{safe_title}_案件文书草稿_{analysis_id[:8]}.docx",
-            content_type=DOCX_CONTENT_TYPE,
+            filename=(
+                f"{safe_title}_案件处理方案与文书草稿_{analysis_id[:8]}.pdf"
+            ),
+            content_type=PDF_CONTENT_TYPE,
             content=content,
             sha256=hashlib.sha256(content).hexdigest(),
-            generated_at=generated_at,
+            generated_at=resolved_generated_at,
         )
-
-    @staticmethod
-    def _add_limited_list(
-        document: Document,
-        label: str,
-        items: list[str],
-        limit: int,
-    ) -> None:
-        document.add_paragraph(f"{label}：")
-        for item in items[:limit]:
-            document.add_paragraph(item, style="List Bullet")
 
     @staticmethod
     def _safe_title(title: str | None) -> str:
         normalized = re.sub(r'[\\/:*?"<>|\r\n]+', "_", (title or "未命名案件").strip())
-        return normalized[:60] or "未命名案件"
+        return Path(normalized[:60] or "未命名案件").name
 
+
+def _paragraph_label(paragraph_id: str) -> str:
+    number = int(paragraph_id.removeprefix("p"))
+    return f"材料第 {number} 段"

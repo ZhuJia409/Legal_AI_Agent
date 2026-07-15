@@ -4,13 +4,16 @@ import asyncio
 import logging
 
 import pytest
+from langchain.agents.structured_output import ToolStrategy
 from pydantic import BaseModel, ValidationError
 
 from app.schemas.case_analysis import (
     AgentCandidateCauseDraft,
+    AgentCaseDocumentFormDraft,
     AgentClaimDraft,
     AgentDeadlineDraft,
     AgentDeadlineScanDraft,
+    AgentDocumentFactDraft,
     AgentEvidenceDraft,
     AgentFactDraft,
     AgentFindingDraft,
@@ -27,6 +30,7 @@ from app.schemas.case_analysis import (
     AgentTimelineEventDraft,
     CaseStageCode,
 )
+from app.services import case_analysis_agents as agent_module
 from app.services.case_analysis_agents import (
     CaseAgentRunResult,
     CaseAnalysisModelInvocationError,
@@ -129,6 +133,7 @@ class FakeCaseRunner:
     ) -> None:
         self.fail_modules = fail_modules or set()
         self.calls: list[str] = []
+        self.tool_strategy_modules: list[str] = []
         self.first_wave_entered: set[str] = set()
         self.first_wave_ready = asyncio.Event()
         self.synchronize_first_wave = synchronize_first_wave
@@ -142,9 +147,12 @@ class FakeCaseRunner:
         user_prompt: str,
         response_model: type[BaseModel],
         analysis_id: str,
+        force_tool_strategy: bool = False,
     ) -> CaseAgentRunResult:
         del system_prompt, user_prompt, response_model, analysis_id
         self.calls.append(module)
+        if force_tool_strategy:
+            self.tool_strategy_modules.append(module)
         if module in self.fail_modules:
             raise CaseAnalysisModelInvocationError(f"forced failure: {module}")
         if self.synchronize_first_wave and module in {
@@ -292,6 +300,24 @@ def _draft_for(module: str) -> BaseModel:
             risks=["材料不足导致方案需调整"],
             missing_information=["客户风险偏好"],
         )
+    if module == "document_form":
+        return AgentCaseDocumentFormDraft(
+            report_title="案件处理方案与文书草稿",
+            case_summary="双方对婚约期间款项性质及返还范围存在争议。",
+            strategies=[],
+            draft_title="中立案件处理意见（草稿）",
+            draft_purpose="供律师确定后续谈判或诉讼方案。",
+            key_facts=[
+                {
+                    "text": "双方未办理结婚登记。",
+                    "paragraph_ids": ["p0002"],
+                }
+            ],
+            core_positions_or_requests=["款项性质和返还范围需结合给付目的判断。"],
+            recommended_actions=["补充银行流水"],
+            missing_information=["代理立场"],
+            lawyer_review_items=["核对管辖和请求范围"],
+        )
     raise AssertionError(f"unexpected module: {module}")
 
 
@@ -325,6 +351,50 @@ async def test_graph_runs_first_wave_in_parallel_and_aggregates_dynamic_workers(
     assert len(result.stages[4].issues) == 5  # type: ignore[union-attr]
     assert result.status == "partial"
     assert "专业法律人士" in result.disclaimer
+
+
+@pytest.mark.asyncio
+async def test_graph_uses_tool_form_and_resolves_document_fact_references() -> None:
+    runner = FakeCaseRunner()
+
+    result = await CaseAnalysisGraphService(runner).analyze(
+        title="婚约财产纠纷",
+        content="基本信息\n\n双方未办理结婚登记。",
+    )
+
+    assert runner.tool_strategy_modules == ["document_form"]
+    document_stage = next(item for item in result.stages if item.stage == "document_draft")
+    assert document_stage.document_form is not None
+    assert document_stage.document_form.key_facts[0].source_refs[0].paragraph_id == "p0002"
+    assert document_stage.document_form.key_facts[0].source_refs[0].quote == (
+        "双方未办理结婚登记。"
+    )
+
+
+@pytest.mark.asyncio
+async def test_document_form_rejects_unknown_material_paragraph() -> None:
+    draft = _draft_for("document_form")
+    assert isinstance(draft, AgentCaseDocumentFormDraft)
+    runner = FakeCaseRunner(
+        draft_overrides={
+            "document_form": draft.model_copy(
+                update={
+                    "key_facts": [
+                        AgentDocumentFactDraft(
+                            text="无法验证的事实",
+                            paragraph_ids=["p9999"],
+                        )
+                    ]
+                }
+            )
+        }
+    )
+
+    with pytest.raises(CaseAnalysisStructuredOutputError, match="document_form"):
+        await CaseAnalysisGraphService(runner).analyze(
+            title=None,
+            content="基本信息\n\n案件事实",
+        )
 
 
 @pytest.mark.asyncio
@@ -605,9 +675,10 @@ async def test_runner_limits_concurrency_and_falls_back_without_network() -> Non
         response_model: type[BaseModel],
         module: str,
         analysis_id: str,
+        force_tool_strategy: bool = False,
     ) -> BaseModel:
         nonlocal active, peak
-        del system_prompt, user_prompt, response_model, module, analysis_id
+        del system_prompt, user_prompt, response_model, module, analysis_id, force_tool_strategy
         calls.append(model_name)
         if model_name == "primary" and len(calls) == 1:
             raise CaseAnalysisModelInvocationError("primary unavailable")
@@ -657,8 +728,9 @@ async def test_runner_does_not_fallback_for_unexpected_programming_error() -> No
         response_model: type[BaseModel],
         module: str,
         analysis_id: str,
+        force_tool_strategy: bool = False,
     ) -> BaseModel:
-        del system_prompt, user_prompt, response_model, module, analysis_id
+        del system_prompt, user_prompt, response_model, module, analysis_id, force_tool_strategy
         calls.append(model_name)
         raise TypeError("programming bug")
 
@@ -697,8 +769,9 @@ async def test_runner_reports_all_model_schema_failures_as_structured_output_err
         response_model: type[BaseModel],
         module: str,
         analysis_id: str,
+        force_tool_strategy: bool = False,
     ) -> BaseModel:
-        del system_prompt, user_prompt, response_model, module, analysis_id
+        del system_prompt, user_prompt, response_model, module, analysis_id, force_tool_strategy
         calls.append(model_name)
         return WrongDraft(unexpected="value")
 
@@ -720,3 +793,41 @@ async def test_runner_reports_all_model_schema_failures_as_structured_output_err
         )
 
     assert calls == ["primary", "fallback"]
+
+
+@pytest.mark.asyncio
+async def test_document_runner_forces_langchain_tool_strategy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+    draft = _draft_for("document_form")
+
+    class FakeAgent:
+        async def ainvoke(self, payload: object, config: object) -> dict[str, object]:
+            del payload, config
+            return {"structured_response": draft}
+
+    def fake_create_agent(**kwargs: object) -> FakeAgent:
+        captured.update(kwargs)
+        return FakeAgent()
+
+    monkeypatch.setattr(agent_module, "create_agent", fake_create_agent)
+    runner = LangChainCaseAnalysisAgentRunner(
+        base_url="https://example.invalid/v1",
+        api_key="test-key",
+        model="primary",
+        fallback_model=None,
+    )
+
+    result = await runner.run(
+        module="document_form",
+        system_prompt="system",
+        user_prompt="user",
+        response_model=AgentCaseDocumentFormDraft,
+        analysis_id="analysis-tool-form",
+        force_tool_strategy=True,
+    )
+
+    assert result.output == draft
+    assert isinstance(captured["response_format"], ToolStrategy)
+    assert captured["response_format"].schema is AgentCaseDocumentFormDraft  # type: ignore[union-attr]

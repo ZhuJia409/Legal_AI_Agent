@@ -25,7 +25,6 @@ from app.schemas.case_analysis import (
     CaseAnalysisHistoryResponse,
     CaseAnalysisResponse,
     DocumentDraftStageResult,
-    StrategyStageResult,
 )
 from app.services.analysis_history import (
     CaseAnalysisHistoryService,
@@ -36,7 +35,10 @@ from app.services.case_analysis_agents import (
     CaseAnalysisStructuredOutputError,
     LangChainCaseAnalysisAgentRunner,
 )
-from app.services.case_analysis_document import CaseAnalysisDocumentRenderer
+from app.services.case_analysis_document import (
+    CaseAnalysisDocumentRenderer,
+    CaseDocumentGenerationError,
+)
 from app.services.case_analysis_graph import (
     CaseAnalysisCriticalStageError,
     CaseAnalysisGraphService,
@@ -52,6 +54,7 @@ from app.services.document_parser import (
     DocumentParserConfigurationError,
     DocumentParserUpstreamError,
 )
+from app.services.latex_pdf import TectonicCompiler
 from app.services.mineru_parser import DocumentParserProtocol, MineruDocumentParser
 from app.services.object_storage import MinioObjectStorage
 
@@ -139,8 +142,15 @@ def _case_object_storage(settings: Settings) -> MinioObjectStorage:
     )
 
 
-def get_case_analysis_document_renderer() -> CaseAnalysisDocumentRenderer:
-    return CaseAnalysisDocumentRenderer()
+def get_case_analysis_document_renderer(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> CaseAnalysisDocumentRenderer:
+    return CaseAnalysisDocumentRenderer(
+        compiler=TectonicCompiler(
+            tectonic_path=settings.tectonic_path,
+            timeout_seconds=settings.tectonic_timeout_seconds,
+        )
+    )
 
 
 def get_case_analysis_persistence_service(
@@ -203,21 +213,29 @@ async def create_case_analysis(
             title=resolved.title,
             content=resolved.content,
         )
-        strategy_stage = cast(
-            StrategyStageResult,
-            next(stage for stage in result.stages if stage.stage == "strategy_options"),
-        )
         draft_stage = cast(
             DocumentDraftStageResult,
             next(stage for stage in result.stages if stage.stage == "document_draft"),
         )
-        document = document_renderer.render(
-            analysis_id=result.analysis_id,
-            title=resolved.title,
-            risk_level=result.risk_level,
-            strategy_stage=strategy_stage,
-            draft_stage=draft_stage,
-        )
+        try:
+            document = await document_renderer.render(
+                analysis_id=result.analysis_id,
+                title=resolved.title,
+                status=result.status,
+                risk_level=result.risk_level,
+                draft_stage=draft_stage,
+            )
+        except CaseDocumentGenerationError as exc:
+            logger.warning(
+                "case_document_generation_failed analysis_id=%s error_type=%s",
+                result.analysis_id,
+                exc.__class__.__name__,
+            )
+            return _error_response(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                code="case_document_generation_error",
+                message="案件文书 PDF 暂时无法生成，请稍后重试。",
+            )
         try:
             await persistence_service.persist(
                 title=resolved.title,
@@ -354,12 +372,15 @@ async def download_case_analysis_document(
         )
     record = document.record
     encoded_filename = quote(record.document_filename, safe="")
+    fallback_extension = (
+        "pdf" if record.document_content_type == "application/pdf" else "docx"
+    )
     return Response(
         content=document.content,
         media_type=record.document_content_type,
         headers={
             "Content-Disposition": (
-                'attachment; filename="case-analysis-draft.docx"; '
+                f'attachment; filename="case-analysis-draft.{fallback_extension}"; '
                 f"filename*=UTF-8''{encoded_filename}"
             ),
             "Content-Length": str(record.document_size_bytes),

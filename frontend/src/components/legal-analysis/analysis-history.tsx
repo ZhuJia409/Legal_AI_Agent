@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, FileClock, Loader2 } from "lucide-react";
+import { AlertTriangle, Download, FileClock, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import {
@@ -85,6 +85,7 @@ export function AnalysisHistory({
         <div className="grid gap-3">
           {items.map((item) => {
             const id = item.analysis_id ?? item.task_id ?? "";
+            const isCaseHistory = endpoint === "case-analyses";
             return (
               <article
                 className="flex min-w-0 flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4 sm:flex-row sm:items-center sm:justify-between"
@@ -100,14 +101,24 @@ export function AnalysisHistory({
                     {" · 风险："}{item.risk_level}
                   </p>
                 </div>
-                <button
-                  className="h-9 shrink-0 rounded-md bg-[#214a4b] px-4 text-sm font-semibold text-white disabled:bg-zinc-300"
-                  disabled={openingId === id}
-                  onClick={() => openItem(item)}
-                  type="button"
-                >
-                  {openingId === id ? "加载中" : "查看"}
-                </button>
+                {isCaseHistory ? (
+                  <a
+                    className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md bg-[#214a4b] px-4 text-sm font-semibold text-white"
+                    href={`/api/v1/case-analyses/${encodeURIComponent(id)}/document`}
+                  >
+                    <Download aria-hidden="true" className="h-4 w-4" />
+                    下载文书
+                  </a>
+                ) : (
+                  <button
+                    className="h-9 shrink-0 rounded-md bg-[#214a4b] px-4 text-sm font-semibold text-white disabled:bg-zinc-300"
+                    disabled={openingId === id}
+                    onClick={() => openItem(item)}
+                    type="button"
+                  >
+                    {openingId === id ? "加载中" : "查看"}
+                  </button>
+                )}
               </article>
             );
           })}

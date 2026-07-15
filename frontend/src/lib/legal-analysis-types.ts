@@ -164,10 +164,30 @@ export type StrategyStageResult = CaseStageBase<"strategy_options"> & {
   strategies: CaseStrategy[];
 };
 
+export type CaseDocumentForm = {
+  report_title: string;
+  case_summary: string;
+  strategies: Array<{
+    mode: StrategyMode;
+    objective: string;
+    actions: string[];
+    prerequisites: string[];
+    risks: string[];
+  }>;
+  draft_title: string;
+  draft_purpose: string;
+  key_facts: Array<{ text: string; source_refs: CaseSourceRef[] }>;
+  core_positions_or_requests: string[];
+  recommended_actions: string[];
+  missing_information: string[];
+  lawyer_review_items: string[];
+};
+
 export type DocumentDraftStageResult = CaseStageBase<"document_draft"> & {
   draft_title: string;
   draft_sections: string[];
   quality_checks: string[];
+  document_form?: CaseDocumentForm | null;
 };
 
 export type DeadlineStageResult = CaseStageBase<"deadline_management"> & {
@@ -213,9 +233,11 @@ export type CaseAnalysisResponse = {
 };
 
 export type CaseDraftDocumentInfo = {
-  format: "docx";
+  format: "docx" | "pdf";
   filename: string;
-  content_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  content_type:
+    | "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    | "application/pdf";
   size_bytes: number;
   sha256: string;
   generated_at: string;

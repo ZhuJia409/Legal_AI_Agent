@@ -17,6 +17,7 @@ from typing_extensions import TypedDict
 from app.integrations.llm.client import LLMClientError, LLMConfigurationError
 from app.schemas.case_analysis import (
     CASE_ANALYSIS_DISCLAIMER,
+    AgentCaseDocumentFormDraft,
     AgentDeadlineScanDraft,
     AgentEvidenceDraft,
     AgentFactDraft,
@@ -33,6 +34,8 @@ from app.schemas.case_analysis import (
     CaseCandidateCause,
     CaseClaim,
     CaseDeadline,
+    CaseDocumentFact,
+    CaseDocumentForm,
     CaseFinding,
     CaseIssueAnalysis,
     CaseLegalRelation,
@@ -126,6 +129,7 @@ class CaseAnalysisGraphState(TypedDict, total=False):
     risk_failures: Annotated[list[CaseStageError], operator.add]
     strategy_results: Annotated[list[CaseStrategy], operator.add]
     strategy_failures: Annotated[list[CaseStageError], operator.add]
+    document_form: CaseDocumentForm
     response: CaseAnalysisResponse
 
 
@@ -203,6 +207,7 @@ class CaseAnalysisGraphService:
         builder.add_node("risk_worker", self._risk_worker)
         builder.add_node("dispatch_strategies", self._dispatch_strategies_node)
         builder.add_node("strategy_worker", self._strategy_worker)
+        builder.add_node("document_form", self._document_form_node)
         builder.add_node("build_report", self._build_report_node)
 
         builder.add_edge(START, "prepare_input")
@@ -223,9 +228,10 @@ class CaseAnalysisGraphService:
         builder.add_conditional_edges(
             "dispatch_strategies",
             self._fan_out_strategies,
-            ["strategy_worker", "build_report"],
+            ["strategy_worker", "document_form"],
         )
-        builder.add_edge("strategy_worker", "build_report")
+        builder.add_edge("strategy_worker", "document_form")
+        builder.add_edge("document_form", "build_report")
         builder.add_edge("build_report", END)
         return builder.compile()
 
@@ -478,9 +484,9 @@ class CaseAnalysisGraphService:
 
     def _fan_out_strategies(
         self, state: CaseAnalysisGraphState
-    ) -> list[Send] | Literal["build_report"]:
+    ) -> list[Send] | Literal["document_form"]:
         if not state.get("risk_results"):
-            return "build_report"
+            return "document_form"
         risk_payload = [
             {
                 "dimension": item.dimension,
@@ -546,6 +552,54 @@ class CaseAnalysisGraphService:
             _log_node_failure(state, f"strategy:{mode}", exc)
             return {"strategy_failures": [_stage_error("strategy_failed", exc)]}
 
+    async def _document_form_node(
+        self, state: CaseAnalysisGraphState
+    ) -> dict[str, Any]:
+        """用工具表单生成精简文书数据；该节点失败时不生成不可审计的文件。"""
+
+        try:
+            draft = await self._run(
+                state,
+                "document_form",
+                AgentCaseDocumentFormDraft,
+                (
+                    "填写案件处理方案与文书草稿表单。只压缩已验证信息，不得生成 LaTeX、"
+                    "法条、案例、精确胜诉概率或可直接提交法院的诉状。"
+                ),
+                extra={
+                    "intake": state["intake_result"].model_dump(mode="json"),
+                    "facts": state["fact_result"].model_dump(mode="json"),
+                    "evidence": state["evidence_result"].model_dump(mode="json"),
+                    "legal": state["legal_result"].model_dump(mode="json"),
+                    "issues": [item.model_dump(mode="json") for item in state["issue_results"]],
+                    "risks": [
+                        {
+                            "dimension": item.dimension,
+                            "summary": item.summary,
+                            "risk_level": item.risk_level,
+                            "risks": [risk.model_dump(mode="json") for risk in item.risks],
+                            "missing_information": list(item.missing_information),
+                        }
+                        for item in state["risk_results"]
+                    ],
+                    "strategies": [
+                        item.model_dump(mode="json")
+                        for item in state.get("strategy_results", [])
+                    ],
+                },
+                force_tool_strategy=True,
+            )
+            return {
+                "document_form": _document_form_result(draft, state["segments"])
+            }
+        except LLMConfigurationError:
+            raise
+        except _EXPECTED_NODE_ERRORS as exc:
+            _log_node_failure(state, "document_form", exc)
+            raise CaseAnalysisStructuredOutputError(
+                "document_form returned invalid structured output"
+            ) from exc
+
     def _build_report_node(self, state: CaseAnalysisGraphState) -> dict[str, Any]:
         response = _build_response(state)
         return {"response": response}
@@ -558,6 +612,7 @@ class CaseAnalysisGraphService:
         instruction: str,
         *,
         extra: dict[str, Any] | None = None,
+        force_tool_strategy: bool = False,
     ) -> BaseModel:
         run = await self.runner.run(
             module=module,
@@ -565,6 +620,7 @@ class CaseAnalysisGraphService:
             user_prompt=_prompt(instruction, state["segments"], extra),
             response_model=response_model,
             analysis_id=state["analysis_id"],
+            force_tool_strategy=force_tool_strategy,
         )
         try:
             return response_model.model_validate(run.output.model_dump())
@@ -744,6 +800,32 @@ def _issue_result(
     )
 
 
+def _document_form_result(
+    draft: AgentCaseDocumentFormDraft,
+    segments: tuple[CaseEvidenceSegment, ...],
+) -> CaseDocumentForm:
+    """把模型段落号解析为可信引用，未知编号会使关键文书节点整体失败。"""
+
+    return CaseDocumentForm(
+        report_title=draft.report_title,
+        case_summary=draft.case_summary,
+        strategies=draft.strategies,
+        draft_title=draft.draft_title,
+        draft_purpose=draft.draft_purpose,
+        key_facts=[
+            CaseDocumentFact(
+                text=item.text,
+                source_refs=resolve_source_refs(item.paragraph_ids, segments),
+            )
+            for item in draft.key_facts
+        ],
+        core_positions_or_requests=draft.core_positions_or_requests,
+        recommended_actions=draft.recommended_actions,
+        missing_information=draft.missing_information,
+        lawyer_review_items=draft.lawyer_review_items,
+    )
+
+
 def _stage_error(code: str, exc: Exception) -> CaseStageError:
     # 对外只暴露稳定错误语义，不泄露 provider 响应或案件材料。
     return CaseStageError(code=code, message=f"节点执行失败（{exc.__class__.__name__}）。")
@@ -881,8 +963,12 @@ def _build_response(state: CaseAnalysisGraphState) -> CaseAnalysisResponse:
         risk_stage,
         strategy_stage,
     ]
+    document_form = state["document_form"]
     document_missing = _unique(
         item for stage in preliminary_stages for item in stage.missing_information
+    )
+    document_missing = _unique(
+        [*document_missing, *document_form.missing_information]
     )
     if any(stage.status != "succeeded" for stage in preliminary_stages):
         document_missing.append("相关阶段仍需补充材料或人工复核")
@@ -892,13 +978,18 @@ def _build_response(state: CaseAnalysisGraphState) -> CaseAnalysisResponse:
         status=_status(document_missing),
         summary="已按验证后的阶段结果生成案件分析报告草稿，不是可直接提交法院的文书。",
         missing_information=document_missing,
-        draft_title="中立案件分析报告（草稿）",
-        draft_sections=[stage.summary for stage in preliminary_stages],
+        draft_title=document_form.draft_title,
+        draft_sections=[
+            document_form.draft_purpose,
+            *document_form.core_positions_or_requests,
+            *document_form.recommended_actions,
+        ],
         quality_checks=[
             "事实引用仅来自已上传材料段落",
             "未生成无来源法条或类案",
             "所有结论等待专业法律人士复核",
         ],
+        document_form=document_form,
     )
 
     stages = [

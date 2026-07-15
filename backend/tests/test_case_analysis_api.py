@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from app.api.v1.case_analyses import (
     CaseUploadBodyTooLargeError,
     _build_limited_receive,
+    get_case_analysis_document_renderer,
     get_case_analysis_graph_service,
     get_case_analysis_persistence_service,
     get_case_document_parser,
@@ -19,6 +20,10 @@ from app.integrations.llm.client import LLMClientError, LLMConfigurationError
 from app.main import app
 from app.schemas.case_analysis import CaseAnalysisResponse
 from app.services.case_analysis_agents import CaseAnalysisStructuredOutputError
+from app.services.case_analysis_document import (
+    CaseDocumentGenerationError,
+    GeneratedCaseDocument,
+)
 from app.services.case_analysis_graph import CaseAnalysisCriticalStageError
 from app.services.document_parser import (
     DocumentParseError,
@@ -80,11 +85,35 @@ class FakeCasePersistenceService:
         response.draft_document = document.to_document_info(response.analysis_id)  # type: ignore[attr-defined]
 
 
+class FakeCaseDocumentRenderer:
+    def __init__(self, error: Exception | None = None) -> None:
+        self.error = error
+        self.calls: list[dict[str, object]] = []
+
+    async def render(self, **kwargs: object) -> GeneratedCaseDocument:
+        self.calls.append(kwargs)
+        if self.error is not None:
+            raise self.error
+        content = b"%PDF-case"
+        return GeneratedCaseDocument(
+            filename="案件处理方案与文书草稿.pdf",
+            content_type="application/pdf",
+            content=content,
+            sha256=__import__("hashlib").sha256(content).hexdigest(),
+            generated_at=__import__("datetime").datetime.now(
+                __import__("datetime").UTC
+            ),
+        )
+
+
 @pytest.fixture
 def client() -> TestClient:
     app.dependency_overrides.clear()
     app.dependency_overrides[get_case_analysis_persistence_service] = (
         lambda: FakeCasePersistenceService()
+    )
+    app.dependency_overrides[get_case_analysis_document_renderer] = (
+        lambda: FakeCaseDocumentRenderer()
     )
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -222,6 +251,7 @@ def test_case_analysis_json_returns_full_compatible_response(client: TestClient)
     assert len(data["stages"]) == 9
     assert data["report"]["overall_risk_level"] == "medium"
     assert data["disclaimer"]
+    assert data["draft_document"]["format"] == "pdf"
     assert service.calls == [
         {"title": "买卖合同纠纷", "content": "卖方逾期交货。", "analysis_id": None}
     ]
@@ -235,6 +265,24 @@ def test_case_analysis_partial_response_keeps_http_200(client: TestClient) -> No
 
     assert response.status_code == 200
     assert response.json()["status"] == "partial"
+
+
+def test_case_document_generation_failure_is_controlled_and_not_persisted(
+    client: TestClient,
+) -> None:
+    service = FakeCaseAnalysisService()
+    persistence = FakeCasePersistenceService()
+    _override_case_dependencies(service)
+    app.dependency_overrides[get_case_analysis_document_renderer] = lambda: (
+        FakeCaseDocumentRenderer(CaseDocumentGenerationError("compile failed"))
+    )
+    app.dependency_overrides[get_case_analysis_persistence_service] = lambda: persistence
+
+    response = client.post("/api/v1/case-analyses", json={"content": "案件事实。"})
+
+    _assert_error(response, 503, "case_document_generation_error")
+    assert "compile failed" not in response.text
+    assert persistence.calls == []
 
 
 @pytest.mark.parametrize(

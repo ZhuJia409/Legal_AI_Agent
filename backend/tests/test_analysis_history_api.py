@@ -62,6 +62,9 @@ class FakeCaseHistory:
 
 
 class FakeStoredCaseDocument:
+    def __init__(self, *, pdf: bool = False) -> None:
+        self.pdf = pdf
+
     async def get_document(self, analysis_id: str) -> CaseAnalysisDocumentDownload:
         from app.repositories.case_analysis import CaseAnalysisRecord
 
@@ -72,8 +75,12 @@ class FakeStoredCaseDocument:
             status="complete",
             risk_level="medium",
             response_payload={},
-            document_filename="案件草稿.docx",
-            document_content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            document_filename="案件草稿.pdf" if self.pdf else "案件草稿.docx",
+            document_content_type=(
+                "application/pdf"
+                if self.pdf
+                else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            ),
             document_size_bytes=len(report.content),
             document_sha256=report.metadata.sha256,
             document_object_key="key",
@@ -109,6 +116,25 @@ def test_contract_and_case_history_endpoints_return_saved_results() -> None:
 
 def test_case_history_missing_and_docx_download_are_controlled() -> None:
     app.dependency_overrides.clear()
+
+
+def test_case_pdf_download_uses_dynamic_content_type_and_filename() -> None:
+    app.dependency_overrides.clear()
+    app.dependency_overrides[get_case_stored_document_service] = lambda: (
+        FakeStoredCaseDocument(pdf=True)
+    )
+    client = TestClient(app)
+    task_id = "123e4567-e89b-12d3-a456-426614174001"
+
+    document = client.get(f"/api/v1/case-analyses/{task_id}/document")
+
+    assert document.status_code == 200
+    assert document.headers["content-type"].startswith("application/pdf")
+    assert 'filename="case-analysis-draft.pdf"' in document.headers[
+        "content-disposition"
+    ]
+    assert "filename*=UTF-8''" in document.headers["content-disposition"]
+    app.dependency_overrides.clear()
     app.dependency_overrides[get_case_analysis_history_service] = lambda: FakeCaseHistory(True)
     app.dependency_overrides[get_case_stored_document_service] = lambda: FakeStoredCaseDocument()
     client = TestClient(app)
@@ -125,4 +151,3 @@ def test_case_history_missing_and_docx_download_are_controlled() -> None:
     )
     assert "filename*=UTF-8''" in document.headers["content-disposition"]
     app.dependency_overrides.clear()
-

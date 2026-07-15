@@ -34,6 +34,7 @@ CASE_ANALYSIS_STAGE_ORDER: tuple[CaseStageCode, ...] = (
 )
 RiskDimension = Literal["internal", "opponent", "execution_cost"]
 StrategyMode = Literal["aggressive", "balanced", "conservative"]
+ConciseDocumentText = Annotated[str, Field(min_length=1, max_length=200)]
 
 CASE_ANALYSIS_DISCLAIMER = (
     "本结果由人工智能基于已提供案件材料生成，仅供案件分析参考，不构成确定性法律结论；"
@@ -207,6 +208,43 @@ class AgentStrategyDraft(StrictCaseModel):
     missing_information: list[str]
 
 
+class AgentDocumentStrategyDraft(StrictCaseModel):
+    """文书表单中的精简策略，数量约束用于控制最终 PDF 篇幅。"""
+
+    mode: StrategyMode
+    objective: str = Field(min_length=1, max_length=160)
+    actions: list[ConciseDocumentText] = Field(max_length=3)
+    prerequisites: list[ConciseDocumentText] = Field(max_length=2)
+    risks: list[ConciseDocumentText] = Field(max_length=2)
+
+
+class AgentDocumentFactDraft(StrictCaseModel):
+    text: str = Field(min_length=1, max_length=200)
+    paragraph_ids: list[str] = Field(min_length=1, max_length=3)
+
+
+class AgentCaseDocumentFormDraft(StrictCaseModel):
+    """由 ToolStrategy 填写的案件 PDF 表单，模型不得输出 LaTeX。"""
+
+    report_title: str = Field(min_length=1, max_length=80)
+    case_summary: str = Field(min_length=1, max_length=300)
+    strategies: list[AgentDocumentStrategyDraft] = Field(max_length=3)
+    draft_title: str = Field(min_length=1, max_length=80)
+    draft_purpose: str = Field(min_length=1, max_length=200)
+    key_facts: list[AgentDocumentFactDraft] = Field(max_length=5)
+    core_positions_or_requests: list[ConciseDocumentText] = Field(max_length=5)
+    recommended_actions: list[ConciseDocumentText] = Field(max_length=5)
+    missing_information: list[ConciseDocumentText] = Field(max_length=5)
+    lawyer_review_items: list[ConciseDocumentText] = Field(max_length=5)
+
+    @model_validator(mode="after")
+    def _require_unique_strategy_modes(self) -> AgentCaseDocumentFormDraft:
+        modes = [item.mode for item in self.strategies]
+        if len(modes) != len(set(modes)):
+            raise ValueError("document strategies must use unique modes")
+        return self
+
+
 class CaseFinding(StrictCaseModel):
     title: str
     detail: str
@@ -281,6 +319,24 @@ class CaseStrategy(StrictCaseModel):
     missing_information: list[str]
 
 
+class CaseDocumentFact(StrictCaseModel):
+    text: str
+    source_refs: list[CaseSourceRef]
+
+
+class CaseDocumentForm(StrictCaseModel):
+    report_title: str
+    case_summary: str
+    strategies: list[AgentDocumentStrategyDraft]
+    draft_title: str
+    draft_purpose: str
+    key_facts: list[CaseDocumentFact]
+    core_positions_or_requests: list[str]
+    recommended_actions: list[str]
+    missing_information: list[str]
+    lawyer_review_items: list[str]
+
+
 class CaseStageBase(StrictCaseModel):
     stage: CaseStageCode
     status: StageStatus
@@ -346,6 +402,7 @@ class DocumentDraftStageResult(CaseStageBase):
     draft_title: str
     draft_sections: list[str]
     quality_checks: list[str]
+    document_form: CaseDocumentForm | None = None
 
 
 class DeadlineStageResult(CaseStageBase):
@@ -379,11 +436,12 @@ class CaseAnalysisReport(StrictCaseModel):
 class CaseDraftDocumentInfo(StrictCaseModel):
     """案件文书草稿的可下载元数据，不暴露 MinIO 对象地址。"""
 
-    format: Literal["docx"] = "docx"
+    format: Literal["docx", "pdf"] = "pdf"
     filename: str = Field(min_length=1)
     content_type: Literal[
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/pdf",
+    ] = "application/pdf"
     size_bytes: int = Field(ge=0)
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     generated_at: datetime
@@ -395,6 +453,18 @@ class CaseDraftDocumentInfo(StrictCaseModel):
         if value.tzinfo is None or value.utcoffset() is None:
             raise ValueError("generated_at must include timezone")
         return value
+
+    @model_validator(mode="after")
+    def _require_matching_format_and_content_type(self) -> CaseDraftDocumentInfo:
+        expected = {
+            "pdf": "application/pdf",
+            "docx": (
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            ),
+        }
+        if self.content_type != expected[self.format]:
+            raise ValueError("document format and content_type must match")
+        return self
 
 
 class CaseAnalysisResponse(StrictCaseModel):

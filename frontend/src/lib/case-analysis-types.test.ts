@@ -118,6 +118,24 @@ type ExpectedDocumentDraftFields = {
   draft_title: string;
   draft_sections: string[];
   quality_checks: string[];
+  document_form?: {
+    report_title: string;
+    case_summary: string;
+    strategies: Array<{
+      mode: "aggressive" | "balanced" | "conservative";
+      objective: string;
+      actions: string[];
+      prerequisites: string[];
+      risks: string[];
+    }>;
+    draft_title: string;
+    draft_purpose: string;
+    key_facts: Array<{ text: string; source_refs: ExpectedSourceRef[] }>;
+    core_positions_or_requests: string[];
+    recommended_actions: string[];
+    missing_information: string[];
+    lawyer_review_items: string[];
+  } | null;
 };
 type ExpectedDeadlineFields = {
   deadlines: Array<{

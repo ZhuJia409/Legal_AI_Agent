@@ -11,7 +11,7 @@ from typing import Protocol
 
 import httpx
 from langchain.agents import create_agent
-from langchain.agents.structured_output import StructuredOutputError
+from langchain.agents.structured_output import StructuredOutputError, ToolStrategy
 from langchain_openai import ChatOpenAI
 from openai import OpenAIError
 from pydantic import BaseModel, ValidationError
@@ -43,6 +43,7 @@ class CaseAnalysisAgentRunnerProtocol(Protocol):
         user_prompt: str,
         response_model: type[BaseModel],
         analysis_id: str,
+        force_tool_strategy: bool = False,
     ) -> CaseAgentRunResult:
         """执行一个严格结构化的案件分析节点。"""
 
@@ -57,6 +58,7 @@ class StructuredInvokerProtocol(Protocol):
         response_model: type[BaseModel],
         module: str,
         analysis_id: str,
+        force_tool_strategy: bool = False,
     ) -> BaseModel:
         """调用单个模型并返回已经解析的结构化对象。"""
 
@@ -96,6 +98,7 @@ class LangChainCaseAnalysisAgentRunner:
         user_prompt: str,
         response_model: type[BaseModel],
         analysis_id: str,
+        force_tool_strategy: bool = False,
     ) -> CaseAgentRunResult:
         if not self.api_key:
             raise LLMConfigurationError("LLM_API_KEY is not configured")
@@ -114,6 +117,7 @@ class LangChainCaseAnalysisAgentRunner:
                         response_model=response_model,
                         module=module,
                         analysis_id=analysis_id,
+                        force_tool_strategy=force_tool_strategy,
                     )
                     output = response_model.model_validate(raw_output.model_dump())
                     logger.info(
@@ -182,6 +186,7 @@ class LangChainCaseAnalysisAgentRunner:
         response_model: type[BaseModel],
         module: str,
         analysis_id: str,
+        force_tool_strategy: bool = False,
     ) -> BaseModel:
         model = ChatOpenAI(
             api_key=self.api_key,
@@ -192,11 +197,17 @@ class LangChainCaseAnalysisAgentRunner:
             max_retries=1,
             extra_body={"enable_thinking": False},
         )
+        # 文书节点显式暴露“填写表单”工具，确保模型不直接生成 LaTeX 或自由文本。
+        response_format = (
+            ToolStrategy(response_model, tool_message_content="案件文书表单已提交。")
+            if force_tool_strategy
+            else response_model
+        )
         agent = create_agent(
             model=model,
             tools=[],
             system_prompt=system_prompt,
-            response_format=response_model,
+            response_format=response_format,
         )
         try:
             result = await agent.ainvoke(
